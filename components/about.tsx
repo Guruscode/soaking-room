@@ -11,7 +11,7 @@ export function About() {
           <div className="grid grid-cols-2 gap-4">
             <div className="relative h-48 rounded-xl overflow-hidden shadow-lg">
               <Image
-                src="/image-16.JPG"
+                src="/image-16.jpg"
                 alt="Moses performing on stage"
                 fill
                 className="object-cover"
@@ -19,7 +19,7 @@ export function About() {
             </div>
             <div className="relative h-48 rounded-xl overflow-hidden shadow-lg">
               <Image
-                src="/image-13.JPG"
+                src="/image-13.jpg"
                 alt="Moses singing with guitar"
                 fill
                 className="object-cover"
@@ -27,7 +27,7 @@ export function About() {
             </div>
             <div className="col-span-2 relative h-56 rounded-xl overflow-hidden shadow-lg">
               <Image
-                src="/image-20.JPG"
+                src="/image-20.jpg"
                 alt="Moses Akor portrait"
                 fill
                 className="object-cover"

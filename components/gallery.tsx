@@ -10,12 +10,12 @@ export function Gallery() {
       title: "Ministry Leader",
     },
     {
-      src: "image-2.JPG",
+      src: "image-2.jpg",
       alt: "Moses performing on stage with guitar",
       title: "Live Performance",
     },
     {
-      src: "image-3.JPG",
+      src: "image-3.jpg",
       alt: "Moses singing with guitar",
       title: "Worship Session",
     },
