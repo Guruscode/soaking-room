@@ -18,7 +18,7 @@ export function Hero() {
             <div className="flex flex-col justify-center space-y-6">
               <div className="space-y-3">
                 <h2 className="text-4xl md:text-5xl font-bold text-foreground leading-tight">
-                  The Soaking Room: A Worship Movement
+                  The Soaking Room 
                 </h2>
                 <p className="text-lg text-muted-foreground">
                   Founded by Moses Akoh, a Nigerian pastor and gospel artist, The Soaking Room is a global worship
@@ -38,27 +38,35 @@ export function Hero() {
                   <Heart className="w-5 h-5 mr-2" />
                   Donate Now
                 </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="rounded-lg border-primary text-primary hover:bg-primary/5 bg-transparent"
-                >
-                  Learn More
-                </Button>
+               
               </div>
             </div>
 
             {/* Right Image */}
-            <div className="relative h-96 md:h-full min-h-96 rounded-2xl overflow-hidden shadow-2xl">
-              <Image
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202025-10-28%20at%206.16.24%20AM-3YxUOeRLfwXcKKoi0sA87awJUlxhsB.jpeg"
-                alt="Moses Akor - Music Minister"
-                fill
-                className="object-cover"
-                priority
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-            </div>
+     <div className="relative h-[350px] md:h-[450px] lg:h-[650px] min-h-96 rounded-2xl overflow-hidden shadow-2xl
+                group
+                border border-white/10
+                bg-gradient-to-br from-white/5 via-transparent to-white/5
+                p-1 md:p-2"> {/* This "p-1" creates the outer glow trick */}
+
+  {/* Inner container that holds the image */}
+  <div className="h-full w-full rounded-2xl overflow-hidden 
+                  bg-black/20 
+                  ring-1 ring-white/20 
+                  shadow-inner">
+    <Image
+      src="/image-1.JPG"
+      alt="Moses Akor - Music Minister"
+      fill
+      className="object-cover transition-transform duration-1000 group-hover:scale-105"
+      priority
+    />
+  </div>
+
+  {/* Optional subtle floating glow orb (very elegant) */}
+  <div className="absolute -top-20 -right-20 w-64 h-64 bg-amber-400/20 rounded-full blur-3xl" />
+  <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-purple-600/10 rounded-full blur-3xl" />
+</div>
           </div>
         </div>
       </section>

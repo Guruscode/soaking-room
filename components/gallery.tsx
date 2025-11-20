@@ -5,17 +5,17 @@ import Image from "next/image"
 export function Gallery() {
   const galleryImages = [
     {
-      src: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202025-10-28%20at%206.16.24%20AM-3YxUOeRLfwXcKKoi0sA87awJUlxhsB.jpeg",
+      src: "/image-1.JPG",
       alt: "Moses Akor portrait",
       title: "Ministry Leader",
     },
     {
-      src: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202025-10-28%20at%206.16.39%20AM%20%281%29-rCPKxnMGDltJtsNtcy0RkaWWMQKAOP.jpeg",
+      src: "image-2.JPG",
       alt: "Moses performing on stage with guitar",
       title: "Live Performance",
     },
     {
-      src: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202025-10-28%20at%206.16.39%20AM-QMmoyoDFFRK2XS96d7wWsyU38fYpdZ.jpeg",
+      src: "image-3.JPG",
       alt: "Moses singing with guitar",
       title: "Worship Session",
     },

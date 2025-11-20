@@ -11,7 +11,7 @@ export function About() {
           <div className="grid grid-cols-2 gap-4">
             <div className="relative h-48 rounded-xl overflow-hidden shadow-lg">
               <Image
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202025-10-28%20at%206.16.39%20AM%20%281%29-rCPKxnMGDltJtsNtcy0RkaWWMQKAOP.jpeg"
+                src="/image-16.JPG"
                 alt="Moses performing on stage"
                 fill
                 className="object-cover"
@@ -19,7 +19,7 @@ export function About() {
             </div>
             <div className="relative h-48 rounded-xl overflow-hidden shadow-lg">
               <Image
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202025-10-28%20at%206.16.39%20AM-QMmoyoDFFRK2XS96d7wWsyU38fYpdZ.jpeg"
+                src="/image-13.JPG"
                 alt="Moses singing with guitar"
                 fill
                 className="object-cover"
@@ -27,7 +27,7 @@ export function About() {
             </div>
             <div className="col-span-2 relative h-56 rounded-xl overflow-hidden shadow-lg">
               <Image
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202025-10-28%20at%206.16.24%20AM-3YxUOeRLfwXcKKoi0sA87awJUlxhsB.jpeg"
+                src="/image-20.JPG"
                 alt="Moses Akor portrait"
                 fill
                 className="object-cover"

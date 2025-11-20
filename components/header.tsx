@@ -1,4 +1,5 @@
 "use client"
+import Link from "next/link"
 
 import { Music } from "lucide-react"
 
@@ -11,8 +12,10 @@ export function Header() {
             <Music className="w-6 h-6 text-primary-foreground" />
           </div>
           <div>
+            <Link href="/">
             <h1 className="text-xl font-bold text-foreground">The Soaking Room</h1>
             <p className="text-xs text-muted-foreground">A Worship Movement</p>
+            </Link>
           </div>
         </div>
         <nav className="hidden md:flex gap-8">
@@ -21,6 +24,9 @@ export function Header() {
           </a>
           <a href="#donate" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
             Donate
+          </a>
+           <a href="/gallery" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
+            Gallery
           </a>
           <a href="#contact" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
             Contact

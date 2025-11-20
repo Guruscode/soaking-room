@@ -6,19 +6,19 @@ import { Play } from "lucide-react"
 export function YoutubeMinistration() {
   const videos = [
     {
-      id: "dQw4w9WgXcQ",
-      title: "Latest Ministration",
-      description: "Watch the latest ministration from Moses Akor",
+      id: "fUHk79ZPmcU",
+      title: "Unconditional Worship | Moses Akoh",
+      description: "A worship session recorded at Graceville Christian Centre in Abuja, emphasizing healing, the Holy Spirit, and surrendering one's life as worship.",
     },
     {
-      id: "dQw4w9WgXcQ",
-      title: "Gospel Performance",
-      description: "Powerful gospel performance and worship",
+      id: "Ezn6P0Dr8j0",
+      title: "Worship Teaching Series (Christ’s School) | Moses Akoh | Soaking Room",
+      description: "Part 1 of a teaching series on true worship in Spirit and Truth, exploring Jesus' life and the call to offer spiritual sacrifices.",
     },
     {
-      id: "dQw4w9WgXcQ",
-      title: "Ministry Message",
-      description: "Inspiring message through music",
+      id: "M3hxm234cwA",
+      title: "High Praise & Warfare | Moses Akoh",
+      description: "A powerful session of high praise and spiritual warfare at Qavah Evangelical Ministries, with declarations of love, joy, and invocation of the Holy Spirit.",
     },
   ]
 
@@ -28,7 +28,7 @@ export function YoutubeMinistration() {
         <div className="text-center mb-12">
           <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Latest Ministrations</h3>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Watch Moses Akor's latest ministrations and worship sessions on YouTube
+            Watch Moses Akoh's latest ministrations and worship sessions on YouTube
           </p>
         </div>
 
@@ -55,7 +55,7 @@ export function YoutubeMinistration() {
 
         <div className="text-center">
           <a
-            href="https://www.youtube.com/channel/UCMNM6jPTpnGywuyNh-ta1yw"
+            href="https://www.youtube.com/@TheMosesAkoh"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-block px-8 py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg font-semibold transition-colors"
