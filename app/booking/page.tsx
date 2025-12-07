@@ -1,11 +1,27 @@
 // app/booking/page.tsx
 "use client"
 
+import { useEffect } from "react"
 import { motion } from "framer-motion"
+import Script from "next/script"        // ← this is the key
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 
+// Extend window only for this file (no global pollution)
+declare global {
+  interface Window {
+    Calendly?: any
+  }
+}
+
 export default function BookingPage() {
+  // Re-initialise Calendly when the script finishes loading
+  const handleCalendlyLoad = () => {
+    if (window.Calendly) {
+      window.Calendly.initInlineWidgets()
+    }
+  }
+
   return (
     <>
       <Header />
@@ -31,7 +47,7 @@ export default function BookingPage() {
                 </strong>
               </p>
               <p className="text-lg text-gray-600 mt-6 leading-relaxed">
-                Minister Moses Akoh is a worship leader, pastor, songwriter, and missionary with a heart to lead God's people into His presence through music that blends Gospel, Contemporary, Rock, and African styles. 
+                Minister Moses Akoh is a worship leader, pastor, songwriter, and missionary with a heart to lead God’s people into His presence through music that blends Gospel, Contemporary, Rock, and African styles. 
                 Committed to excellence and integrity, this questionnaire helps ensure a smooth, God-honoring event by clarifying expectations for both parties.
               </p>
               <p className="text-lg text-gray-600 mt-4 leading-relaxed">
@@ -41,7 +57,7 @@ export default function BookingPage() {
             </div>
           </motion.div>
 
-          {/* Calendly Embed – Shows Available Dates/Times */}
+          {/* Calendly – Perfectly styled & guaranteed to load */}
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
@@ -49,15 +65,14 @@ export default function BookingPage() {
             className="max-w-5xl mx-auto"
           >
             <div className="bg-white rounded-3xl shadow-xl overflow-hidden hover:shadow-cyan-500/20 transition-all duration-500">
-              <div 
+              <div
                 className="calendly-inline-widget"
-                data-url="https://calendly.com/bookingmosesakoh/new-meeting?month=2025-12"
-                style={{ minHeight: "700px" }}
+                data-url="https://calendly.com/bookingmosesakoh/new-meeting"
+                style={{ minHeight: "750px" }}
               />
             </div>
           </motion.div>
 
-          {/* Follow-up Note */}
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -66,7 +81,8 @@ export default function BookingPage() {
             className="text-center mt-20"
           >
             <p className="text-xl text-gray-600 font-light">
-              Book a quick discovery call above to discuss details. We'll follow up with the full questionnaire within 24 hours.
+              Select an available time above to schedule a discovery call.<br />
+              We’ll send the full questionnaire right after you book.
             </p>
           </motion.div>
 
@@ -75,8 +91,12 @@ export default function BookingPage() {
 
       <Footer />
 
-      {/* Calendly Script */}
-      <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async />
+      {/* This is the magic line – loads Calendly properly in Next.js */}
+      <Script
+        src="https://assets.calendly.com/assets/external/widget.js"
+        strategy="lazyOnload"
+        onLoad={handleCalendlyLoad}
+      />
     </>
   )
 }
