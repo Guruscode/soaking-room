@@ -1,27 +1,12 @@
 // app/booking/page.tsx
 "use client"
 
-import { useEffect } from "react"
 import { motion } from "framer-motion"
-import Script from "next/script"        // ← this is the key
+import Script from "next/script"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 
-// Extend window only for this file (no global pollution)
-declare global {
-  interface Window {
-    Calendly?: any
-  }
-}
-
 export default function BookingPage() {
-  // Re-initialise Calendly when the script finishes loading
-  const handleCalendlyLoad = () => {
-    if (window.Calendly) {
-      window.Calendly.initInlineWidgets()
-    }
-  }
-
   return (
     <>
       <Header />
@@ -29,7 +14,7 @@ export default function BookingPage() {
       <section className="min-h-screen bg-white py-20 overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
 
-          {/* Hero */}
+          {/* Hero Text */}
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
@@ -57,7 +42,7 @@ export default function BookingPage() {
             </div>
           </motion.div>
 
-          {/* Calendly – Perfectly styled & guaranteed to load */}
+          {/* Calendly – FULL HEIGHT FIX */}
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
@@ -68,11 +53,13 @@ export default function BookingPage() {
               <div
                 className="calendly-inline-widget"
                 data-url="https://calendly.com/bookingmosesakoh/new-meeting"
-                style={{ minHeight: "750px" }}
+                // This is the magic line → forces full height
+                style={{ height: "800px" }}
               />
             </div>
           </motion.div>
 
+          {/* Note */}
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -82,7 +69,7 @@ export default function BookingPage() {
           >
             <p className="text-xl text-gray-600 font-light">
               Select an available time above to schedule a discovery call.<br />
-              We’ll send the full questionnaire right after you book.
+              We’ll send the full questionnaire immediately after you book.
             </p>
           </motion.div>
 
@@ -91,11 +78,10 @@ export default function BookingPage() {
 
       <Footer />
 
-      {/* This is the magic line – loads Calendly properly in Next.js */}
+      {/* Calendly Script – this is the only way that works reliably in Next.js */}
       <Script
         src="https://assets.calendly.com/assets/external/widget.js"
         strategy="lazyOnload"
-        onLoad={handleCalendlyLoad}
       />
     </>
   )
