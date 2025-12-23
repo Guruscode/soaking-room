@@ -4,6 +4,59 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Music, Radio, Headphones, Share2, Instagram, Facebook, Youtube, Music2 } from "lucide-react"
 
 export function MusicLinks() {
+  const featuredLinks = [
+    {
+      name: "Apple Music",
+      subtitle: "Listen on Apple Music",
+      url: "https://music.apple.com/ng/artist/moses-akoh/1224355061",
+      icon: Music,
+      badge: "Stream",
+      description: "Albums, singles, and curated essentials.",
+      color: "from-gray-900 to-gray-700",
+      text: "text-white",
+    },
+    {
+      name: "YouTube Music",
+      subtitle: "Stream on YouTube Music",
+      url: "https://music.youtube.com/channel/UCMNM6jPTpnGywuyNh-ta1yw?feature=gws_kp_artist",
+      icon: Radio,
+      badge: "Watch",
+      description: "Videos, live moments, and worship sets.",
+      color: "from-red-500 to-orange-500",
+      text: "text-white",
+    },
+    {
+      name: "AudioMack",
+      subtitle: "Discover on AudioMack",
+      url: "https://audiomack.com/moses-akoh",
+      icon: Headphones,
+      badge: "Discover",
+      description: "Trending uploads and community favorites.",
+      color: "from-amber-500 to-orange-600",
+      text: "text-white",
+    },
+    {
+      name: "SoundCloud",
+      subtitle: "Follow on SoundCloud",
+      url: "https://soundcloud.com/ocheakoh",
+      icon: Share2,
+      badge: "Follow",
+      description: "Deep cuts, demos, and special drops.",
+      color: "from-orange-400 to-amber-500",
+      text: "text-white",
+    },
+    {
+      name: "Spotify",
+      subtitle: "Stream on Spotify",
+      url: "https://open.spotify.com/artist/6mUEeS22r3xn9ksKKgENrT?si=i0BtWGX5Sgme1jiX-e3C7w",
+      icon: Music2,
+      badge: "Stream",
+      description: "Latest releases, playlists, and soaking sessions.",
+      color: "from-[#1DB954] to-emerald-600",
+      text: "text-white",
+    },
+  ]
+
   const platforms = [
     {
       name: "Apple Music",
@@ -76,7 +129,7 @@ export function MusicLinks() {
   ]
 
   return (
-    <section className="py-16 md:py-24 bg-background">
+    <section className="py-16 md:py-24 bg-gradient-to-br from-cyan-50 via-white to-emerald-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Listen & Follow</h3>
@@ -85,30 +138,65 @@ export function MusicLinks() {
           </p>
         </div>
 
+        {/* Featured Ministration Links */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
+          {featuredLinks.map((link, idx) => {
+            const Icon = link.icon
+            return (
+              <a
+                key={`${link.name}-${idx}`}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-2xl overflow-hidden shadow-lg bg-foreground text-background transition-transform hover:-translate-y-1"
+              >
+                <div className={`h-full p-6 md:p-7 bg-gradient-to-br ${link.color} ${link.text}`}>
+                  <div className="flex items-start gap-4">
+                    <div className="w-14 h-14 rounded-xl bg-white/10 backdrop-blur flex items-center justify-center">
+                      <Icon className="w-7 h-7" />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold uppercase tracking-wide bg-white/20 px-2 py-1 rounded-full">
+                          {link.badge}
+                        </span>
+                        <span className="text-sm opacity-90">{link.subtitle ?? "Ministration"}</span>
+                      </div>
+                      <h4 className="text-2xl font-bold leading-tight">{link.name}</h4>
+                      <p className="text-sm opacity-90 max-w-xl">{link.subtitle}</p>
+                      <p className="text-xs opacity-80">{link.description}</p>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            )
+          })}
+        </div>
+
         {/* Music Streaming Platforms */}
-        <div className="mb-12">
+        {/* <div className="mb-12">
           <h4 className="text-xl font-semibold text-foreground mb-6 text-center">Music Streaming</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {platforms.map((platform, i) => {
               const Icon = platform.icon
               return (
                 <a key={i} href={platform.url} target="_blank" rel="noopener noreferrer" className="group">
-                  <Card className="rounded-xl border-border h-full hover:shadow-lg transition-all cursor-pointer">
+                  <Card className="rounded-xl border-border h-full hover:shadow-xl transition-all cursor-pointer">
                     <CardContent className="p-6 flex flex-col items-center text-center h-full justify-center">
                       <div
-                        className={`w-14 h-14 rounded-lg flex items-center justify-center mb-4 ${platform.color} text-white transition-colors`}
+                        className={`w-16 h-16 rounded-xl flex items-center justify-center mb-4 ${platform.color} text-white transition-colors shadow-md`}
                       >
-                        <Icon className="w-7 h-7" />
+                        <Icon className="w-8 h-8" />
                       </div>
                       <h5 className="font-semibold text-foreground mb-1">{platform.name}</h5>
-                      <p className="text-sm text-muted-foreground">{platform.description}</p>
+                      <p className="text-sm text-muted-foreground max-w-xs">{platform.description}</p>
                     </CardContent>
                   </Card>
                 </a>
               )
             })}
           </div>
-        </div>
+        </div> */}
 
         {/* Social Media Links */}
         <div className="bg-muted/50 rounded-xl p-8">
