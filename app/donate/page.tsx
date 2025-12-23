@@ -13,11 +13,8 @@ export default function DonatePage() {
             <div className="max-w-3xl space-y-4">
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-700">Partner With Us</p>
               <h1 className="text-4xl md:text-5xl font-bold text-foreground leading-tight">
-                Sow into the ministry and help us keep the sound of worship alive.
+                Partner with us by sowing, as we take the Gospel of Jesus, through worship, to all nations.
               </h1>
-              <p className="text-lg text-muted-foreground">
-                Every gift fuels recordings, worship gatherings, outreach, and the message God has given us. Thank you for standing with The Soaking Room.
-              </p>
             </div>
           </div>
         </section>
