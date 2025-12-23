@@ -19,7 +19,7 @@ export default function DonatePage() {
           </div>
         </section>
 
-        <Donation />
+        {/* <Donation /> */}
         <BankDetails />
       </main>
       <Footer />

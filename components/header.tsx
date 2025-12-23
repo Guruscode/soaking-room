@@ -11,7 +11,7 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   // Updated nav items including Booking
-  const navItems = ["About", "Gallery", "Contact", "Booking"]
+  const navItems = ["Home", "About", "Gallery", "Donate", "Contact", "Booking"]
 
   return (
     <>
@@ -44,8 +44,10 @@ export function Header() {
               <motion.a
                 key={item}
                 href={
+                  item === "Home" ? "/" :
                   item === "About" ? "/about" :
                   item === "Gallery" ? "/gallery" :
+                  item === "Donate" ? "/donate" :
                   item === "Contact" ? "/contact" :
                   item === "Booking" ? "/booking" : "#"  // ← your booking page
                 }
@@ -106,9 +108,10 @@ export function Header() {
                   <a
                     key={item}
                     href={
+                      item === "Home" ? "/" :
                       item === "About" ? "/about" :
                       item === "Gallery" ? "/gallery" :
-                  
+                      item === "Donate" ? "/donate" :
                       item === "Contact" ? "/contact" :
                       item === "Booking" ? "/booking" : "#"
                     }
