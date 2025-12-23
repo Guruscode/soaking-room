@@ -1,9 +1,13 @@
 "use client"
 
+import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Play } from "lucide-react"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
 
 export function YoutubeMinistration() {
+  const [activeVideo, setActiveVideo] = useState<{ id: string; title: string } | null>(null)
+
   const videos = [
     {
       id: "fUHk79ZPmcU",
@@ -22,6 +26,8 @@ export function YoutubeMinistration() {
     },
   ]
 
+  const fallbackThumb = "/image-1.JPG"
+
   return (
     <section className="py-16 md:py-24 bg-muted/30">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -35,16 +41,30 @@ export function YoutubeMinistration() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {videos.map((video, i) => (
             <Card key={i} className="rounded-xl overflow-hidden border-border hover:shadow-lg transition-shadow">
-              <div className="relative bg-black aspect-video flex items-center justify-center group cursor-pointer">
+              <button
+                type="button"
+                className="relative bg-black aspect-video flex items-center justify-center group cursor-pointer w-full"
+                onClick={() => setActiveVideo({ id: video.id, title: video.title })}
+              >
                 <img
-                  src={`https://img.youtube.com/vi/${video.id}/maxresdefault.jpg`}
+                  src={`https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`}
                   alt={video.title}
-                  className="w-full h-full object-cover group-hover:opacity-75 transition-opacity"
+                  className="w-full h-full object-cover group-hover:opacity-80 transition-opacity bg-slate-200"
+                  loading="lazy"
+                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    if (e.currentTarget.dataset.fallback) return
+                    e.currentTarget.dataset.fallback = "true"
+                    e.currentTarget.src = fallbackThumb
+                  }}
                 />
-                <div className="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/50 transition-colors">
-                  <Play className="w-16 h-16 text-white fill-white" />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/60 transition-colors">
+                  <span className="flex items-center gap-3 px-4 py-2 rounded-full bg-white/90 text-black font-semibold text-sm shadow-lg">
+                    <Play className="w-5 h-5" />
+                    Play
+                  </span>
                 </div>
-              </div>
+              </button>
               <CardContent className="pt-4">
                 <h4 className="font-semibold text-foreground mb-2">{video.title}</h4>
                 <p className="text-sm text-muted-foreground">{video.description}</p>
@@ -64,6 +84,22 @@ export function YoutubeMinistration() {
           </a>
         </div>
       </div>
+
+      <Dialog open={!!activeVideo} onOpenChange={() => setActiveVideo(null)}>
+        <DialogContent className="max-w-5xl p-0 overflow-hidden">
+          {activeVideo && (
+            <div className="aspect-video w-full bg-black">
+              <iframe
+                title={activeVideo.title}
+                src={`https://www.youtube.com/embed/${activeVideo.id}?autoplay=1`}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                className="w-full h-full"
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </section>
   )
 }

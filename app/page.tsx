@@ -15,12 +15,13 @@ export default function Home() {
       <Header />
       <Hero />
       <About />
+       <MusicLinks />
       <Gallery />
       <Testimonials />
       <YoutubeMinistration />
       <Donation />
-      <MusicLinks />
-      <BankDetails />
+     
+      {/* <BankDetails /> */}
       <Footer />
     </main>
   )

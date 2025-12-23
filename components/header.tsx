@@ -11,7 +11,7 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   // Updated nav items including Booking
-  const navItems = ["Home", "About", "Gallery", "Donate", "Contact", "Booking"]
+  const navItems = ["Home", "About", "Gallery", "TSR Academy", "Contact", "Booking"]
 
   return (
     <>
@@ -47,6 +47,7 @@ export function Header() {
                   item === "Home" ? "/" :
                   item === "About" ? "/about" :
                   item === "Gallery" ? "/gallery" :
+                  item === "TSR Academy" ? "/tsr-academy" :
                   item === "Donate" ? "/donate" :
                   item === "Contact" ? "/contact" :
                   item === "Booking" ? "/booking" : "#"  // ← your booking page
@@ -111,6 +112,7 @@ export function Header() {
                       item === "Home" ? "/" :
                       item === "About" ? "/about" :
                       item === "Gallery" ? "/gallery" :
+                      item === "TSR Academy" ? "/tsr-academy" :
                       item === "Donate" ? "/donate" :
                       item === "Contact" ? "/contact" :
                       item === "Booking" ? "/booking" : "#"
