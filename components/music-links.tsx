@@ -59,7 +59,7 @@ export function MusicLinks() {
         <div className="text-center mb-12">
           <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Listen & Follow</h3>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Stream Moses Akor's music across all major platforms and stay connected on social media
+            Stream Moses Akoh's music across all major platforms and stay connected on social media
           </p>
         </div>
 

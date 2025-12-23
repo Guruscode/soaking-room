@@ -6,7 +6,7 @@ export function Gallery() {
   const galleryImages = [
     {
       src: "/image-1.JPG",
-      alt: "Moses Akor portrait",
+      alt: "Moses Akoh portrait",
       title: "Ministry Leader",
     },
     {

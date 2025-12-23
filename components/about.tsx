@@ -28,7 +28,7 @@ export function About() {
             <div className="col-span-2 relative h-56 rounded-xl overflow-hidden shadow-lg">
               <Image
                 src="/image-20.jpg"
-                alt="Moses Akor portrait"
+                alt="Moses Akoh portrait"
                 fill
                 className="object-cover"
               />

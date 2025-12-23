@@ -16,7 +16,7 @@ export function Footer() {
                 <Music className="w-6 h-6 text-primary-foreground" />
               </div>
               <div>
-                <h3 className="font-bold text-lg">Moses Akor</h3>
+                <h3 className="font-bold text-lg">Moses Akoh</h3>
                 <p className="text-sm text-background/70">Music Ministry</p>
               </div>
             </div>
@@ -62,7 +62,7 @@ export function Footer() {
 
         <div className="border-t border-background/20 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-background/70">
-            <p>&copy; {currentYear} Moses Akor Music Ministry. All rights reserved.</p>
+            <p>&copy; {currentYear} Moses Akoh Music Ministry. All rights reserved.</p>
             <p>Spreading faith and hope through music.</p>
           </div>
         </div>
