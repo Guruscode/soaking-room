@@ -70,7 +70,7 @@ export function Footer() {
 
         <div className="border-t border-background/20 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-background/70">
-            <p>&copy; {currentYear} Moses Akoh Music Ministry. All rights reserved.</p>
+            <p>&copy; {currentYear} Moses Akoh Ministry. All rights reserved.</p>
             <p>Spreading faith and hope through music.</p>
           </div>
         </div>
