@@ -84,9 +84,9 @@ export function Hero() {
                 transition={{ delay: 0.9 }}
                 className="mt-8 text-xl md:text-2xl text-gray-600 font-light max-w-2xl"
               >
-                A sacred space of extended worship led by Moses Akoh.
+               A sacred space for extended worship, led by Moses Akoh. 
                 <br className="hidden md:block" />
-                Where hearts linger in the presence of God.
+               Where hearts linger in the presence of God.
               </motion.p>
 
               <motion.div
