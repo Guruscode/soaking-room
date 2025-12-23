@@ -38,10 +38,8 @@ export default function Contact() {
               <Globe className="w-12 h-12 text-cyan-600 mx-auto mb-6" />
               <h2 className="text-2xl font-bold text-black mb-4">Address</h2>
               <p className="text-gray-600">
-                26, NE Eduok Road,<br />
-                NAF Valley Estate,<br />
-                Asokoro, Abuja,<br />
-                Nigeria
+                Atlantic Mall,<br />
+                Utako, FCT Abuja
               </p>
             </div>
 
@@ -50,7 +48,7 @@ export default function Contact() {
               <Phone className="w-12 h-12 text-cyan-600 mx-auto mb-6" />
               <h2 className="text-2xl font-bold text-black mb-4">Phone</h2>
               <p className="text-gray-600">
-                08061157979
+                09057027326
               </p>
             </div>
 

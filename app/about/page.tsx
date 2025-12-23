@@ -60,9 +60,9 @@ export default function About() {
                 <Globe className="w-6 h-6 text-cyan-600" />
                 Contacts
               </h2>
-              <p>26, NE Eduok Road, NAF Valley Estate, Asokoro, Abuja, Nigeria</p>
+              <p>Atlantic Mall, Utako, FCT Abuja</p>
               <p className="flex items-center gap-2">
-                Phone: 08061157979
+                Phone: 09057027326
               </p>
               <p className="flex items-center gap-2">
                 Email: soakingroomworship@gmail.com
