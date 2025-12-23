@@ -1,6 +1,8 @@
 "use client"
 
-import { Music, Heart } from "lucide-react"
+import Link from "next/link"
+import Image from "next/image"
+import { Heart } from "lucide-react"
 
 export function Footer() {
   const currentYear = new Date().getFullYear()
@@ -12,12 +14,18 @@ export function Footer() {
           {/* Brand */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                <Music className="w-6 h-6 text-primary-foreground" />
+              <div className="w-12 h-12 rounded-xl bg-black flex items-center justify-center shadow-md overflow-hidden">
+                <Image
+                  src="/logo.PNG"
+                  alt="The Soaking Room Logo"
+                  width={40}
+                  height={40}
+                  className="w-10 h-10 object-contain"
+                />
               </div>
               <div>
-                <h3 className="font-bold text-lg">Moses Akoh</h3>
-                <p className="text-sm text-background/70">Music Ministry</p>
+                <h3 className="font-bold text-lg">The Soaking Room</h3>
+                <p className="text-sm text-background/70">Worship • Obedience • Eyes on Jesus</p>
               </div>
             </div>
             <p className="text-sm text-background/80 leading-relaxed">
@@ -30,19 +38,19 @@ export function Footer() {
             <h4 className="font-semibold text-lg">Quick Links</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="#about" className="text-background/80 hover:text-background transition-colors">
+                <Link href="/about" className="text-background/80 hover:text-background transition-colors">
                   About
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#donate" className="text-background/80 hover:text-background transition-colors">
+                <Link href="/#donate" className="text-background/80 hover:text-background transition-colors">
                   Donate
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#contact" className="text-background/80 hover:text-background transition-colors">
+                <Link href="/contact" className="text-background/80 hover:text-background transition-colors">
                   Contact
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

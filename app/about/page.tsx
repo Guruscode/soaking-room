@@ -22,7 +22,7 @@ export default function About() {
             Moses Oche <span className="text-cyan-600">Akoh</span>
           </h1>
           <p className="text-xl text-gray-600 font-light">
-            Music Director | Vocal Coach | Producer | Worship Leader
+            Music Director | Pastor | Producer | Worship Leader
           </p>
         </motion.div>
 

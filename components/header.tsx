@@ -2,18 +2,15 @@
 
 import Link from "next/link"
 import Image from "next/image"  // ← add this if you haven't already
-import { Music, Heart, Menu, X } from "lucide-react"
+import { Heart, Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { motion, AnimatePresence } from "framer-motion"
 import { useState } from "react"
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-
-  const scrollToDonate = () => {
-    document.getElementById("donate")?.scrollIntoView({ behavior: "smooth" })
-    setMobileMenuOpen(false)
-  }
+  const [supportModalOpen, setSupportModalOpen] = useState(false)
 
   // Updated nav items including Booking
   const navItems = ["About", "Gallery", "Contact", "Booking"]
@@ -67,7 +64,7 @@ export function Header() {
 
             <Button
               size="lg"
-              onClick={scrollToDonate}
+              onClick={() => setSupportModalOpen(true)}
               className="bg-black hover:bg-gray-900 text-white font-medium px-8 py-6 rounded-2xl shadow-xl hover:shadow-cyan-500/20"
             >
               <Heart className="w-5 h-5 mr-2 fill-current" />
@@ -123,7 +120,10 @@ export function Header() {
 
                 <Button
                   size="lg"
-                  onClick={scrollToDonate}
+                  onClick={() => {
+                    setMobileMenuOpen(false)
+                    setSupportModalOpen(true)
+                  }}
                   className="w-full mt-8 bg-black hover:bg-gray-900 text-white text-lg py-8 rounded-2xl shadow-xl"
                 >
                   <Heart className="w-6 h-6 mr-3 fill-current" />
@@ -134,6 +134,45 @@ export function Header() {
           </>
         )}
       </AnimatePresence>
+
+      <Dialog open={supportModalOpen} onOpenChange={setSupportModalOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Support the Ministry</DialogTitle>
+            <DialogDescription>
+              Choose how you would like to support. Thank you for standing with us.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 text-sm text-gray-700">
+            <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+              <p className="text-xs uppercase font-semibold text-gray-500 mb-1">Bank Transfer</p>
+              <p className="font-semibold text-gray-900">Moses Akoh Oche</p>
+              <p className="font-mono text-base">0255815560</p>
+              <p className="text-gray-600">Guarantee Trust Bank PLC</p>
+              <p className="text-gray-600">Atlantic Mall, Utako, FCT Abuja</p>
+            </div>
+            <p className="text-gray-600">
+              Prefer to give online? Use the donation section on the homepage to pick a method that works best for you.
+            </p>
+          </div>
+          <DialogFooter className="flex flex-col sm:flex-row gap-2">
+            <Link
+              href="/#donate"
+              className="inline-flex items-center justify-center rounded-xl bg-black px-4 py-2.5 text-white text-sm font-medium hover:bg-gray-900"
+              onClick={() => setSupportModalOpen(false)}
+            >
+              Go to Donate Section
+            </Link>
+            <Button
+              variant="outline"
+              className="text-sm"
+              onClick={() => setSupportModalOpen(false)}
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }
