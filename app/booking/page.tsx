@@ -1,8 +1,6 @@
-// app/booking/page.tsx
 "use client"
 
 import { motion } from "framer-motion"
-import Script from "next/script"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 
@@ -25,38 +23,50 @@ export default function BookingPage() {
               Host <span className="text-cyan-600">Minister Moses Akoh</span>
             </h1>
 
-            <div className="max-w-4xl mx-auto text-center">
+            <div className="max-w-4xl mx-auto">
               <p className="text-xl text-gray-700 font-light leading-relaxed">
                 <strong className="font-semibold text-black">
                   MINISTERIAL HOSTING REQUIREMENT QUESTIONNAIRE FOR MINISTER MOSES AKOH
                 </strong>
               </p>
+
               <p className="text-lg text-gray-600 mt-6 leading-relaxed">
-                Minister Moses Akoh is a worship leader, pastor, songwriter, and missionary with a heart to lead God’s people into His presence through music that blends Gospel, Contemporary, Rock, and African styles. 
-                Committed to excellence and integrity, this questionnaire helps ensure a smooth, God-honoring event by clarifying expectations for both parties.
+                Minister Moses Akoh is a worship leader, pastor, songwriter, and missionary with a heart to lead God’s people
+                into His presence through music that blends Gospel, Contemporary, Rock, and African styles.
               </p>
+
               <p className="text-lg text-gray-600 mt-4 leading-relaxed">
-                We appreciate your partnership and ask you to complete this form to facilitate a joyful and impactful ministry experience. 
-                Responses will form the basis of our mutual agreement.
+                To ensure a smooth, God-honoring and impactful ministry experience, kindly complete the hosting questionnaire
+                using the button below.
               </p>
             </div>
           </motion.div>
 
-          {/* Calendly – FULL HEIGHT FIX */}
+          {/* Redirect Button */}
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 1 }}
-            className="max-w-5xl mx-auto"
+            className="flex justify-center"
           >
-            <div className="bg-white rounded-3xl shadow-xl overflow-hidden hover:shadow-cyan-500/20 transition-all duration-500">
-              <div
-                className="calendly-inline-widget"
-                data-url="https://calendly.com/bookingmosesakoh/new-meeting"
-                // This is the magic line → forces full height
-                style={{ height: "800px" }}
-              />
-            </div>
+            <a
+              href="https://docs.google.com/forms/d/e/1FAIpQLSf54vDckuYWtWspOu69T2q9FEcRKhUWiu9ZrKOamLGUPvJSyA/viewform"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="
+                inline-flex items-center justify-center
+                px-12 py-5
+                text-lg font-semibold text-white
+                bg-cyan-600
+                rounded-full
+                shadow-lg
+                hover:bg-cyan-700
+                hover:shadow-cyan-500/30
+                transition-all duration-300
+              "
+            >
+              Fill Hosting Questionnaire
+            </a>
           </motion.div>
 
           {/* Note */}
@@ -68,8 +78,8 @@ export default function BookingPage() {
             className="text-center mt-20"
           >
             <p className="text-xl text-gray-600 font-light">
-              Select an available time above to schedule a discovery call.<br />
-              We’ll send the full questionnaire immediately after you book.
+              Kindly complete the questionnaire using the button above.<br />
+              Our team will review your submission and contact you shortly.
             </p>
           </motion.div>
 
@@ -77,12 +87,6 @@ export default function BookingPage() {
       </section>
 
       <Footer />
-
-      {/* Calendly Script – this is the only way that works reliably in Next.js */}
-      <Script
-        src="https://assets.calendly.com/assets/external/widget.js"
-        strategy="lazyOnload"
-      />
     </>
   )
 }
