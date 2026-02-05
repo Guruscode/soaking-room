@@ -1,5 +1,3 @@
-can you add a new section very beautiful with new song alert
-https://youtu.be/edwrLWhFx6o?si=A57EnoKYVHbh-1_L
 "use client"
 import Image from "next/image"
 import { motion } from "framer-motion"
