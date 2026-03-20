@@ -26,7 +26,7 @@ export default function AdminOverviewPage() {
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           <Button className="rounded-xl bg-white text-slate-900 hover:bg-slate-100">Review Admissions</Button>
-          <Button variant="outline" className="rounded-xl border-slate-400 text-white hover:bg-slate-700">Upload Curriculum</Button>
+          <Button variant="outline" className="rounded-xl bg-slate-900  border-slate-400 text-white hover:bg-slate-700">Upload Curriculum</Button>
         </div>
       </section>
 

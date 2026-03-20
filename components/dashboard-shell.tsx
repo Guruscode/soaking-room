@@ -56,17 +56,17 @@ export function DashboardShell({
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
-          <div className="mb-4 rounded-xl bg-slate-900 px-3 py-3 text-white">
-            <p className="text-xs uppercase tracking-[0.14em] text-slate-300">Navigation</p>
-            <p className="mt-1 text-sm font-medium">Dashboard Menu</p>
+          <div className="mb-12 rounded-xl bg-slate-900 px-3 py-3 text-white">
+            <p className="text-xxl uppercase tracking-[0.14em] text-slate-300">Navigation</p>
+          
           </div>
-          <nav className="space-y-2">
+          <nav className="space-y-3">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={() => setSidebarOpen(false)}
-                className={`block rounded-lg border px-3 py-2 text-sm ${
+                className={`block rounded-lg border px-3 py-2 text-lg ${
                   pathname === item.href || pathname.startsWith(`${item.href}/`)
                     ? "border-slate-900 bg-slate-900 text-white"
                     : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-900 hover:text-white"

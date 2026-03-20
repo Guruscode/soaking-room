@@ -1,5 +1,6 @@
 import { type ReactNode } from "react"
 import { DashboardShell } from "@/components/dashboard-shell"
+import { Hero } from "@/components/hero"
 
 const navItems = [
   { label: "Overview", href: "/admin/overview" },
@@ -7,6 +8,8 @@ const navItems = [
   { label: "Admissions", href: "/admin/admissions" },
   { label: "Teachers Guide", href: "/admin/teachers-guide" },
   { label: "Broadcasts", href: "/admin/broadcasts" },
+  { label: "Settings", href: "/admin/settings"},
+
 ]
 
 export default function AdminDashboardLayout({ children }: { children: ReactNode }) {
