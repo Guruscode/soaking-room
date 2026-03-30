@@ -1,10 +1,10 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Figtree } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
+import { AuthProvider } from "@/components/providers/auth-provider"
+import { Toaster } from "@/components/ui/toaster"
+import { getSessionUser } from "@/lib/session"
 import "./globals.css"
-
-const figtree = Figtree({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "Moses Akoh - Music Ministry",
@@ -13,15 +13,20 @@ export const metadata: Metadata = {
   generator: "v0.app",
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const initialUser = await getSessionUser()
+
   return (
     <html lang="en">
-      <body className={`${figtree.className} font-sans antialiased`}>
-        {children}
+      <body className="font-sans antialiased">
+        <AuthProvider initialUser={initialUser}>
+          {children}
+          <Toaster />
+        </AuthProvider>
         <Analytics />
       </body>
     </html>

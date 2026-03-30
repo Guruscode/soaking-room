@@ -2,8 +2,13 @@
 
 import { type ReactNode, useState } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { Menu, X } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
+import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/components/providers/auth-provider"
+import { getErrorMessage } from "@/lib/errors"
 
 type NavItem = {
   label: string
@@ -13,18 +18,41 @@ type NavItem = {
 export function DashboardShell({
   portalTitle,
   portalSubtitle,
-  userLabel,
   navItems,
   children,
 }: {
   portalTitle: string
   portalSubtitle: string
-  userLabel: string
   navItems: NavItem[]
   children: ReactNode
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
   const pathname = usePathname()
+  const router = useRouter()
+  const { toast } = useToast()
+  const { logout, user } = useAuth()
+
+  const onLogout = async () => {
+    setIsLoggingOut(true)
+
+    try {
+      await logout()
+      toast({
+        title: "Signed out",
+        description: "Your session has been closed successfully.",
+      })
+      router.push("/tsr-academy/login")
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Sign-out failed",
+        description: getErrorMessage(error, "We could not sign you out."),
+      })
+    } finally {
+      setIsLoggingOut(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900">
@@ -44,8 +72,14 @@ export function DashboardShell({
               <h1 className="text-lg font-semibold text-slate-900">{portalSubtitle}</h1>
             </div>
           </div>
-          <div className="rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-700">
-            {userLabel}
+          <div className="flex items-center gap-3">
+            <div className="rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-700">
+              {user?.fullName || "Academy User"}
+            </div>
+            <Button type="button" variant="outline" className="rounded-xl" onClick={onLogout} disabled={isLoggingOut}>
+              {isLoggingOut ? <Spinner className="size-4" /> : null}
+              Logout
+            </Button>
           </div>
         </div>
       </header>

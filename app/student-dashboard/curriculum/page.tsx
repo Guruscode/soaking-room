@@ -1,65 +1,31 @@
-"use client"
+import { redirect } from "next/navigation"
+import { getStudentDashboardData } from "@/lib/db"
+import { getSessionUser } from "@/lib/session"
 
-import { useState } from "react"
-import { RecordActionMenu } from "@/components/record-action-menu"
+export default async function StudentCurriculumPage() {
+  const sessionUser = await getSessionUser()
 
-type CurriculumRow = {
-  id: number
-  module: string
-  week: string
-  status: "Pending" | "Approved" | "Rejected"
-}
-
-const initialRows: CurriculumRow[] = [
-  { id: 1, module: "Identity & Sonship", week: "Week 1", status: "Approved" },
-  { id: 2, module: "Spiritual Impact of Your Voice", week: "Week 2", status: "Pending" },
-  { id: 3, module: "Anatomy of Your Ministry Voice", week: "Week 3", status: "Pending" },
-]
-
-export default function StudentCurriculumPage() {
-  const [rows, setRows] = useState(initialRows)
-
-  const updateStatus = (id: number, status: CurriculumRow["status"]) => {
-    setRows((prev) => prev.map((row) => (row.id === id ? { ...row, status } : row)))
+  if (!sessionUser || sessionUser.role !== "student") {
+    redirect("/tsr-academy/login")
   }
 
-  const removeRow = (id: number) => {
-    setRows((prev) => prev.filter((row) => row.id !== id))
-  }
+  const { curriculum } = await getStudentDashboardData(sessionUser.id)
 
   return (
     <div className="rounded-xl border border-slate-200 p-4">
-      <h2 className="text-2xl font-semibold">Curriculum & Module Rotation</h2>
-      <div className="mt-3 overflow-x-auto">
-        <table className="min-w-full text-left text-sm">
-          <thead>
-            <tr className="border-b border-slate-200 text-slate-500">
-              <th className="py-2 pr-4 font-medium">Module</th>
-              <th className="py-2 pr-4 font-medium">Week</th>
-              <th className="py-2 pr-4 font-medium">Status</th>
-              <th className="py-2 pr-2 font-medium">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.id} className="border-b border-slate-100 text-slate-700">
-                <td className="py-2 pr-4">{row.module}</td>
-                <td className="py-2 pr-4">{row.week}</td>
-                <td className="py-2 pr-4">{row.status}</td>
-                <td className="py-2 pr-2">
-                  <RecordActionMenu
-                    recordName={row.module}
-                    status={row.status}
-                    showApproval
-                    onApprove={() => updateStatus(row.id, "Approved")}
-                    onReject={() => updateStatus(row.id, "Rejected")}
-                    onDelete={() => removeRow(row.id)}
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <h2 className="text-2xl font-semibold">Curriculum</h2>
+      <p className="mt-2 text-sm text-slate-600">View the published text modules prepared for your category and academy-wide classes.</p>
+      <div className="mt-4 space-y-4">
+        {curriculum.map((item) => (
+          <article key={item.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h3 className="text-lg font-semibold text-slate-900">{item.title}</h3>
+              <span className="rounded-full bg-slate-900 px-3 py-1 text-xs text-white">{item.week}</span>
+            </div>
+            <p className="mt-1 text-sm text-slate-500">{item.category}</p>
+            <p className="mt-3 text-sm leading-6 text-slate-700">{item.content}</p>
+          </article>
+        ))}
       </div>
     </div>
   )
