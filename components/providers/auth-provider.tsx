@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { getErrorMessage } from "@/lib/errors"
-import type { LoginPayload, RegisterPayload } from "@/lib/types"
+import type { LoginPayload, RegisterPayload, RegistrationOtpRequestResult, RegistrationOtpVerifyPayload } from "@/lib/types"
 import type { SessionUser } from "@/lib/session"
 
 type ApiResponse<T> = {
@@ -16,7 +16,8 @@ type AuthContextValue = {
   isAuthenticated: boolean
   isHydrating: boolean
   login: (payload: LoginPayload) => Promise<SessionUser>
-  register: (payload: RegisterPayload) => Promise<SessionUser>
+  requestRegistrationOtp: (payload: RegisterPayload) => Promise<RegistrationOtpRequestResult>
+  verifyRegistrationOtp: (payload: RegistrationOtpVerifyPayload) => Promise<SessionUser>
   logout: () => Promise<void>
   refreshSession: () => Promise<SessionUser | null>
   setUser: (user: SessionUser | null) => void
@@ -89,8 +90,21 @@ export function AuthProvider({
     return sessionUser
   }
 
-  const register = async (payload: RegisterPayload) => {
+  const requestRegistrationOtp = async (payload: RegisterPayload) => {
     const response = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify(payload),
+    })
+
+    return parseResponse<RegistrationOtpRequestResult>(response)
+  }
+
+  const verifyRegistrationOtp = async (payload: RegistrationOtpVerifyPayload) => {
+    const response = await fetch("/api/auth/register/verify-otp", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -122,7 +136,8 @@ export function AuthProvider({
       isAuthenticated: Boolean(user),
       isHydrating,
       login,
-      register,
+      requestRegistrationOtp,
+      verifyRegistrationOtp,
       logout,
       refreshSession,
       setUser,

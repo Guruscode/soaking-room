@@ -103,6 +103,16 @@ export type RegisterPayload = {
   confirmPassword: string
 }
 
+export type RegistrationOtpRequestResult = {
+  email: string
+  expiresAt: string
+}
+
+export type RegistrationOtpVerifyPayload = {
+  email: string
+  otp: string
+}
+
 export type LoginPayload = {
   email: string
   password: string

@@ -1,8 +1,14 @@
-import { randomUUID } from "node:crypto"
+import { createHash, randomInt, randomUUID } from "node:crypto"
 import { BROADCAST_AUDIENCE_OPTIONS, CURRICULUM_CATEGORY_OPTIONS } from "@/lib/academy-options"
 import { turso } from "@/lib/turso"
 import { env } from "@/lib/env"
 import { AppError } from "@/lib/errors"
+import {
+  sendAdmissionApprovedEmail,
+  sendBroadcastEmail,
+  sendRegistrationOtpEmail,
+  sendRegistrationSubmittedEmail,
+} from "@/lib/email"
 import { hashPassword, verifyPassword } from "@/lib/password"
 import type {
   AcademySettings,
@@ -17,6 +23,8 @@ import type {
   CurriculumPayload,
   LoginPayload,
   NotificationItem,
+  RegistrationOtpRequestResult,
+  RegistrationOtpVerifyPayload,
   RegisterPayload,
   SettingsPayload,
   TeachersGuideItem,
@@ -96,6 +104,25 @@ type DatabaseAssignmentRow = {
   title: string
   instructions: string
   due_date: string
+  created_at: string
+  updated_at: string
+}
+
+type DatabasePendingRegistrationRow = {
+  id: string
+  full_name: string
+  date_of_birth_or_age: string
+  category: string
+  location: string
+  email: string
+  phone: string
+  born_again: string
+  church: string | null
+  musical_skill: string | null
+  reason: string
+  password_hash: string
+  otp_hash: string
+  otp_expires_at: string
   created_at: string
   updated_at: string
 }
@@ -217,6 +244,40 @@ function sanitizeOptionalValue(value?: string | null) {
   return nextValue ? nextValue : null
 }
 
+function hashOtp(code: string) {
+  return createHash("sha256").update(code).digest("hex")
+}
+
+function generateOtp() {
+  return randomInt(100000, 1000000).toString()
+}
+
+function getOtpExpiryDate() {
+  return new Date(Date.now() + 10 * 60 * 1000)
+}
+
+async function sendEmailSafely(taskName: string, action: () => Promise<unknown>) {
+  try {
+    await action()
+  } catch (error) {
+    console.error(`Failed to send ${taskName} email:`, error)
+  }
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+function chunkArray<T>(items: T[], size: number) {
+  const chunks: T[][] = []
+
+  for (let index = 0; index < items.length; index += size) {
+    chunks.push(items.slice(index, index + size))
+  }
+
+  return chunks
+}
+
 function ensureRequiredValue(value: string, fieldName: string) {
   if (!value.trim()) {
     throw new AppError(`${fieldName} is required.`)
@@ -256,6 +317,15 @@ async function getUserByEmail(email: string) {
   })
 
   return result.rows[0] ? (result.rows[0] as unknown as DatabaseUserRow) : null
+}
+
+async function getPendingRegistrationByEmail(email: string) {
+  const result = await turso.execute({
+    sql: "SELECT * FROM pending_registrations WHERE email = ? LIMIT 1",
+    args: [email.toLowerCase()],
+  })
+
+  return result.rows[0] ? (result.rows[0] as unknown as DatabasePendingRegistrationRow) : null
 }
 
 async function getUserById(id: string) {
@@ -421,6 +491,20 @@ async function seedAssignments() {
       args: [randomUUID(), assignment[0], assignment[1], assignment[2]],
     })
   }
+}
+
+async function listStudentsMatchingAudience(audience: string) {
+  const result = await turso.execute({
+    sql: `
+      SELECT * FROM users
+      WHERE role = 'student'
+      AND (? = 'All Students' OR category = ?)
+      ORDER BY created_at DESC
+    `,
+    args: [audience, audience],
+  })
+
+  return result.rows.map((row) => mapUser(row as unknown as DatabaseUserRow))
 }
 
 async function syncNotificationsForBroadcast(broadcast: BroadcastItem) {
@@ -602,6 +686,27 @@ export async function ensureDatabaseSetup() {
             updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
           )
         `,
+        `
+          CREATE TABLE IF NOT EXISTS pending_registrations (
+            id TEXT PRIMARY KEY,
+            full_name TEXT NOT NULL,
+            date_of_birth_or_age TEXT NOT NULL,
+            category TEXT NOT NULL,
+            location TEXT NOT NULL,
+            email TEXT NOT NULL UNIQUE,
+            phone TEXT NOT NULL,
+            born_again TEXT NOT NULL,
+            church TEXT,
+            musical_skill TEXT,
+            reason TEXT NOT NULL,
+            password_hash TEXT NOT NULL,
+            otp_hash TEXT NOT NULL,
+            otp_expires_at TEXT NOT NULL,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+          )
+        `,
+        "CREATE INDEX IF NOT EXISTS idx_pending_registrations_email ON pending_registrations(email)",
       ])
 
       await seedAdminUser()
@@ -667,6 +772,143 @@ export async function registerStudent(payload: RegisterPayload) {
   }
 
   await syncExistingBroadcastsForUser(id)
+  return mapUser(user)
+}
+
+export async function requestRegistrationOtp(payload: RegisterPayload): Promise<RegistrationOtpRequestResult> {
+  await ensureDatabaseSetup()
+
+  const email = ensureRequiredValue(payload.email, "Email").toLowerCase()
+
+  if (payload.password.length < 8) {
+    throw new AppError("Password must be at least 8 characters long.")
+  }
+
+  if (payload.password !== payload.confirmPassword) {
+    throw new AppError("Passwords do not match.")
+  }
+
+  const existingUser = await getUserByEmail(email)
+
+  if (existingUser) {
+    throw new AppError("An account with this email already exists.", 409)
+  }
+
+  const otp = generateOtp()
+  const expiresAt = getOtpExpiryDate()
+  const pendingId = (await getPendingRegistrationByEmail(email))?.id || randomUUID()
+
+  await turso.execute({
+    sql: `
+      INSERT INTO pending_registrations (
+        id, full_name, date_of_birth_or_age, category, location, email, phone, born_again,
+        church, musical_skill, reason, password_hash, otp_hash, otp_expires_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(email) DO UPDATE SET
+        full_name = excluded.full_name,
+        date_of_birth_or_age = excluded.date_of_birth_or_age,
+        category = excluded.category,
+        location = excluded.location,
+        phone = excluded.phone,
+        born_again = excluded.born_again,
+        church = excluded.church,
+        musical_skill = excluded.musical_skill,
+        reason = excluded.reason,
+        password_hash = excluded.password_hash,
+        otp_hash = excluded.otp_hash,
+        otp_expires_at = excluded.otp_expires_at,
+        updated_at = CURRENT_TIMESTAMP
+    `,
+    args: [
+      pendingId,
+      ensureRequiredValue(payload.fullName, "Full name"),
+      ensureRequiredValue(payload.dateOfBirthOrAge, "Date of birth / age"),
+      ensureRequiredValue(payload.category, "Category"),
+      ensureRequiredValue(payload.location, "Location"),
+      email,
+      ensureRequiredValue(payload.phone, "Phone"),
+      ensureRequiredValue(payload.bornAgain, "Born again response"),
+      sanitizeOptionalValue(payload.church),
+      sanitizeOptionalValue(payload.musicalSkill),
+      ensureRequiredValue(payload.reason, "Reason"),
+      hashPassword(payload.password),
+      hashOtp(otp),
+      expiresAt.toISOString(),
+    ],
+  })
+
+  await sendRegistrationOtpEmail(email, payload.fullName.trim(), otp)
+
+  return {
+    email,
+    expiresAt: expiresAt.toISOString(),
+  }
+}
+
+export async function verifyRegistrationOtp(payload: RegistrationOtpVerifyPayload) {
+  await ensureDatabaseSetup()
+
+  const email = ensureRequiredValue(payload.email, "Email").toLowerCase()
+  const otp = ensureRequiredValue(payload.otp, "OTP")
+  const pendingRegistration = await getPendingRegistrationByEmail(email)
+
+  if (!pendingRegistration) {
+    throw new AppError("No pending registration was found for this email.", 404)
+  }
+
+  if (new Date(pendingRegistration.otp_expires_at).getTime() < Date.now()) {
+    throw new AppError("This OTP has expired. Please request a new code.")
+  }
+
+  if (hashOtp(otp) !== pendingRegistration.otp_hash) {
+    throw new AppError("The OTP you entered is invalid.", 401)
+  }
+
+  const existingUser = await getUserByEmail(email)
+  if (existingUser) {
+    await turso.execute({ sql: "DELETE FROM pending_registrations WHERE email = ?", args: [email] })
+    throw new AppError("An account with this email already exists.", 409)
+  }
+
+  const id = randomUUID()
+  await turso.execute({
+    sql: `
+      INSERT INTO users (
+        id, full_name, date_of_birth_or_age, category, location, email, phone, born_again,
+        church, musical_skill, reason, password_hash, role, admission_status
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `,
+    args: [
+      id,
+      pendingRegistration.full_name,
+      pendingRegistration.date_of_birth_or_age,
+      pendingRegistration.category,
+      pendingRegistration.location,
+      pendingRegistration.email,
+      pendingRegistration.phone,
+      pendingRegistration.born_again,
+      pendingRegistration.church,
+      pendingRegistration.musical_skill,
+      pendingRegistration.reason,
+      pendingRegistration.password_hash,
+      "student",
+      "pending",
+    ],
+  })
+
+  await turso.execute({ sql: "DELETE FROM pending_registrations WHERE email = ?", args: [email] })
+
+  const user = await getUserById(id)
+
+  if (!user) {
+    throw new AppError("We could not finish your registration. Please try again.", 500)
+  }
+
+  await syncExistingBroadcastsForUser(id)
+  void sendEmailSafely("registration confirmation", () =>
+    sendRegistrationSubmittedEmail(user.email, user.full_name),
+  )
+
   return mapUser(user)
 }
 
@@ -746,7 +988,15 @@ export async function createAdmission(payload: AdminStudentPayload) {
   }
 
   await syncExistingBroadcastsForUser(id)
-  return mapUser(user)
+  const mappedUser = mapUser(user)
+
+  if (mappedUser.admissionStatus === "approved") {
+    void sendEmailSafely("admission approved", () =>
+      sendAdmissionApprovedEmail(mappedUser.email, mappedUser.fullName),
+    )
+  }
+
+  return mappedUser
 }
 
 export async function updateAdmission(userId: string, payload: Partial<AdminStudentPayload>) {
@@ -813,7 +1063,15 @@ export async function updateAdmission(userId: string, payload: Partial<AdminStud
     throw new AppError("Student record not found.", 404)
   }
 
-  return mapUser(updatedUser)
+  const mappedUser = mapUser(updatedUser)
+
+  if (existingUser.admission_status !== "approved" && mappedUser.admissionStatus === "approved") {
+    void sendEmailSafely("admission approved", () =>
+      sendAdmissionApprovedEmail(mappedUser.email, mappedUser.fullName),
+    )
+  }
+
+  return mappedUser
 }
 
 export async function updateAdmissionStatus(userId: string, status: AdmissionStatus) {
@@ -992,6 +1250,27 @@ export async function createBroadcast(payload: BroadcastPayload) {
 
   const mapped = mapBroadcast(item)
   await syncNotificationsForBroadcast(mapped)
+
+  const recipientEmails = (await listStudentsMatchingAudience(mapped.audience))
+    .map((student) => student.email)
+    .filter(Boolean)
+
+  for (const batch of chunkArray(recipientEmails, 25)) {
+    await sendEmailSafely("broadcast", () =>
+      sendBroadcastEmail(batch, {
+        title: mapped.title,
+        message: mapped.message,
+        className: mapped.className,
+        classStartAt: mapped.classStartAt,
+        classMode: mapped.classMode,
+        meetingLink: mapped.meetingLink,
+        venue: mapped.venue,
+      }),
+    )
+
+    await sleep(2000)
+  }
+
   return mapped
 }
 
