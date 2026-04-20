@@ -28,6 +28,20 @@ export interface EmailOptions {
   text?: string
 }
 
+type EmailTemplateOptions = {
+  eyebrow?: string
+  title: string
+  greeting?: string
+  intro: string
+  body?: string[]
+  accentColor?: string
+  accentSoft?: string
+  panelHtml?: string
+  ctaLabel?: string
+  ctaUrl?: string
+  closing?: string
+}
+
 const EMAIL_RETRY_DELAYS_MS = [1500, 4000, 8000] as const
 
 function sleep(ms: number) {
@@ -91,84 +105,170 @@ export async function sendEmail(options: EmailOptions) {
   throw new Error("Failed to send email", { cause: lastError })
 }
 
-export async function sendWelcomeEmail(to: string, userName: string) {
-  const subject = "Welcome to TSR Academy!"
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h1 style="color: #333; text-align: center;">Welcome to TSR Academy!</h1>
-      <p>Dear ${userName},</p>
-      <p>Thank you for joining TSR Academy. We're excited to have you on board!</p>
-      <p>You can now access your student dashboard and start your learning journey.</p>
-      <p>Best regards,<br>The TSR Academy Team</p>
+function getAppUrl() {
+  return process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;")
+}
+
+function buildEmailTemplate({
+  eyebrow = "TSR Academy",
+  title,
+  greeting,
+  intro,
+  body = [],
+  accentColor = "#0f766e",
+  accentSoft = "#ccfbf1",
+  panelHtml,
+  ctaLabel,
+  ctaUrl,
+  closing = "The TSR Academy Team",
+}: EmailTemplateOptions) {
+  const safeTitle = escapeHtml(title)
+  const safeEyebrow = escapeHtml(eyebrow)
+  const safeIntro = escapeHtml(intro)
+  const safeGreeting = greeting ? `<p style="margin: 0 0 16px; font-size: 16px; color: #334155;">${escapeHtml(greeting)}</p>` : ""
+  const bodyHtml = body
+    .map((paragraph) => `<p style="margin: 0 0 14px; font-size: 15px; line-height: 1.7; color: #475569;">${escapeHtml(paragraph)}</p>`)
+    .join("")
+  const ctaHtml =
+    ctaLabel && ctaUrl
+      ? `
+        <div style="margin: 28px 0 8px;">
+          <a href="${ctaUrl}" style="display: inline-block; padding: 14px 22px; border-radius: 999px; background: ${accentColor}; color: #ffffff; text-decoration: none; font-weight: 600;">
+            ${escapeHtml(ctaLabel)}
+          </a>
+        </div>
+      `
+      : ""
+
+  return `
+    <div style="margin: 0; padding: 32px 16px; background: #f8fafc; font-family: Arial, sans-serif;">
+      <div style="max-width: 640px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 24px; overflow: hidden;">
+        <div style="padding: 32px 32px 24px; background: linear-gradient(135deg, ${accentColor}, #0f172a);">
+          <p style="margin: 0 0 10px; font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: ${accentSoft};">${safeEyebrow}</p>
+          <h1 style="margin: 0; font-size: 30px; line-height: 1.2; color: #ffffff;">${safeTitle}</h1>
+        </div>
+        <div style="padding: 32px;">
+          ${safeGreeting}
+          <p style="margin: 0 0 14px; font-size: 15px; line-height: 1.7; color: #475569;">${safeIntro}</p>
+          ${bodyHtml}
+          ${panelHtml || ""}
+          ${ctaHtml}
+          <p style="margin: 28px 0 0; font-size: 15px; line-height: 1.7; color: #475569;">
+            Best regards,<br>${escapeHtml(closing)}
+          </p>
+        </div>
+      </div>
     </div>
   `
+}
+
+export async function sendWelcomeEmail(to: string, userName: string) {
+  const subject = "Welcome to TSR Academy!"
+  const html = buildEmailTemplate({
+    title: "Welcome to TSR Academy",
+    greeting: `Dear ${userName},`,
+    intro: "Thank you for joining TSR Academy. We're excited to have you on board.",
+    body: ["You can now access your student dashboard and start your learning journey."],
+    ctaLabel: "Open Dashboard",
+    ctaUrl: `${getAppUrl()}/student-dashboard`,
+  })
 
   return sendEmail({ to, subject, html })
 }
 
 export async function sendPasswordResetEmail(to: string, resetToken: string) {
   const subject = "Password Reset - TSR Academy"
-  const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/reset-password?token=${resetToken}`
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h1 style="color: #333; text-align: center;">Password Reset</h1>
-      <p>You requested a password reset for your TSR Academy account.</p>
-      <p>Click the link below to reset your password:</p>
-      <a href="${resetUrl}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">Reset Password</a>
-      <p>If you didn't request this, please ignore this email.</p>
-      <p>This link will expire in 1 hour.</p>
-      <p>Best regards,<br>The TSR Academy Team</p>
-    </div>
-  `
+  const resetUrl = `${getAppUrl()}/reset-password?token=${resetToken}`
+  const html = buildEmailTemplate({
+    title: "Password reset",
+    intro: "You requested a password reset for your TSR Academy account.",
+    body: ["Use the button below to choose a new password.", "If you did not request this, you can ignore this email. This link expires in 1 hour."],
+    accentColor: "#2563eb",
+    accentSoft: "#bfdbfe",
+    ctaLabel: "Reset Password",
+    ctaUrl: resetUrl,
+  })
 
   return sendEmail({ to, subject, html })
 }
 
 export async function sendRegistrationOtpEmail(to: string, userName: string, otp: string) {
   const subject = "Your TSR Academy verification code"
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h1 style="color: #333; text-align: center;">Verify your TSR Academy registration</h1>
-      <p>Dear ${userName},</p>
-      <p>Use the one-time password below to complete your account creation.</p>
-      <div style="margin: 24px 0; padding: 18px; text-align: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;">
-        <span style="font-size: 32px; font-weight: 700; letter-spacing: 10px; color: #0f172a;">${otp}</span>
+  const html = buildEmailTemplate({
+    title: "Verify your registration",
+    greeting: `Dear ${userName},`,
+    intro: "Use the one-time password below to complete your account creation.",
+    panelHtml: `
+      <div style="margin: 24px 0; padding: 18px; text-align: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px;">
+        <span style="font-size: 32px; font-weight: 700; letter-spacing: 10px; color: #0f172a;">${escapeHtml(otp)}</span>
       </div>
-      <p>This code expires in 10 minutes.</p>
-      <p>If you did not start this registration, you can ignore this email.</p>
-      <p>Best regards,<br>The TSR Academy Team</p>
-    </div>
-  `
+    `,
+    body: ["This code expires in 10 minutes.", "If you did not start this registration, you can ignore this email."],
+  })
 
   return sendEmail({ to, subject, html, text: `Your TSR Academy verification code is ${otp}. It expires in 10 minutes.` })
 }
 
 export async function sendRegistrationSubmittedEmail(to: string, userName: string) {
   const subject = "Your TSR Academy application has been received"
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h1 style="color: #333; text-align: center;">Application received</h1>
-      <p>Dear ${userName},</p>
-      <p>Your TSR Academy account has been created successfully and your application is now under review.</p>
-      <p>You can sign in to your student dashboard while you wait for approval.</p>
-      <p>We will send you another email as soon as your admission is approved.</p>
-      <p>Best regards,<br>The TSR Academy Team</p>
-    </div>
-  `
+  const html = buildEmailTemplate({
+    title: "Application received",
+    greeting: `Dear ${userName},`,
+    intro: "Your TSR Academy account has been created successfully and your application is now under review.",
+    body: [
+      "You can sign in to your student dashboard while you wait for the admin decision.",
+      "We will email you again as soon as your admission status changes.",
+    ],
+    ctaLabel: "Go to Login",
+    ctaUrl: `${getAppUrl()}/tsr-academy/login`,
+  })
 
   return sendEmail({ to, subject, html })
 }
 
 export async function sendAdmissionApprovedEmail(to: string, userName: string) {
   const subject = "Your TSR Academy admission has been approved"
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h1 style="color: #333; text-align: center;">Admission approved</h1>
-      <p>Dear ${userName},</p>
-      <p>Your TSR Academy admission has been approved. You can now continue from your dashboard and keep up with classes and academy updates.</p>
-      <p>Best regards,<br>The TSR Academy Team</p>
-    </div>
-  `
+  const html = buildEmailTemplate({
+    title: "Admission approved",
+    greeting: `Dear ${userName},`,
+    intro: "Your TSR Academy admission has been approved.",
+    body: [
+      "You can now continue from your dashboard and keep up with classes, curriculum, and academy updates.",
+      "If you have any questions, reply to this email or contact the academy support team.",
+    ],
+    accentColor: "#15803d",
+    accentSoft: "#bbf7d0",
+    ctaLabel: "Open Dashboard",
+    ctaUrl: `${getAppUrl()}/student-dashboard`,
+  })
+
+  return sendEmail({ to, subject, html })
+}
+
+export async function sendAdmissionRejectedEmail(to: string, userName: string) {
+  const subject = "Update on your TSR Academy admission"
+  const html = buildEmailTemplate({
+    title: "Admission update",
+    greeting: `Dear ${userName},`,
+    intro: "Your TSR Academy admission request was not approved at this time.",
+    body: [
+      "If you believe this was an error or you need clarification, please contact the academy admin team for the next steps.",
+      "Thank you for your interest in TSR Academy.",
+    ],
+    accentColor: "#b45309",
+    accentSoft: "#fde68a",
+    ctaLabel: "Contact Support",
+    ctaUrl: `mailto:${env.smtpFromEmail}`,
+  })
 
   return sendEmail({ to, subject, html })
 }
@@ -199,15 +299,14 @@ export async function sendBroadcastEmail(recipients: string[], payload: {
     : ""
 
   const subject = `TSR Academy: ${payload.title}`
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h1 style="color: #333; text-align: center;">${payload.title}</h1>
-      <p>Dear student,</p>
-      <p>${payload.message}</p>
-      ${classMeta}
-      <p style="margin-top: 24px;">Best regards,<br>The TSR Academy Team</p>
-    </div>
-  `
+  const html = buildEmailTemplate({
+    title: payload.title,
+    greeting: "Dear student,",
+    intro: payload.message,
+    panelHtml: classMeta,
+    ctaLabel: "Open Dashboard",
+    ctaUrl: `${getAppUrl()}/student-dashboard`,
+  })
 
   return sendEmail({
     to: env.smtpFromEmail,

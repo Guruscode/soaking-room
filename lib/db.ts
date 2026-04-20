@@ -5,6 +5,7 @@ import { env } from "@/lib/env"
 import { AppError } from "@/lib/errors"
 import {
   sendAdmissionApprovedEmail,
+  sendAdmissionRejectedEmail,
   sendBroadcastEmail,
   sendRegistrationOtpEmail,
   sendRegistrationSubmittedEmail,
@@ -1085,6 +1086,12 @@ export async function updateAdmission(userId: string, payload: Partial<AdminStud
   if (existingUser.admission_status !== "approved" && mappedUser.admissionStatus === "approved") {
     void sendEmailSafely("admission approved", () =>
       sendAdmissionApprovedEmail(mappedUser.email, mappedUser.fullName),
+    )
+  }
+
+  if (existingUser.admission_status !== "rejected" && mappedUser.admissionStatus === "rejected") {
+    void sendEmailSafely("admission rejected", () =>
+      sendAdmissionRejectedEmail(mappedUser.email, mappedUser.fullName),
     )
   }
 
