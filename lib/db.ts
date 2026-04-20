@@ -1009,7 +1009,7 @@ export async function createAdmission(payload: AdminStudentPayload) {
   const mappedUser = mapUser(user)
 
   if (mappedUser.admissionStatus === "approved") {
-    void sendEmailSafely("admission approved", () =>
+    await sendEmailSafely("admission approved", () =>
       sendAdmissionApprovedEmail(mappedUser.email, mappedUser.fullName),
     )
   }
@@ -1084,13 +1084,13 @@ export async function updateAdmission(userId: string, payload: Partial<AdminStud
   const mappedUser = mapUser(updatedUser)
 
   if (existingUser.admission_status !== "approved" && mappedUser.admissionStatus === "approved") {
-    void sendEmailSafely("admission approved", () =>
+    await sendEmailSafely("admission approved", () =>
       sendAdmissionApprovedEmail(mappedUser.email, mappedUser.fullName),
     )
   }
 
   if (existingUser.admission_status !== "rejected" && mappedUser.admissionStatus === "rejected") {
-    void sendEmailSafely("admission rejected", () =>
+    await sendEmailSafely("admission rejected", () =>
       sendAdmissionRejectedEmail(mappedUser.email, mappedUser.fullName),
     )
   }
