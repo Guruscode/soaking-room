@@ -2,6 +2,14 @@
 
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { useToast } from "@/hooks/use-toast"
@@ -22,6 +30,17 @@ export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<AcademySettings | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false)
+
+  const syncFormWithSettings = (nextSettings: AcademySettings) => {
+    setFormState({
+      academyName: nextSettings.academyName,
+      supportEmail: nextSettings.supportEmail,
+      timezone: nextSettings.timezone,
+      defaultOnlineLink: nextSettings.defaultOnlineLink,
+      defaultVenue: nextSettings.defaultVenue,
+    })
+  }
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -40,13 +59,7 @@ export default function AdminSettingsPage() {
         }
 
         setSettings(data.data)
-        setFormState({
-          academyName: data.data.academyName,
-          supportEmail: data.data.supportEmail,
-          timezone: data.data.timezone,
-          defaultOnlineLink: data.data.defaultOnlineLink,
-          defaultVenue: data.data.defaultVenue,
-        })
+        syncFormWithSettings(data.data)
       } catch (error) {
         toast({
           variant: "destructive",
@@ -81,6 +94,8 @@ export default function AdminSettingsPage() {
       }
 
       setSettings(data.data)
+      syncFormWithSettings(data.data)
+      setIsFormModalOpen(false)
       toast({
         title: "Settings updated",
         description: "Academy defaults have been saved.",
@@ -108,23 +123,24 @@ export default function AdminSettingsPage() {
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-slate-200 p-4">
-        <h2 className="text-2xl font-semibold">Settings</h2>
-        <p className="mt-2 text-sm text-slate-600">Manage academy-wide defaults used by broadcasts and student-facing experiences.</p>
-        <form onSubmit={onSubmit} className="mt-4 grid gap-4 md:grid-cols-2">
-          <Field label="Academy Name" value={formState.academyName} onChange={(value) => setFormState((prev) => ({ ...prev, academyName: value }))} />
-          <Field label="Support Email" type="email" value={formState.supportEmail} onChange={(value) => setFormState((prev) => ({ ...prev, supportEmail: value }))} />
-          <Field label="Timezone" value={formState.timezone} onChange={(value) => setFormState((prev) => ({ ...prev, timezone: value }))} />
-          <Field label="Default Online Link" value={formState.defaultOnlineLink} onChange={(value) => setFormState((prev) => ({ ...prev, defaultOnlineLink: value }))} />
-          <div className="md:col-span-2">
-            <Field label="Default Venue" value={formState.defaultVenue} onChange={(value) => setFormState((prev) => ({ ...prev, defaultVenue: value }))} />
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h2 className="text-2xl font-semibold">Settings</h2>
+            <p className="mt-2 text-sm text-slate-600">Manage academy-wide defaults used by broadcasts and student-facing experiences.</p>
           </div>
-          <div className="md:col-span-2">
-            <Button type="submit" className="rounded-xl bg-slate-900" disabled={isSaving}>
-              {isSaving ? <Spinner className="size-4" /> : null}
-              Save Settings
-            </Button>
-          </div>
-        </form>
+          <Button
+            type="button"
+            className="rounded-xl bg-slate-900"
+            onClick={() => {
+              if (settings) {
+                syncFormWithSettings(settings)
+              }
+              setIsFormModalOpen(true)
+            }}
+          >
+            Edit Settings
+          </Button>
+        </div>
       </div>
 
       {settings ? (
@@ -140,6 +156,51 @@ export default function AdminSettingsPage() {
           </div>
         </div>
       ) : null}
+
+      <Dialog
+        open={isFormModalOpen}
+        onOpenChange={(open) => {
+          if (!open && settings) {
+            syncFormWithSettings(settings)
+          }
+          setIsFormModalOpen(open)
+        }}
+      >
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Settings</DialogTitle>
+            <DialogDescription>Update academy-wide defaults used across the admin and student experience.</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={onSubmit} className="grid gap-4 md:grid-cols-2">
+            <Field label="Academy Name" value={formState.academyName} onChange={(value) => setFormState((prev) => ({ ...prev, academyName: value }))} />
+            <Field label="Support Email" type="email" value={formState.supportEmail} onChange={(value) => setFormState((prev) => ({ ...prev, supportEmail: value }))} />
+            <Field label="Timezone" value={formState.timezone} onChange={(value) => setFormState((prev) => ({ ...prev, timezone: value }))} />
+            <Field label="Default Online Link" value={formState.defaultOnlineLink} onChange={(value) => setFormState((prev) => ({ ...prev, defaultOnlineLink: value }))} />
+            <div className="md:col-span-2">
+              <Field label="Default Venue" value={formState.defaultVenue} onChange={(value) => setFormState((prev) => ({ ...prev, defaultVenue: value }))} />
+            </div>
+            <DialogFooter className="md:col-span-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  if (settings) {
+                    syncFormWithSettings(settings)
+                  }
+                  setIsFormModalOpen(false)
+                }}
+                disabled={isSaving}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" className="rounded-xl bg-slate-900" disabled={isSaving}>
+                {isSaving ? <Spinner className="size-4" /> : null}
+                Save Settings
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

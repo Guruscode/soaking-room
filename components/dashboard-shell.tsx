@@ -57,8 +57,8 @@ export function DashboardShell({
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900">
       <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
+        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-4 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
+          <div className="flex min-w-0 items-center gap-3">
             <button
               type="button"
               aria-label="Toggle sidebar"
@@ -67,16 +67,16 @@ export function DashboardShell({
             >
               {sidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </button>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">{portalTitle}</p>
-              <h1 className="text-lg font-semibold text-slate-900">{portalSubtitle}</h1>
+            <div className="min-w-0">
+              <p className="truncate text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 sm:text-xs">{portalTitle}</p>
+              <h1 className="truncate text-base font-semibold text-slate-900 sm:text-lg">{portalSubtitle}</h1>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-700">
+          <div className="flex w-full items-center justify-between gap-3 md:w-auto md:justify-end">
+            <div className="max-w-[55vw] truncate rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-700 md:max-w-56">
               {user?.fullName || "Academy User"}
             </div>
-            <Button type="button" variant="outline" className="rounded-xl" onClick={onLogout} disabled={isLoggingOut}>
+            <Button type="button" variant="outline" className="shrink-0 rounded-xl" onClick={onLogout} disabled={isLoggingOut}>
               {isLoggingOut ? <Spinner className="size-4" /> : null}
               Logout
             </Button>
@@ -84,9 +84,9 @@ export function DashboardShell({
         </div>
       </header>
 
-      <div className="mx-auto flex w-full max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto flex w-full max-w-7xl gap-4 px-4 py-4 sm:px-6 sm:py-6 lg:gap-6 lg:px-8">
         <aside
-          className={`fixed inset-y-0 left-0 z-40 w-72 border-r border-slate-200 bg-white p-4 transition-transform md:static md:translate-x-0 md:rounded-2xl md:border md:shadow-sm ${
+          className={`fixed inset-y-0 left-0 z-40 w-[85vw] max-w-72 border-r border-slate-200 bg-white p-4 transition-transform md:static md:translate-x-0 md:rounded-2xl md:border md:shadow-sm ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
@@ -100,7 +100,7 @@ export function DashboardShell({
                 key={item.href}
                 href={item.href}
                 onClick={() => setSidebarOpen(false)}
-                className={`block rounded-lg border px-3 py-2 text-lg ${
+                className={`block rounded-lg border px-3 py-2 text-base sm:text-lg ${
                   pathname === item.href || pathname.startsWith(`${item.href}/`)
                     ? "border-slate-900 bg-slate-900 text-white"
                     : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-900 hover:text-white"
@@ -121,7 +121,7 @@ export function DashboardShell({
           />
         )}
 
-        <section className="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+        <section className="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-6">
           {children}
         </section>
       </div>

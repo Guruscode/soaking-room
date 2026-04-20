@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { AdminRowActions } from "@/components/admin-row-actions"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -40,6 +41,7 @@ export default function AdminAdmissionsPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false)
   const [isExportModalOpen, setIsExportModalOpen] = useState(false)
   const [exportStartDate, setExportStartDate] = useState("")
   const [exportEndDate, setExportEndDate] = useState("")
@@ -81,6 +83,16 @@ export default function AdminAdmissionsPage() {
     setFormState(initialFormState)
   }
 
+  const closeFormModal = () => {
+    setIsFormModalOpen(false)
+    resetForm()
+  }
+
+  const openCreateModal = () => {
+    resetForm()
+    setIsFormModalOpen(true)
+  }
+
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setIsSaving(true)
@@ -107,7 +119,7 @@ export default function AdminAdmissionsPage() {
         title: editingId ? "Student updated" : "Student created",
         description: `${data.data.fullName} has been saved.`,
       })
-      resetForm()
+      closeFormModal()
     } catch (error) {
       toast({
         variant: "destructive",
@@ -135,6 +147,7 @@ export default function AdminAdmissionsPage() {
       admissionStatus: row.admissionStatus,
       password: "",
     })
+    setIsFormModalOpen(true)
   }
 
   const updateStatus = async (row: AcademyUser, status: AdmissionStatus) => {
@@ -182,7 +195,7 @@ export default function AdminAdmissionsPage() {
         title: "Student removed",
         description: `${row.fullName} has been deleted.`,
       })
-      if (editingId === row.id) resetForm()
+      if (editingId === row.id) closeFormModal()
     } catch (error) {
       toast({
         variant: "destructive",
@@ -272,89 +285,55 @@ export default function AdminAdmissionsPage() {
             <h2 className="text-2xl font-semibold">Admissions CMS</h2>
             <p className="mt-2 text-sm text-slate-600">Create, review, update, approve, reject, and delete student records.</p>
           </div>
-          <Button type="button" variant="outline" className="rounded-xl" onClick={() => setIsExportModalOpen(true)}>
-            Export Students
-          </Button>
-        </div>
-        <form onSubmit={onSubmit} className="mt-4 grid gap-4 md:grid-cols-2">
-          <Field label="Full Name" value={formState.fullName} onChange={(value) => setFormState((prev) => ({ ...prev, fullName: value }))} />
-          <Field label="Date of Birth / Age" value={formState.dateOfBirthOrAge} onChange={(value) => setFormState((prev) => ({ ...prev, dateOfBirthOrAge: value }))} />
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Category</label>
-            <select
-              value={formState.category}
-              onChange={(event) => setFormState((prev) => ({ ...prev, category: event.target.value }))}
-              className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs"
-              required
-            >
-              <option value="">Select category</option>
-              {STUDENT_CATEGORY_OPTIONS.map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
-          </div>
-          <Field label="Location" value={formState.location} onChange={(value) => setFormState((prev) => ({ ...prev, location: value }))} />
-          <Field label="Email" type="email" value={formState.email} onChange={(value) => setFormState((prev) => ({ ...prev, email: value }))} />
-          <Field label="Phone" value={formState.phone} onChange={(value) => setFormState((prev) => ({ ...prev, phone: value }))} />
-          <Field label="Church / Fellowship" value={formState.church || ""} onChange={(value) => setFormState((prev) => ({ ...prev, church: value }))} />
-          <Field label="Musical Skill" value={formState.musicalSkill || ""} onChange={(value) => setFormState((prev) => ({ ...prev, musicalSkill: value }))} />
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Born Again</label>
-            <select
-              value={formState.bornAgain}
-              onChange={(event) => setFormState((prev) => ({ ...prev, bornAgain: event.target.value }))}
-              className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs"
-            >
-              <option value="Yes">Yes</option>
-              <option value="No">No</option>
-            </select>
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Admission Status</label>
-            <select
-              value={formState.admissionStatus}
-              onChange={(event) => setFormState((prev) => ({ ...prev, admissionStatus: event.target.value as AdmissionStatus }))}
-              className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs"
-            >
-              <option value="pending">Pending</option>
-              <option value="approved">Approved</option>
-              <option value="rejected">Rejected</option>
-            </select>
-          </div>
-          <div className="md:col-span-2">
-            <label className="mb-1 block text-sm font-medium text-slate-700">
-              {editingId ? "New Password (optional)" : "Password"}
-            </label>
-            <Input
-              type="password"
-              value={formState.password || ""}
-              onChange={(event) => setFormState((prev) => ({ ...prev, password: event.target.value }))}
-              required={!editingId}
-            />
-          </div>
-          <div className="md:col-span-2">
-            <label className="mb-1 block text-sm font-medium text-slate-700">Reason</label>
-            <Textarea rows={4} value={formState.reason} onChange={(event) => setFormState((prev) => ({ ...prev, reason: event.target.value }))} required />
-          </div>
-          <div className="flex gap-2 md:col-span-2">
-            <Button type="submit" className="rounded-xl bg-slate-900" disabled={isSaving}>
-              {isSaving ? <Spinner className="size-4" /> : null}
-              {editingId ? "Update Student" : "Create Student"}
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" className="rounded-xl bg-slate-900" onClick={openCreateModal}>
+              Add Admission
             </Button>
-            {editingId ? (
-              <Button type="button" variant="outline" className="rounded-xl" onClick={resetForm}>
-                Cancel Edit
-              </Button>
-            ) : null}
+            <Button type="button" variant="outline" className="rounded-xl" onClick={() => setIsExportModalOpen(true)}>
+              Export Students
+            </Button>
           </div>
-        </form>
+        </div>
       </div>
 
       <div className="rounded-xl border border-slate-200 p-4">
-        <h3 className="text-lg font-semibold text-slate-900">Student Records</h3>
-        <div className="mt-3 overflow-x-auto">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <h3 className="text-lg font-semibold text-slate-900">Student Records</h3>
+          <p className="text-sm text-slate-500">{rows.length} total</p>
+        </div>
+        <div className="mt-3 space-y-3 md:hidden">
+          {isLoading ? (
+            <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
+              <Spinner />
+              Loading admissions...
+            </div>
+          ) : (
+            rows.map((row) => (
+              <div key={row.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-medium text-slate-900">{row.fullName}</p>
+                    <p className="text-sm text-slate-500">{row.email}</p>
+                  </div>
+                  <AdminRowActions
+                    recordName={row.fullName}
+                    onEdit={() => onEdit(row)}
+                    onDelete={() => onDelete(row)}
+                    onApprove={() => updateStatus(row, "approved")}
+                    onReject={() => updateStatus(row, "rejected")}
+                    canApprove={row.admissionStatus !== "approved"}
+                    canReject={row.admissionStatus !== "rejected"}
+                  />
+                </div>
+                <div className="mt-3 grid gap-2 text-sm text-slate-600">
+                  <p><span className="font-medium text-slate-800">Category:</span> {row.category}</p>
+                  <p><span className="font-medium text-slate-800">Status:</span> <span className="capitalize">{row.admissionStatus}</span></p>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+        <div className="mt-3 hidden overflow-x-auto md:block">
           {isLoading ? (
             <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
               <Spinner />
@@ -368,7 +347,7 @@ export default function AdminAdmissionsPage() {
                   <th className="py-2 pr-4 font-medium">Category</th>
                   <th className="py-2 pr-4 font-medium">Email</th>
                   <th className="py-2 pr-4 font-medium">Status</th>
-                  <th className="py-2 pr-2 font-medium">Action</th>
+                  <th className="py-2 text-right font-medium">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -378,24 +357,17 @@ export default function AdminAdmissionsPage() {
                     <td className="py-2 pr-4">{row.category}</td>
                     <td className="py-2 pr-4">{row.email}</td>
                     <td className="py-2 pr-4 capitalize">{row.admissionStatus}</td>
-                    <td className="py-2 pr-2">
-                      <div className="flex flex-wrap gap-2">
-                        <Button type="button" variant="outline" size="sm" onClick={() => onEdit(row)}>
-                          Edit
-                        </Button>
-                        {row.admissionStatus !== "approved" ? (
-                          <Button type="button" size="sm" onClick={() => updateStatus(row, "approved")}>
-                            Approve
-                          </Button>
-                        ) : null}
-                        {row.admissionStatus !== "rejected" ? (
-                          <Button type="button" variant="outline" size="sm" onClick={() => updateStatus(row, "rejected")}>
-                            Reject
-                          </Button>
-                        ) : null}
-                        <Button type="button" variant="destructive" size="sm" onClick={() => onDelete(row)}>
-                          Delete
-                        </Button>
+                    <td className="py-2 text-right">
+                      <div className="flex justify-end">
+                        <AdminRowActions
+                          recordName={row.fullName}
+                          onEdit={() => onEdit(row)}
+                          onDelete={() => onDelete(row)}
+                          onApprove={() => updateStatus(row, "approved")}
+                          onReject={() => updateStatus(row, "rejected")}
+                          canApprove={row.admissionStatus !== "approved"}
+                          canReject={row.admissionStatus !== "rejected"}
+                        />
                       </div>
                     </td>
                   </tr>
@@ -405,6 +377,99 @@ export default function AdminAdmissionsPage() {
           )}
         </div>
       </div>
+
+      <Dialog
+        open={isFormModalOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            closeFormModal()
+            return
+          }
+
+          setIsFormModalOpen(true)
+        }}
+      >
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>{editingId ? "Edit Admission" : "Add Admission"}</DialogTitle>
+            <DialogDescription>
+              {editingId ? "Update this student record." : "Create a new student admission record."}
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={onSubmit} className="grid gap-4 md:grid-cols-2">
+            <Field label="Full Name" value={formState.fullName} onChange={(value) => setFormState((prev) => ({ ...prev, fullName: value }))} />
+            <Field label="Date of Birth / Age" value={formState.dateOfBirthOrAge} onChange={(value) => setFormState((prev) => ({ ...prev, dateOfBirthOrAge: value }))} />
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">Category</label>
+              <select
+                value={formState.category}
+                onChange={(event) => setFormState((prev) => ({ ...prev, category: event.target.value }))}
+                className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs"
+                required
+              >
+                <option value="">Select category</option>
+                {STUDENT_CATEGORY_OPTIONS.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <Field label="Location" value={formState.location} onChange={(value) => setFormState((prev) => ({ ...prev, location: value }))} />
+            <Field label="Email" type="email" value={formState.email} onChange={(value) => setFormState((prev) => ({ ...prev, email: value }))} />
+            <Field label="Phone" value={formState.phone} onChange={(value) => setFormState((prev) => ({ ...prev, phone: value }))} />
+            <Field label="Church / Fellowship" value={formState.church || ""} onChange={(value) => setFormState((prev) => ({ ...prev, church: value }))} />
+            <Field label="Musical Skill" value={formState.musicalSkill || ""} onChange={(value) => setFormState((prev) => ({ ...prev, musicalSkill: value }))} />
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">Born Again</label>
+              <select
+                value={formState.bornAgain}
+                onChange={(event) => setFormState((prev) => ({ ...prev, bornAgain: event.target.value }))}
+                className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs"
+              >
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">Admission Status</label>
+              <select
+                value={formState.admissionStatus}
+                onChange={(event) => setFormState((prev) => ({ ...prev, admissionStatus: event.target.value as AdmissionStatus }))}
+                className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs"
+              >
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+            <div className="md:col-span-2">
+              <label className="mb-1 block text-sm font-medium text-slate-700">
+                {editingId ? "New Password (optional)" : "Password"}
+              </label>
+              <Input
+                type="password"
+                value={formState.password || ""}
+                onChange={(event) => setFormState((prev) => ({ ...prev, password: event.target.value }))}
+                required={!editingId}
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="mb-1 block text-sm font-medium text-slate-700">Reason</label>
+              <Textarea rows={4} value={formState.reason} onChange={(event) => setFormState((prev) => ({ ...prev, reason: event.target.value }))} required />
+            </div>
+            <DialogFooter className="md:col-span-2">
+              <Button type="button" variant="outline" onClick={closeFormModal} disabled={isSaving}>
+                Cancel
+              </Button>
+              <Button type="submit" className="rounded-xl bg-slate-900" disabled={isSaving}>
+                {isSaving ? <Spinner className="size-4" /> : null}
+                {editingId ? "Update Student" : "Create Student"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={isExportModalOpen} onOpenChange={setIsExportModalOpen}>
         <DialogContent className="sm:max-w-md">
