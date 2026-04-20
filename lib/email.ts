@@ -106,7 +106,7 @@ export async function sendEmail(options: EmailOptions) {
 }
 
 function getAppUrl() {
-  return process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+  return process.env.NEXT_PUBLIC_APP_URL || "https://www.thesoakingroom.com"
 }
 
 function escapeHtml(value: string) {
