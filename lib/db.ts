@@ -941,6 +941,23 @@ export async function listAdmissions() {
   return result.rows.map((row) => mapUser(row as unknown as DatabaseUserRow))
 }
 
+export async function listAdmissionsByCreatedAtRange(startDate: string, endDate: string) {
+  await ensureDatabaseSetup()
+
+  const result = await turso.execute({
+    sql: `
+      SELECT * FROM users
+      WHERE role = 'student'
+        AND datetime(created_at) >= datetime(?)
+        AND datetime(created_at) < datetime(?)
+      ORDER BY created_at DESC
+    `,
+    args: [startDate, endDate],
+  })
+
+  return result.rows.map((row) => mapUser(row as unknown as DatabaseUserRow))
+}
+
 export async function createAdmission(payload: AdminStudentPayload) {
   await ensureDatabaseSetup()
 

@@ -2,6 +2,14 @@
 
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { Textarea } from "@/components/ui/textarea"
@@ -32,6 +40,10 @@ export default function AdminAdmissionsPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false)
+  const [exportStartDate, setExportStartDate] = useState("")
+  const [exportEndDate, setExportEndDate] = useState("")
+  const [isExporting, setIsExporting] = useState(false)
 
   const loadAdmissions = async () => {
     setIsLoading(true)
@@ -180,11 +192,90 @@ export default function AdminAdmissionsPage() {
     }
   }
 
+  const onExportAdmissions = async () => {
+    if (!exportStartDate || !exportEndDate) {
+      toast({
+        variant: "destructive",
+        title: "Date range required",
+        description: "Choose both the start date and end date before exporting.",
+      })
+      return
+    }
+
+    if (exportStartDate > exportEndDate) {
+      toast({
+        variant: "destructive",
+        title: "Invalid date range",
+        description: "The start date cannot be after the end date.",
+      })
+      return
+    }
+
+    setIsExporting(true)
+
+    try {
+      const params = new URLSearchParams({
+        format: "csv",
+        startDate: exportStartDate,
+        endDate: exportEndDate,
+      })
+
+      const response = await fetch(`/api/admin/admissions?${params.toString()}`, {
+        method: "GET",
+        credentials: "include",
+      })
+
+      if (!response.ok) {
+        let message = "Failed to export admissions."
+
+        try {
+          const data = (await response.json()) as { error?: string }
+          message = data.error || message
+        } catch {
+          // Ignore non-JSON error payloads and fall back to the default message.
+        }
+
+        throw new Error(message)
+      }
+
+      const csvBlob = await response.blob()
+      const downloadUrl = window.URL.createObjectURL(csvBlob)
+      const link = document.createElement("a")
+      link.href = downloadUrl
+      link.download = `admissions-${exportStartDate}-to-${exportEndDate}.csv`
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(downloadUrl)
+
+      setIsExportModalOpen(false)
+      toast({
+        title: "Admissions exported",
+        description: `Student records from ${exportStartDate} to ${exportEndDate} have been downloaded.`,
+      })
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Export failed",
+        description: getErrorMessage(error, "Failed to export admissions."),
+      })
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-slate-200 p-4">
-        <h2 className="text-2xl font-semibold">Admissions CMS</h2>
-        <p className="mt-2 text-sm text-slate-600">Create, review, update, approve, reject, and delete student records.</p>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h2 className="text-2xl font-semibold">Admissions CMS</h2>
+            <p className="mt-2 text-sm text-slate-600">Create, review, update, approve, reject, and delete student records.</p>
+          </div>
+          <Button type="button" variant="outline" className="rounded-xl" onClick={() => setIsExportModalOpen(true)}>
+            Export Students
+          </Button>
+        </div>
         <form onSubmit={onSubmit} className="mt-4 grid gap-4 md:grid-cols-2">
           <Field label="Full Name" value={formState.fullName} onChange={(value) => setFormState((prev) => ({ ...prev, fullName: value }))} />
           <Field label="Date of Birth / Age" value={formState.dateOfBirthOrAge} onChange={(value) => setFormState((prev) => ({ ...prev, dateOfBirthOrAge: value }))} />
@@ -314,6 +405,36 @@ export default function AdminAdmissionsPage() {
           )}
         </div>
       </div>
+
+      <Dialog open={isExportModalOpen} onOpenChange={setIsExportModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Export Student Details</DialogTitle>
+            <DialogDescription>
+              Download admissions as a CSV for students created between the selected dates.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4">
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">Start Date</label>
+              <Input type="date" value={exportStartDate} onChange={(event) => setExportStartDate(event.target.value)} max={exportEndDate || undefined} />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">End Date</label>
+              <Input type="date" value={exportEndDate} onChange={(event) => setExportEndDate(event.target.value)} min={exportStartDate || undefined} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setIsExportModalOpen(false)} disabled={isExporting}>
+              Cancel
+            </Button>
+            <Button type="button" className="rounded-xl bg-slate-900" onClick={onExportAdmissions} disabled={isExporting}>
+              {isExporting ? <Spinner className="size-4" /> : null}
+              Export CSV
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
