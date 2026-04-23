@@ -1,9 +1,8 @@
-import Link from "next/link"
 import { type ElementType } from "react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
-import { Button } from "@/components/ui/button"
-import { ArrowRight, CalendarClock, GraduationCap, ShieldCheck, Users } from "lucide-react"
+import { TSR_ACADEMY_ADMISSION_STATUS } from "@/lib/academy-admissions"
+import { CalendarClock, GraduationCap, ShieldCheck, Users } from "lucide-react"
 
 const schools = [
   {
@@ -53,14 +52,14 @@ export default function TSRAcademyInfoPage() {
               <FocusCard icon={CalendarClock} text="Discipleship, character, and spiritual growth" />
             </div>
 
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Button asChild className="rounded-xl bg-slate-900">
-                <Link href="/tsr-academy/register">
-                  Register Now
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-             
+            <div className="mt-10 max-w-4xl rounded-3xl border-2 border-red-300 bg-red-50 px-6 py-6 shadow-lg shadow-red-100">
+              <p className="text-sm font-bold uppercase tracking-[0.24em] text-red-700">Admissions Closed</p>
+              <h2 className="mt-3 text-2xl font-extrabold text-red-900 md:text-3xl">
+                {TSR_ACADEMY_ADMISSION_STATUS.closedNotice}
+              </h2>
+              <p className="mt-3 text-base font-medium text-red-950 md:text-lg">
+                Registration is disabled for now. Please check back for the July cohort.
+              </p>
             </div>
           </div>
         </section>

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { TSR_ACADEMY_ADMISSION_STATUS } from "@/lib/academy-admissions"
 import { AppError, getErrorMessage } from "@/lib/errors"
 import { verifyRegistrationOtp } from "@/lib/db"
 import { createSessionToken, setSessionCookie } from "@/lib/session"
@@ -6,6 +7,10 @@ import type { RegistrationOtpVerifyPayload } from "@/lib/types"
 
 export async function POST(request: Request) {
   try {
+    if (!TSR_ACADEMY_ADMISSION_STATUS.isOpen) {
+      throw new AppError(TSR_ACADEMY_ADMISSION_STATUS.closedNotice, 403)
+    }
+
     const payload = (await request.json()) as RegistrationOtpVerifyPayload
     const user = await verifyRegistrationOtp(payload)
 

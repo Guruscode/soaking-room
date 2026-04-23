@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
@@ -10,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/components/providers/auth-provider"
+import { TSR_ACADEMY_ADMISSION_STATUS } from "@/lib/academy-admissions"
 import { getErrorMessage } from "@/lib/errors"
 
 export function LoginForm() {
@@ -88,13 +88,14 @@ export function LoginForm() {
 
             {error ? <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
 
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+              {TSR_ACADEMY_ADMISSION_STATUS.closedNotice}
+            </div>
+
             <div className="flex flex-wrap gap-3">
               <Button type="submit" className="rounded-xl bg-slate-900" disabled={isSubmitting}>
                 {isSubmitting ? <Spinner className="size-4" /> : null}
                 Login
-              </Button>
-              <Button asChild variant="outline" className="rounded-xl">
-                <Link href="/tsr-academy/register">Create student account</Link>
               </Button>
             </div>
           </form>
