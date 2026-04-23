@@ -185,20 +185,23 @@ export async function sendWelcomeEmail(to: string, userName: string) {
   return sendEmail({ to, subject, html })
 }
 
-export async function sendPasswordResetEmail(to: string, resetToken: string) {
-  const subject = "Password Reset - TSR Academy"
-  const resetUrl = `${getAppUrl()}/reset-password?token=${resetToken}`
+export async function sendPasswordResetOtpEmail(to: string, userName: string, otp: string) {
+  const subject = "Your TSR Academy password reset code"
   const html = buildEmailTemplate({
-    title: "Password reset",
-    intro: "You requested a password reset for your TSR Academy account.",
-    body: ["Use the button below to choose a new password.", "If you did not request this, you can ignore this email. This link expires in 1 hour."],
+    title: "Reset your password",
+    greeting: `Dear ${userName},`,
+    intro: "Use the one-time password below to reset your TSR Academy account password.",
+    panelHtml: `
+      <div style="margin: 24px 0; padding: 18px; text-align: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px;">
+        <span style="font-size: 32px; font-weight: 700; letter-spacing: 10px; color: #0f172a;">${escapeHtml(otp)}</span>
+      </div>
+    `,
+    body: ["This code expires in 10 minutes.", "If you did not request a password reset, you can ignore this email."],
     accentColor: "#2563eb",
     accentSoft: "#bfdbfe",
-    ctaLabel: "Reset Password",
-    ctaUrl: resetUrl,
   })
 
-  return sendEmail({ to, subject, html })
+  return sendEmail({ to, subject, html, text: `Your TSR Academy password reset code is ${otp}. It expires in 10 minutes.` })
 }
 
 export async function sendRegistrationOtpEmail(to: string, userName: string, otp: string) {

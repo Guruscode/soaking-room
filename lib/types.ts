@@ -58,6 +58,7 @@ export type BroadcastItem = {
 export type AssignmentItem = {
   id: string
   title: string
+  audience: string
   instructions: string
   dueDate: string
   createdAt: string
@@ -113,6 +114,22 @@ export type RegistrationOtpVerifyPayload = {
   otp: string
 }
 
+export type PasswordResetOtpRequestPayload = {
+  email: string
+}
+
+export type PasswordResetOtpRequestResult = {
+  email: string
+  expiresAt: string
+}
+
+export type PasswordResetOtpVerifyPayload = {
+  email: string
+  otp: string
+  password: string
+  confirmPassword: string
+}
+
 export type LoginPayload = {
   email: string
   password: string
@@ -161,6 +178,7 @@ export type BroadcastPayload = {
 
 export type AssignmentPayload = {
   title: string
+  audience: string
   instructions: string
   dueDate: string
 }

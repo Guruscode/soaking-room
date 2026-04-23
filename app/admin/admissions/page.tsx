@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { AdminRowActions } from "@/components/admin-row-actions"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Dialog,
   DialogContent,
@@ -34,13 +35,18 @@ const initialFormState: AdminStudentPayload = {
   password: "",
 }
 
+const STATUS_TABS: AdmissionStatus[] = ["pending", "approved", "rejected"]
+
 export default function AdminAdmissionsPage() {
   const { toast } = useToast()
   const [rows, setRows] = useState<AcademyUser[]>([])
+  const [activeTab, setActiveTab] = useState<AdmissionStatus>("pending")
+  const [selectedRejectedIds, setSelectedRejectedIds] = useState<string[]>([])
   const [formState, setFormState] = useState(initialFormState)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false)
   const [isFormModalOpen, setIsFormModalOpen] = useState(false)
   const [isExportModalOpen, setIsExportModalOpen] = useState(false)
   const [exportStartDate, setExportStartDate] = useState("")
@@ -63,6 +69,7 @@ export default function AdminAdmissionsPage() {
       }
 
       setRows(data.data || [])
+      setSelectedRejectedIds((prev) => prev.filter((id) => (data.data || []).some((row) => row.id === id && row.admissionStatus === "rejected")))
     } catch (error) {
       toast({
         variant: "destructive",
@@ -77,6 +84,11 @@ export default function AdminAdmissionsPage() {
   useEffect(() => {
     void loadAdmissions()
   }, [])
+
+  const filteredRows = rows.filter((row) => row.admissionStatus === activeTab)
+  const rejectedRows = rows.filter((row) => row.admissionStatus === "rejected")
+  const isRejectedTab = activeTab === "rejected"
+  const allRejectedSelected = rejectedRows.length > 0 && rejectedRows.every((row) => selectedRejectedIds.includes(row.id))
 
   const resetForm = () => {
     setEditingId(null)
@@ -165,6 +177,7 @@ export default function AdminAdmissionsPage() {
       }
 
       setRows((prev) => prev.map((item) => (item.id === row.id ? data.data! : item)))
+      setSelectedRejectedIds((prev) => prev.filter((id) => id !== row.id))
       toast({
         title: "Admission updated",
         description: `${row.fullName} is now ${status}.`,
@@ -191,6 +204,7 @@ export default function AdminAdmissionsPage() {
       }
 
       setRows((prev) => prev.filter((item) => item.id !== row.id))
+      setSelectedRejectedIds((prev) => prev.filter((id) => id !== row.id))
       toast({
         title: "Student removed",
         description: `${row.fullName} has been deleted.`,
@@ -200,8 +214,73 @@ export default function AdminAdmissionsPage() {
       toast({
         variant: "destructive",
         title: "Delete failed",
-        description: getErrorMessage(error, "Failed to remove student."),
+      description: getErrorMessage(error, "Failed to remove student."),
       })
+    }
+  }
+
+  const toggleRejectedSelection = (userId: string, checked: boolean) => {
+    setSelectedRejectedIds((prev) => {
+      if (checked) {
+        return prev.includes(userId) ? prev : [...prev, userId]
+      }
+
+      return prev.filter((id) => id !== userId)
+    })
+  }
+
+  const toggleSelectAllRejected = (checked: boolean) => {
+    setSelectedRejectedIds(checked ? rejectedRows.map((row) => row.id) : [])
+  }
+
+  const onBulkDeleteRejected = async () => {
+    if (!selectedRejectedIds.length) {
+      return
+    }
+
+    const selectedRows = rejectedRows.filter((row) => selectedRejectedIds.includes(row.id))
+
+    if (!selectedRows.length) {
+      return
+    }
+
+    const confirmed = window.confirm(`Delete ${selectedRows.length} rejected admission${selectedRows.length > 1 ? "s" : ""}? This cannot be undone.`)
+
+    if (!confirmed) {
+      return
+    }
+
+    setIsBulkDeleting(true)
+
+    try {
+      await Promise.all(
+        selectedRows.map(async (row) => {
+          const response = await fetch(`/api/admin/admissions/${row.id}`, {
+            method: "DELETE",
+            credentials: "include",
+          })
+          const data = (await response.json()) as { error?: string }
+
+          if (!response.ok) {
+            throw new Error(data.error || `Failed to delete ${row.fullName}.`)
+          }
+        }),
+      )
+
+      setRows((prev) => prev.filter((row) => !selectedRejectedIds.includes(row.id)))
+      setSelectedRejectedIds([])
+      toast({
+        title: "Rejected admissions deleted",
+        description: `${selectedRows.length} record${selectedRows.length > 1 ? "s have" : " has"} been removed.`,
+      })
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Bulk delete failed",
+        description: getErrorMessage(error, "Failed to delete the selected admissions."),
+      })
+    } finally {
+      setIsBulkDeleting(false)
     }
   }
 
@@ -299,7 +378,57 @@ export default function AdminAdmissionsPage() {
       <div className="rounded-xl border border-slate-200 p-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <h3 className="text-lg font-semibold text-slate-900">Student Records</h3>
-          <p className="text-sm text-slate-500">{rows.length} total</p>
+          <p className="text-sm text-slate-500">{filteredRows.length} in view · {rows.length} total</p>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {STATUS_TABS.map((status) => {
+            const count = rows.filter((row) => row.admissionStatus === status).length
+
+            return (
+              <Button
+                key={status}
+                type="button"
+                variant={activeTab === status ? "default" : "outline"}
+                className="rounded-xl capitalize"
+                onClick={() => {
+                  setActiveTab(status)
+                  if (status !== "rejected") {
+                    setSelectedRejectedIds([])
+                  }
+                }}
+              >
+                {status} ({count})
+              </Button>
+            )
+          })}
+        </div>
+        {isRejectedTab ? (
+          <div className="mt-4 flex flex-col gap-3 rounded-xl border border-red-200 bg-red-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <Checkbox
+                id="select-all-rejected"
+                checked={allRejectedSelected}
+                onCheckedChange={(checked) => toggleSelectAllRejected(Boolean(checked))}
+                disabled={!rejectedRows.length || isBulkDeleting}
+              />
+              <label htmlFor="select-all-rejected" className="text-sm text-slate-700">
+                Select all rejected records
+              </label>
+            </div>
+            <Button
+              type="button"
+              variant="destructive"
+              className="rounded-xl"
+              disabled={!selectedRejectedIds.length || isBulkDeleting}
+              onClick={() => void onBulkDeleteRejected()}
+            >
+              {isBulkDeleting ? <Spinner className="size-4" /> : null}
+              Delete Selected ({selectedRejectedIds.length})
+            </Button>
+          </div>
+        ) : null}
+        <div className="mt-3 text-sm text-slate-500">
+          Showing {activeTab} admissions only.
         </div>
         <div className="mt-3 space-y-3 md:hidden">
           {isLoading ? (
@@ -307,13 +436,28 @@ export default function AdminAdmissionsPage() {
               <Spinner />
               Loading admissions...
             </div>
+          ) : !filteredRows.length ? (
+            <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
+              No {activeTab} admissions found.
+            </div>
           ) : (
-            rows.map((row) => (
+            filteredRows.map((row) => (
               <div key={row.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="font-medium text-slate-900">{row.fullName}</p>
-                    <p className="text-sm text-slate-500">{row.email}</p>
+                    <div className="flex items-center gap-3">
+                      {isRejectedTab ? (
+                        <Checkbox
+                          checked={selectedRejectedIds.includes(row.id)}
+                          onCheckedChange={(checked) => toggleRejectedSelection(row.id, Boolean(checked))}
+                          disabled={isBulkDeleting}
+                        />
+                      ) : null}
+                      <div>
+                        <p className="font-medium text-slate-900">{row.fullName}</p>
+                        <p className="text-sm text-slate-500">{row.email}</p>
+                      </div>
+                    </div>
                   </div>
                   <AdminRowActions
                     recordName={row.fullName}
@@ -339,10 +483,15 @@ export default function AdminAdmissionsPage() {
               <Spinner />
               Loading admissions...
             </div>
+          ) : !filteredRows.length ? (
+            <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
+              No {activeTab} admissions found.
+            </div>
           ) : (
             <table className="min-w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-200 text-slate-500">
+                  {isRejectedTab ? <th className="py-2 pr-4 font-medium">Select</th> : null}
                   <th className="py-2 pr-4 font-medium">Name</th>
                   <th className="py-2 pr-4 font-medium">Category</th>
                   <th className="py-2 pr-4 font-medium">Email</th>
@@ -351,8 +500,17 @@ export default function AdminAdmissionsPage() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row) => (
+                {filteredRows.map((row) => (
                   <tr key={row.id} className="border-b border-slate-100 text-slate-700 align-top">
+                    {isRejectedTab ? (
+                      <td className="py-2 pr-4">
+                        <Checkbox
+                          checked={selectedRejectedIds.includes(row.id)}
+                          onCheckedChange={(checked) => toggleRejectedSelection(row.id, Boolean(checked))}
+                          disabled={isBulkDeleting}
+                        />
+                      </td>
+                    ) : null}
                     <td className="py-2 pr-4">{row.fullName}</td>
                     <td className="py-2 pr-4">{row.category}</td>
                     <td className="py-2 pr-4">{row.email}</td>

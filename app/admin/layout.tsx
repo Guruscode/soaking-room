@@ -6,6 +6,7 @@ import { getSessionUser } from "@/lib/session"
 const navItems = [
   { label: "Overview", href: "/admin/overview" },
   { label: "Curriculum", href: "/admin/curriculum" },
+  { label: "Assignments", href: "/admin/assignments" },
   { label: "Admissions", href: "/admin/admissions" },
   { label: "Teachers Guide", href: "/admin/teachers-guide" },
   { label: "Broadcasts", href: "/admin/broadcasts" },

@@ -7,6 +7,7 @@ import {
   sendAdmissionApprovedEmail,
   sendAdmissionRejectedEmail,
   sendBroadcastEmail,
+  sendPasswordResetOtpEmail,
   sendRegistrationOtpEmail,
   sendRegistrationSubmittedEmail,
 } from "@/lib/email"
@@ -24,6 +25,9 @@ import type {
   CurriculumPayload,
   LoginPayload,
   NotificationItem,
+  PasswordResetOtpRequestPayload,
+  PasswordResetOtpRequestResult,
+  PasswordResetOtpVerifyPayload,
   RegistrationOtpRequestResult,
   RegistrationOtpVerifyPayload,
   RegisterPayload,
@@ -103,6 +107,7 @@ type DatabaseNotificationRow = {
 type DatabaseAssignmentRow = {
   id: string
   title: string
+  audience: string
   instructions: string
   due_date: string
   created_at: string
@@ -122,6 +127,16 @@ type DatabasePendingRegistrationRow = {
   musical_skill: string | null
   reason: string
   password_hash: string
+  otp_hash: string
+  otp_expires_at: string
+  created_at: string
+  updated_at: string
+}
+
+type DatabasePendingPasswordResetRow = {
+  id: string
+  user_id: string
+  email: string
   otp_hash: string
   otp_expires_at: string
   created_at: string
@@ -221,6 +236,7 @@ function mapAssignment(row: DatabaseAssignmentRow): AssignmentItem {
   return {
     id: row.id,
     title: row.title,
+    audience: row.audience,
     instructions: row.instructions,
     dueDate: row.due_date,
     createdAt: row.created_at,
@@ -311,6 +327,16 @@ function normalizeBroadcastAudience(audience: string) {
   return trimmedAudience
 }
 
+function normalizeAssignmentAudience(audience: string) {
+  const trimmedAudience = ensureRequiredValue(audience, "Category")
+
+  if (!BROADCAST_AUDIENCE_OPTIONS.includes(trimmedAudience as (typeof BROADCAST_AUDIENCE_OPTIONS)[number])) {
+    throw new AppError("Invalid assignment category.")
+  }
+
+  return trimmedAudience
+}
+
 async function getUserByEmail(email: string) {
   const result = await turso.execute({
     sql: "SELECT * FROM users WHERE email = ? LIMIT 1",
@@ -327,6 +353,15 @@ async function getPendingRegistrationByEmail(email: string) {
   })
 
   return result.rows[0] ? (result.rows[0] as unknown as DatabasePendingRegistrationRow) : null
+}
+
+async function getPendingPasswordResetByEmail(email: string) {
+  const result = await turso.execute({
+    sql: "SELECT * FROM pending_password_resets WHERE email = ? LIMIT 1",
+    args: [email.toLowerCase()],
+  })
+
+  return result.rows[0] ? (result.rows[0] as unknown as DatabasePendingPasswordResetRow) : null
 }
 
 async function getUserById(id: string) {
@@ -478,6 +513,7 @@ async function listStudentsMatchingAudience(audience: string) {
     sql: `
       SELECT * FROM users
       WHERE role = 'student'
+      AND admission_status = 'approved'
       AND (? = 'All Students' OR category = ?)
       ORDER BY created_at DESC
     `,
@@ -488,18 +524,14 @@ async function listStudentsMatchingAudience(audience: string) {
 }
 
 async function syncNotificationsForBroadcast(broadcast: BroadcastItem) {
-  const students = await listAdmissions()
-
   await turso.execute({
     sql: "DELETE FROM notifications WHERE broadcast_id = ?",
     args: [broadcast.id],
   })
 
-  for (const student of students) {
-    if (!matchesAudience(student.category, broadcast.audience)) {
-      continue
-    }
+  const students = await listStudentsMatchingAudience(broadcast.audience)
 
+  for (const student of students) {
     await turso.execute({
       sql: `
         INSERT INTO notifications (
@@ -530,6 +562,15 @@ async function syncExistingBroadcastsForUser(userId: string) {
   const user = await getUserById(userId)
 
   if (!user) {
+    return
+  }
+
+  await turso.execute({
+    sql: "DELETE FROM notifications WHERE user_id = ?",
+    args: [userId],
+  })
+
+  if (user.admission_status !== "approved") {
     return
   }
 
@@ -649,6 +690,7 @@ export async function ensureDatabaseSetup() {
           CREATE TABLE IF NOT EXISTS assignments (
             id TEXT PRIMARY KEY,
             title TEXT NOT NULL,
+            audience TEXT NOT NULL DEFAULT 'All Students',
             instructions TEXT NOT NULL,
             due_date TEXT NOT NULL,
             created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -687,7 +729,29 @@ export async function ensureDatabaseSetup() {
           )
         `,
         "CREATE INDEX IF NOT EXISTS idx_pending_registrations_email ON pending_registrations(email)",
+        `
+          CREATE TABLE IF NOT EXISTS pending_password_resets (
+            id TEXT PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            email TEXT NOT NULL UNIQUE,
+            otp_hash TEXT NOT NULL,
+            otp_expires_at TEXT NOT NULL,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+          )
+        `,
+        "CREATE INDEX IF NOT EXISTS idx_pending_password_resets_email ON pending_password_resets(email)",
       ])
+
+      try {
+        await turso.execute("ALTER TABLE assignments ADD COLUMN audience TEXT NOT NULL DEFAULT 'All Students'")
+      } catch (error) {
+        const message = error instanceof Error ? error.message.toLowerCase() : ""
+
+        if (!message.includes("duplicate column")) {
+          throw error
+        }
+      }
 
       await seedAdminUser()
       await seedSettings()
@@ -904,6 +968,103 @@ export async function loginUser(payload: LoginPayload) {
   return mapUser(user)
 }
 
+export async function requestPasswordResetOtp(payload: PasswordResetOtpRequestPayload): Promise<PasswordResetOtpRequestResult> {
+  await ensureDatabaseSetup()
+
+  const email = ensureRequiredValue(payload.email, "Email").toLowerCase()
+  const user = await getUserByEmail(email)
+
+  if (!user) {
+    throw new AppError("No account was found with this email address.", 404)
+  }
+
+  const otp = generateOtp()
+  const expiresAt = getOtpExpiryDate()
+  const pendingId = (await getPendingPasswordResetByEmail(email))?.id || randomUUID()
+
+  await turso.execute({
+    sql: `
+      INSERT INTO pending_password_resets (
+        id, user_id, email, otp_hash, otp_expires_at
+      ) VALUES (?, ?, ?, ?, ?)
+      ON CONFLICT(email) DO UPDATE SET
+        user_id = excluded.user_id,
+        otp_hash = excluded.otp_hash,
+        otp_expires_at = excluded.otp_expires_at,
+        updated_at = CURRENT_TIMESTAMP
+    `,
+    args: [
+      pendingId,
+      user.id,
+      email,
+      hashOtp(otp),
+      expiresAt.toISOString(),
+    ],
+  })
+
+  await sendPasswordResetOtpEmail(email, user.full_name, otp)
+
+  return {
+    email,
+    expiresAt: expiresAt.toISOString(),
+  }
+}
+
+export async function resetPasswordWithOtp(payload: PasswordResetOtpVerifyPayload) {
+  await ensureDatabaseSetup()
+
+  const email = ensureRequiredValue(payload.email, "Email").toLowerCase()
+  const otp = ensureRequiredValue(payload.otp, "OTP")
+
+  if (payload.password.length < 8) {
+    throw new AppError("Password must be at least 8 characters long.")
+  }
+
+  if (payload.password !== payload.confirmPassword) {
+    throw new AppError("Passwords do not match.")
+  }
+
+  const pendingReset = await getPendingPasswordResetByEmail(email)
+
+  if (!pendingReset) {
+    throw new AppError("Password reset request not found or has expired.", 404)
+  }
+
+  if (new Date(pendingReset.otp_expires_at).getTime() < Date.now()) {
+    await turso.execute({ sql: "DELETE FROM pending_password_resets WHERE email = ?", args: [email] })
+    throw new AppError("This password reset code has expired. Request a new one.", 410)
+  }
+
+  if (hashOtp(otp) !== pendingReset.otp_hash) {
+    throw new AppError("The OTP you entered is invalid.", 401)
+  }
+
+  const user = await getUserById(pendingReset.user_id)
+
+  if (!user) {
+    await turso.execute({ sql: "DELETE FROM pending_password_resets WHERE email = ?", args: [email] })
+    throw new AppError("User not found.", 404)
+  }
+
+  await turso.execute({
+    sql: `
+      UPDATE users
+      SET password_hash = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `,
+    args: [
+      hashPassword(payload.password),
+      user.id,
+    ],
+  })
+
+  await turso.execute({ sql: "DELETE FROM pending_password_resets WHERE email = ?", args: [email] })
+
+  return {
+    email,
+  }
+}
+
 export async function getAcademyUser(userId: string) {
   await ensureDatabaseSetup()
   const user = await getUserById(userId)
@@ -983,8 +1144,11 @@ export async function createAdmission(payload: AdminStudentPayload) {
     throw new AppError("Student record could not be created.", 500)
   }
 
-  await syncExistingBroadcastsForUser(id)
   const mappedUser = mapUser(user)
+
+  if (mappedUser.admissionStatus === "approved") {
+    await syncExistingBroadcastsForUser(id)
+  }
 
   if (mappedUser.admissionStatus === "approved") {
     await sendEmailSafely("admission approved", () =>
@@ -1062,9 +1226,14 @@ export async function updateAdmission(userId: string, payload: Partial<AdminStud
   const mappedUser = mapUser(updatedUser)
 
   if (existingUser.admission_status !== "approved" && mappedUser.admissionStatus === "approved") {
+    await syncExistingBroadcastsForUser(userId)
     await sendEmailSafely("admission approved", () =>
       sendAdmissionApprovedEmail(mappedUser.email, mappedUser.fullName),
     )
+  }
+
+  if (existingUser.admission_status === "approved" && mappedUser.admissionStatus !== "approved") {
+    await syncExistingBroadcastsForUser(userId)
   }
 
   if (existingUser.admission_status !== "rejected" && mappedUser.admissionStatus === "rejected") {
@@ -1350,10 +1519,11 @@ export async function createAssignment(payload: AssignmentPayload) {
   const id = randomUUID()
 
   await turso.execute({
-    sql: "INSERT INTO assignments (id, title, instructions, due_date) VALUES (?, ?, ?, ?)",
+    sql: "INSERT INTO assignments (id, title, audience, instructions, due_date) VALUES (?, ?, ?, ?, ?)",
     args: [
       id,
       ensureRequiredValue(payload.title, "Title"),
+      normalizeAssignmentAudience(payload.audience),
       ensureRequiredValue(payload.instructions, "Instructions"),
       ensureRequiredValue(payload.dueDate, "Due date"),
     ],
@@ -1375,11 +1545,12 @@ export async function updateAssignment(itemId: string, payload: Partial<Assignme
   await turso.execute({
     sql: `
       UPDATE assignments
-      SET title = ?, instructions = ?, due_date = ?, updated_at = CURRENT_TIMESTAMP
+      SET title = ?, audience = ?, instructions = ?, due_date = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `,
     args: [
       payload.title?.trim() || existingItem.title,
+      payload.audience ? normalizeAssignmentAudience(payload.audience) : existingItem.audience,
       payload.instructions?.trim() || existingItem.instructions,
       payload.dueDate?.trim() || existingItem.due_date,
       itemId,
@@ -1456,6 +1627,7 @@ export async function getStudentDashboardData(userId: string) {
   ])
 
   const visibleCurriculum = curriculum.filter((item) => item.category === "All Students" || item.category === user.category)
+  const visibleAssignments = assignments.filter((item) => item.audience === "All Students" || item.audience === user.category)
 
   const classSchedule = notifications
     .filter((item) => item.classStartAt)
@@ -1465,7 +1637,7 @@ export async function getStudentDashboardData(userId: string) {
 
   return {
     curriculum: visibleCurriculum,
-    assignments,
+    assignments: visibleAssignments,
     notifications,
     classSchedule,
     nextClass,

@@ -3,7 +3,15 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { getErrorMessage } from "@/lib/errors"
-import type { LoginPayload, RegisterPayload, RegistrationOtpRequestResult, RegistrationOtpVerifyPayload } from "@/lib/types"
+import type {
+  LoginPayload,
+  PasswordResetOtpRequestPayload,
+  PasswordResetOtpRequestResult,
+  PasswordResetOtpVerifyPayload,
+  RegisterPayload,
+  RegistrationOtpRequestResult,
+  RegistrationOtpVerifyPayload,
+} from "@/lib/types"
 import type { SessionUser } from "@/lib/session"
 
 type ApiResponse<T> = {
@@ -18,6 +26,8 @@ type AuthContextValue = {
   login: (payload: LoginPayload) => Promise<SessionUser>
   requestRegistrationOtp: (payload: RegisterPayload) => Promise<RegistrationOtpRequestResult>
   verifyRegistrationOtp: (payload: RegistrationOtpVerifyPayload) => Promise<SessionUser>
+  requestPasswordResetOtp: (payload: PasswordResetOtpRequestPayload) => Promise<PasswordResetOtpRequestResult>
+  resetPasswordWithOtp: (payload: PasswordResetOtpVerifyPayload) => Promise<{ email: string }>
   logout: () => Promise<void>
   refreshSession: () => Promise<SessionUser | null>
   setUser: (user: SessionUser | null) => void
@@ -119,6 +129,32 @@ export function AuthProvider({
     return sessionUser
   }
 
+  const requestPasswordResetOtp = async (payload: PasswordResetOtpRequestPayload) => {
+    const response = await fetch("/api/auth/forgot-password", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify(payload),
+    })
+
+    return parseResponse<PasswordResetOtpRequestResult>(response)
+  }
+
+  const resetPasswordWithOtp = async (payload: PasswordResetOtpVerifyPayload) => {
+    const response = await fetch("/api/auth/forgot-password/verify-otp", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify(payload),
+    })
+
+    return parseResponse<{ email: string }>(response)
+  }
+
   const logout = async () => {
     const response = await fetch("/api/auth/logout", {
       method: "POST",
@@ -138,6 +174,8 @@ export function AuthProvider({
       login,
       requestRegistrationOtp,
       verifyRegistrationOtp,
+      requestPasswordResetOtp,
+      resetPasswordWithOtp,
       logout,
       refreshSession,
       setUser,
