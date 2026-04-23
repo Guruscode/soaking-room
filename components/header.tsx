@@ -10,8 +10,17 @@ import { useState } from "react"
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  // Updated nav items including Booking
-  const navItems = ["Home", "About", "Gallery", "TSR Academy", "Contact", "Booking"]
+  const navItems = ["Home", "About", "Gallery", "TSR Academy", "Login", "Contact", "Booking"]
+
+  const getNavHref = (item: string) =>
+    item === "Home" ? "/" :
+    item === "About" ? "/about" :
+    item === "Gallery" ? "/gallery" :
+    item === "TSR Academy" ? "/tsr-academy" :
+    item === "Login" ? "/tsr-academy/login" :
+    item === "Donate" ? "/donate" :
+    item === "Contact" ? "/contact" :
+    item === "Booking" ? "/booking" : "#"
 
   return (
     <>
@@ -43,15 +52,7 @@ export function Header() {
             {navItems.map((item, i) => (
               <motion.a
                 key={item}
-                href={
-                  item === "Home" ? "/" :
-                  item === "About" ? "/about" :
-                  item === "Gallery" ? "/gallery" :
-                  item === "TSR Academy" ? "/tsr-academy" :
-                  item === "Donate" ? "/donate" :
-                  item === "Contact" ? "/contact" :
-                  item === "Booking" ? "/booking" : "#"  // ← your booking page
-                }
+                href={getNavHref(item)}
                 className="text-sm font-medium text-gray-700 hover:text-black relative"
                 whileHover={{ y: -2 }}
                 initial={{ opacity: 0, y: -10 }}
@@ -108,15 +109,7 @@ export function Header() {
                 {navItems.map((item) => (
                   <a
                     key={item}
-                    href={
-                      item === "Home" ? "/" :
-                      item === "About" ? "/about" :
-                      item === "Gallery" ? "/gallery" :
-                      item === "TSR Academy" ? "/tsr-academy" :
-                      item === "Donate" ? "/donate" :
-                      item === "Contact" ? "/contact" :
-                      item === "Booking" ? "/booking" : "#"
-                    }
+                    href={getNavHref(item)}
                     onClick={() => setMobileMenuOpen(false)}
                     className="text-2xl font-medium text-gray-800 hover:text-black transition"
                   >

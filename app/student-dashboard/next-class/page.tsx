@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { getStudentDashboardData } from "@/lib/db"
 import { getSessionUser } from "@/lib/session"
+import { normalizeExternalUrl } from "@/lib/utils"
 
 export default async function StudentNextClassPage() {
   const sessionUser = await getSessionUser()
@@ -12,6 +13,7 @@ export default async function StudentNextClassPage() {
   }
 
   const { nextClass, classSchedule } = await getStudentDashboardData(sessionUser.id)
+  const nextClassMeetingUrl = normalizeExternalUrl(nextClass?.meetingLink)
 
   return (
     <div className="space-y-4">
@@ -24,9 +26,9 @@ export default async function StudentNextClassPage() {
               {new Date(nextClass.classStartAt!).toLocaleString("en-NG", { dateStyle: "full", timeStyle: "short" })}
             </p>
             <p className="mt-1 text-sm text-slate-700 capitalize">{nextClass.classMode || "online"} class</p>
-            {nextClass.classMode === "online" && nextClass.meetingLink ? (
+            {nextClass.classMode === "online" && nextClassMeetingUrl ? (
               <Button asChild className="mt-3 rounded-xl bg-slate-900">
-                <Link href={nextClass.meetingLink} target="_blank" rel="noopener noreferrer">Join Class Link</Link>
+                <Link href={nextClassMeetingUrl} target="_blank" rel="noopener noreferrer">Join Class Link</Link>
               </Button>
             ) : null}
             {nextClass.classMode === "physical" && nextClass.venue ? (
@@ -39,7 +41,7 @@ export default async function StudentNextClassPage() {
       </div>
 
       <div className="rounded-xl border border-slate-200 p-4">
-        <h3 className="text-lg font-semibold text-slate-900">Published Class Schedule</h3>
+        <h3 className="text-lg font-semibold text-slate-900">Class Schedule</h3>
         <div className="mt-3 overflow-x-auto">
           <table className="min-w-full text-left text-sm">
             <thead>
@@ -51,14 +53,24 @@ export default async function StudentNextClassPage() {
               </tr>
             </thead>
             <tbody>
-              {classSchedule.map((row) => (
-                <tr key={row.id} className="border-b border-slate-100 text-slate-700">
-                  <td className="py-2 pr-4">{row.className || row.title}</td>
-                  <td className="py-2 pr-4">{new Date(row.classStartAt!).toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" })}</td>
-                  <td className="py-2 pr-4 capitalize">{row.classMode || "-"}</td>
-                  <td className="py-2 pr-4">{row.classMode === "online" ? row.meetingLink || "-" : row.venue || "-"}</td>
-                </tr>
-              ))}
+              {classSchedule.map((row) => {
+                const meetingUrl = normalizeExternalUrl(row.meetingLink)
+
+                return (
+                  <tr key={row.id} className="border-b border-slate-100 text-slate-700">
+                    <td className="py-2 pr-4">{row.className || row.title}</td>
+                    <td className="py-2 pr-4">{new Date(row.classStartAt!).toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" })}</td>
+                    <td className="py-2 pr-4 capitalize">{row.classMode || "-"}</td>
+                    <td className="py-2 pr-4">
+                      {row.classMode === "online" && meetingUrl ? (
+                        <Link href={meetingUrl} className="font-medium underline" target="_blank" rel="noopener noreferrer">
+                          Open class link
+                        </Link>
+                      ) : row.classMode === "online" ? "-" : row.venue || "-"}
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
