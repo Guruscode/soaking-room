@@ -23,6 +23,7 @@ import {
 
 type AdminRowActionsProps = {
   recordName: string
+  onView?: () => void
   onEdit?: () => void
   onDelete?: () => void
   onApprove?: () => void
@@ -33,6 +34,7 @@ type AdminRowActionsProps = {
 
 export function AdminRowActions({
   recordName,
+  onView,
   onEdit,
   onDelete,
   onApprove,
@@ -50,12 +52,13 @@ export function AdminRowActions({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-40">
+          {onView ? <DropdownMenuItem onClick={onView}>View</DropdownMenuItem> : null}
           {onEdit ? <DropdownMenuItem onClick={onEdit}>Edit</DropdownMenuItem> : null}
           {canApprove && onApprove ? <DropdownMenuItem onClick={onApprove}>Approve</DropdownMenuItem> : null}
           {canReject && onReject ? <DropdownMenuItem onClick={onReject}>Reject</DropdownMenuItem> : null}
           {onDelete ? (
             <>
-              {(onEdit || canApprove || canReject) ? <DropdownMenuSeparator /> : null}
+              {(onView || onEdit || canApprove || canReject) ? <DropdownMenuSeparator /> : null}
               <AlertDialogTrigger asChild>
                 <DropdownMenuItem
                   variant="destructive"

@@ -42,6 +42,7 @@ export default function AdminAdmissionsPage() {
   const [rows, setRows] = useState<AcademyUser[]>([])
   const [activeTab, setActiveTab] = useState<AdmissionStatus>("pending")
   const [selectedRejectedIds, setSelectedRejectedIds] = useState<string[]>([])
+  const [viewingRow, setViewingRow] = useState<AcademyUser | null>(null)
   const [formState, setFormState] = useState(initialFormState)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -461,6 +462,7 @@ export default function AdminAdmissionsPage() {
                   </div>
                   <AdminRowActions
                     recordName={row.fullName}
+                    onView={() => setViewingRow(row)}
                     onEdit={() => onEdit(row)}
                     onDelete={() => onDelete(row)}
                     onApprove={() => updateStatus(row, "approved")}
@@ -517,11 +519,12 @@ export default function AdminAdmissionsPage() {
                     <td className="py-2 pr-4 capitalize">{row.admissionStatus}</td>
                     <td className="py-2 text-right">
                       <div className="flex justify-end">
-                        <AdminRowActions
-                          recordName={row.fullName}
-                          onEdit={() => onEdit(row)}
-                          onDelete={() => onDelete(row)}
-                          onApprove={() => updateStatus(row, "approved")}
+                  <AdminRowActions
+                    recordName={row.fullName}
+                    onView={() => setViewingRow(row)}
+                    onEdit={() => onEdit(row)}
+                    onDelete={() => onDelete(row)}
+                    onApprove={() => updateStatus(row, "approved")}
                           onReject={() => updateStatus(row, "rejected")}
                           canApprove={row.admissionStatus !== "approved"}
                           canReject={row.admissionStatus !== "rejected"}
@@ -629,6 +632,52 @@ export default function AdminAdmissionsPage() {
         </DialogContent>
       </Dialog>
 
+      <Dialog open={Boolean(viewingRow)} onOpenChange={(open) => {
+        if (!open) {
+          setViewingRow(null)
+        }
+      }}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Admission Details</DialogTitle>
+            <DialogDescription>
+              Review this student record without editing it.
+            </DialogDescription>
+          </DialogHeader>
+          {viewingRow ? (
+            <div className="grid gap-4 md:grid-cols-2">
+              <ReadOnlyField label="Full Name" value={viewingRow.fullName} />
+              <ReadOnlyField label="Date of Birth / Age" value={viewingRow.dateOfBirthOrAge} />
+              <ReadOnlyField label="Category" value={viewingRow.category} />
+              <ReadOnlyField label="Location" value={viewingRow.location} />
+              <ReadOnlyField label="Email" value={viewingRow.email} />
+              <ReadOnlyField label="Phone" value={viewingRow.phone} />
+              <ReadOnlyField label="Church / Fellowship" value={viewingRow.church || "-"} />
+              <ReadOnlyField label="Musical Skill" value={viewingRow.musicalSkill || "-"} />
+              <ReadOnlyField label="Born Again" value={viewingRow.bornAgain} />
+              <ReadOnlyField label="Admission Status" value={viewingRow.admissionStatus} />
+              <div className="md:col-span-2">
+                <label className="mb-1 block text-sm font-medium text-slate-700">Reason</label>
+                <div className="min-h-24 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                  {viewingRow.reason}
+                </div>
+              </div>
+              <div className="md:col-span-2">
+                <label className="mb-1 block text-sm font-medium text-slate-700">Created At</label>
+                <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                  {new Date(viewingRow.createdAt).toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" })}
+                </div>
+              </div>
+            </div>
+          ) : null}
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setViewingRow(null)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={isExportModalOpen} onOpenChange={setIsExportModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -658,6 +707,23 @@ export default function AdminAdmissionsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </div>
+  )
+}
+
+function ReadOnlyField({
+  label,
+  value,
+}: {
+  label: string
+  value: string
+}) {
+  return (
+    <div>
+      <label className="mb-1 block text-sm font-medium text-slate-700">{label}</label>
+      <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 capitalize">
+        {value}
+      </div>
     </div>
   )
 }
