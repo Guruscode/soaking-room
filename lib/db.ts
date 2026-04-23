@@ -473,27 +473,6 @@ async function seedTeachersGuides() {
   }
 }
 
-async function seedAssignments() {
-  const result = await turso.execute("SELECT COUNT(*) AS total FROM assignments")
-  const total = Number((result.rows[0] as { total?: number | string }).total ?? 0)
-
-  if (total > 0) {
-    return
-  }
-
-  const assignments = [
-    ["Worship Reflection Journal", "Submit a written reflection on the last live session and highlight one key takeaway.", "2026-04-08"],
-    ["Voice Recording Submission", "Record a short worship exercise and upload it through the academy process.", "2026-04-10"],
-  ]
-
-  for (const assignment of assignments) {
-    await turso.execute({
-      sql: "INSERT INTO assignments (id, title, instructions, due_date) VALUES (?, ?, ?, ?)",
-      args: [randomUUID(), assignment[0], assignment[1], assignment[2]],
-    })
-  }
-}
-
 async function listStudentsMatchingAudience(audience: string) {
   const result = await turso.execute({
     sql: `
@@ -714,7 +693,6 @@ export async function ensureDatabaseSetup() {
       await seedSettings()
       await seedCurriculum()
       await seedTeachersGuides()
-      await seedAssignments()
     })()
   }
 
