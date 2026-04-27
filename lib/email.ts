@@ -238,6 +238,49 @@ export async function sendRegistrationSubmittedEmail(to: string, userName: strin
   return sendEmail({ to, subject, html })
 }
 
+export async function sendAdminCreatedAccountEmail(
+  to: string,
+  userName: string,
+  password: string,
+  admissionStatus: "pending" | "approved" | "rejected",
+) {
+  const statusMessage =
+    admissionStatus === "approved"
+      ? "Your admission has already been approved, so you can sign in and start using your dashboard immediately."
+      : admissionStatus === "rejected"
+        ? "Your account has been created, but your admission is currently marked as rejected. Please contact the academy team if this needs to be reviewed."
+        : "Your account has been created successfully. Your admission is currently pending review."
+
+  const subject = "Your TSR Academy account has been created"
+  const html = buildEmailTemplate({
+    title: "Your account is ready",
+    greeting: `Dear ${userName},`,
+    intro: "An administrator created your TSR Academy account for you.",
+    panelHtml: `
+      <div style="margin: 24px 0; padding: 18px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px;">
+        <p style="margin: 0 0 10px; font-size: 14px; color: #475569;">Use these details to sign in:</p>
+        <p style="margin: 0 0 8px; font-size: 15px; color: #0f172a;"><strong>Email:</strong> ${escapeHtml(to)}</p>
+        <p style="margin: 0; font-size: 15px; color: #0f172a;"><strong>Password:</strong> ${escapeHtml(password)}</p>
+      </div>
+    `,
+    body: [
+      statusMessage,
+      "For security, please sign in and change your password as soon as possible.",
+    ],
+    accentColor: "#0f766e",
+    accentSoft: "#ccfbf1",
+    ctaLabel: "Go to Login",
+    ctaUrl: `${getAppUrl()}/tsr-academy/login`,
+  })
+
+  return sendEmail({
+    to,
+    subject,
+    html,
+    text: `Your TSR Academy account has been created.\nEmail: ${to}\nPassword: ${password}\nStatus: ${admissionStatus}\nLogin: ${getAppUrl()}/tsr-academy/login`,
+  })
+}
+
 export async function sendAdmissionApprovedEmail(to: string, userName: string) {
   const subject = "Your TSR Academy admission has been approved"
   const html = buildEmailTemplate({

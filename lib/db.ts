@@ -4,6 +4,7 @@ import { turso } from "@/lib/turso"
 import { env } from "@/lib/env"
 import { AppError } from "@/lib/errors"
 import {
+  sendAdminCreatedAccountEmail,
   sendAdmissionApprovedEmail,
   sendAdmissionRejectedEmail,
   sendBroadcastEmail,
@@ -278,6 +279,14 @@ async function sendEmailSafely(taskName: string, action: () => Promise<unknown>)
     await action()
   } catch (error) {
     console.error(`Failed to send ${taskName} email:`, error)
+  }
+}
+
+async function runNonCriticalTask(taskName: string, action: () => Promise<unknown>) {
+  try {
+    await action()
+  } catch (error) {
+    console.error(`Failed to complete ${taskName}:`, error)
   }
 }
 
@@ -1102,8 +1111,9 @@ export async function createAdmission(payload: AdminStudentPayload) {
   await ensureDatabaseSetup()
 
   const email = ensureRequiredValue(payload.email, "Email").toLowerCase()
+  const password = payload.password?.trim()
 
-  if (!payload.password || payload.password.length < 8) {
+  if (!password || password.length < 8) {
     throw new AppError("A password of at least 8 characters is required for a new student.")
   }
 
@@ -1132,7 +1142,7 @@ export async function createAdmission(payload: AdminStudentPayload) {
       sanitizeOptionalValue(payload.church),
       sanitizeOptionalValue(payload.musicalSkill),
       ensureRequiredValue(payload.reason, "Reason"),
-      hashPassword(payload.password),
+      hashPassword(password),
       "student",
       payload.admissionStatus,
     ],
@@ -1147,14 +1157,12 @@ export async function createAdmission(payload: AdminStudentPayload) {
   const mappedUser = mapUser(user)
 
   if (mappedUser.admissionStatus === "approved") {
-    await syncExistingBroadcastsForUser(id)
+    await runNonCriticalTask("student notification sync", () => syncExistingBroadcastsForUser(id))
   }
 
-  if (mappedUser.admissionStatus === "approved") {
-    await sendEmailSafely("admission approved", () =>
-      sendAdmissionApprovedEmail(mappedUser.email, mappedUser.fullName),
-    )
-  }
+  await sendEmailSafely("admin account created", () =>
+    sendAdminCreatedAccountEmail(mappedUser.email, mappedUser.fullName, password, mappedUser.admissionStatus),
+  )
 
   return mappedUser
 }
@@ -1226,14 +1234,14 @@ export async function updateAdmission(userId: string, payload: Partial<AdminStud
   const mappedUser = mapUser(updatedUser)
 
   if (existingUser.admission_status !== "approved" && mappedUser.admissionStatus === "approved") {
-    await syncExistingBroadcastsForUser(userId)
+    await runNonCriticalTask("student notification sync", () => syncExistingBroadcastsForUser(userId))
     await sendEmailSafely("admission approved", () =>
       sendAdmissionApprovedEmail(mappedUser.email, mappedUser.fullName),
     )
   }
 
   if (existingUser.admission_status === "approved" && mappedUser.admissionStatus !== "approved") {
-    await syncExistingBroadcastsForUser(userId)
+    await runNonCriticalTask("student notification sync", () => syncExistingBroadcastsForUser(userId))
   }
 
   if (existingUser.admission_status !== "rejected" && mappedUser.admissionStatus === "rejected") {

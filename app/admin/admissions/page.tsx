@@ -37,6 +37,17 @@ const initialFormState: AdminStudentPayload = {
 
 const STATUS_TABS: AdmissionStatus[] = ["pending", "approved", "rejected"]
 
+async function readApiResponse<T>(response: Response) {
+  const contentType = response.headers.get("content-type") || ""
+
+  if (contentType.includes("application/json")) {
+    return (await response.json()) as T
+  }
+
+  const text = await response.text()
+  return { error: text || `Request failed with status ${response.status}.` } as T
+}
+
 export default function AdminAdmissionsPage() {
   const { toast } = useToast()
   const [rows, setRows] = useState<AcademyUser[]>([])
@@ -63,7 +74,7 @@ export default function AdminAdmissionsPage() {
         credentials: "include",
         cache: "no-store",
       })
-      const data = (await response.json()) as { data?: AcademyUser[]; error?: string }
+      const data = await readApiResponse<{ data?: AcademyUser[]; error?: string }>(response)
 
       if (!response.ok) {
         throw new Error(data.error || "Failed to load admissions.")
@@ -121,7 +132,7 @@ export default function AdminAdmissionsPage() {
         credentials: "include",
         body: JSON.stringify(payload),
       })
-      const data = (await response.json()) as { data?: AcademyUser; error?: string }
+      const data = await readApiResponse<{ data?: AcademyUser; error?: string }>(response)
 
       if (!response.ok || !data.data) {
         throw new Error(data.error || "Failed to save student.")
@@ -171,7 +182,7 @@ export default function AdminAdmissionsPage() {
         credentials: "include",
         body: JSON.stringify({ admissionStatus: status }),
       })
-      const data = (await response.json()) as { data?: AcademyUser; error?: string }
+      const data = await readApiResponse<{ data?: AcademyUser; error?: string }>(response)
 
       if (!response.ok || !data.data) {
         throw new Error(data.error || "Failed to update admission status.")
@@ -198,7 +209,7 @@ export default function AdminAdmissionsPage() {
         method: "DELETE",
         credentials: "include",
       })
-      const data = (await response.json()) as { error?: string }
+      const data = await readApiResponse<{ error?: string }>(response)
 
       if (!response.ok) {
         throw new Error(data.error || "Failed to remove student.")
@@ -260,7 +271,7 @@ export default function AdminAdmissionsPage() {
             method: "DELETE",
             credentials: "include",
           })
-          const data = (await response.json()) as { error?: string }
+          const data = await readApiResponse<{ error?: string }>(response)
 
           if (!response.ok) {
             throw new Error(data.error || `Failed to delete ${row.fullName}.`)
@@ -322,7 +333,7 @@ export default function AdminAdmissionsPage() {
         let message = "Failed to export admissions."
 
         try {
-          const data = (await response.json()) as { error?: string }
+          const data = await readApiResponse<{ error?: string }>(response)
           message = data.error || message
         } catch {
           // Ignore non-JSON error payloads and fall back to the default message.
