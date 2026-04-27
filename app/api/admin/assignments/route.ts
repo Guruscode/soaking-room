@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server"
-import { createAssignment, listAssignments } from "@/lib/db"
+import { createAssignment, listAssignmentsForAdmin } from "@/lib/db"
 import { handleRouteError, requireAdminSession } from "@/lib/route-helpers"
 import type { AssignmentPayload } from "@/lib/types"
 
 export async function GET() {
   try {
     await requireAdminSession()
-    return NextResponse.json({ data: await listAssignments() })
+    return NextResponse.json({ data: await listAssignmentsForAdmin() })
   } catch (error) {
     return handleRouteError(error)
   }

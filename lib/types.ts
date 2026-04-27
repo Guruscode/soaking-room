@@ -1,6 +1,7 @@
 export type UserRole = "student" | "admin"
 export type AdmissionStatus = "pending" | "approved" | "rejected"
 export type ClassMode = "online" | "physical"
+export type AssignmentSubmissionType = "text" | "image" | "pdf"
 
 export type AcademyUser = {
   id: string
@@ -61,6 +62,29 @@ export type AssignmentItem = {
   audience: string
   instructions: string
   dueDate: string
+  createdAt: string
+  updatedAt: string
+  submission?: AssignmentSubmissionItem | null
+  submissionCount?: number
+  latestSubmissionAt?: string | null
+}
+
+export type AssignmentSubmissionItem = {
+  id: string
+  assignmentId: string
+  userId: string
+  studentName: string
+  studentEmail: string
+  submissionType: AssignmentSubmissionType
+  textContent: string | null
+  fileName: string | null
+  fileMimeType: string | null
+  fileDataUrl: string | null
+  fileSizeBytes: number | null
+  score: number | null
+  adminComment: string | null
+  reviewedAt: string | null
+  reviewedByName: string | null
   createdAt: string
   updatedAt: string
 }
@@ -181,6 +205,19 @@ export type AssignmentPayload = {
   audience: string
   instructions: string
   dueDate: string
+}
+
+export type AssignmentSubmissionPayload = {
+  submissionType: AssignmentSubmissionType
+  textContent?: string
+  fileName?: string
+  fileMimeType?: string
+  fileDataUrl?: string
+}
+
+export type AssignmentSubmissionReviewPayload = {
+  score?: number | null
+  adminComment?: string
 }
 
 export type SettingsPayload = {

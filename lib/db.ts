@@ -20,6 +20,10 @@ import type {
   AdmissionStatus,
   AssignmentItem,
   AssignmentPayload,
+  AssignmentSubmissionItem,
+  AssignmentSubmissionPayload,
+  AssignmentSubmissionReviewPayload,
+  AssignmentSubmissionType,
   BroadcastItem,
   BroadcastPayload,
   CurriculumItem,
@@ -111,6 +115,26 @@ type DatabaseAssignmentRow = {
   audience: string
   instructions: string
   due_date: string
+  created_at: string
+  updated_at: string
+}
+
+type DatabaseAssignmentSubmissionRow = {
+  id: string
+  assignment_id: string
+  user_id: string
+  student_name: string
+  student_email: string
+  submission_type: AssignmentSubmissionType
+  text_content: string | null
+  file_name: string | null
+  file_mime_type: string | null
+  file_data_url: string | null
+  file_size_bytes: number | string | null
+  score: number | string | null
+  admin_comment: string | null
+  reviewed_at: string | null
+  reviewed_by_name: string | null
   created_at: string
   updated_at: string
 }
@@ -245,6 +269,28 @@ function mapAssignment(row: DatabaseAssignmentRow): AssignmentItem {
   }
 }
 
+function mapAssignmentSubmission(row: DatabaseAssignmentSubmissionRow): AssignmentSubmissionItem {
+  return {
+    id: row.id,
+    assignmentId: row.assignment_id,
+    userId: row.user_id,
+    studentName: row.student_name,
+    studentEmail: row.student_email,
+    submissionType: row.submission_type,
+    textContent: row.text_content,
+    fileName: row.file_name,
+    fileMimeType: row.file_mime_type,
+    fileDataUrl: row.file_data_url,
+    fileSizeBytes: row.file_size_bytes === null ? null : Number(row.file_size_bytes),
+    score: row.score === null ? null : Number(row.score),
+    adminComment: row.admin_comment,
+    reviewedAt: row.reviewed_at,
+    reviewedByName: row.reviewed_by_name,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
+}
+
 function mapSettings(row: DatabaseSettingsRow): AcademySettings {
   return {
     id: row.id,
@@ -310,6 +356,30 @@ function ensureRequiredValue(value: string, fieldName: string) {
   }
 
   return value.trim()
+}
+
+function normalizeAssignmentSubmissionType(submissionType: string): AssignmentSubmissionType {
+  const trimmedSubmissionType = ensureRequiredValue(submissionType, "Submission type")
+
+  if (trimmedSubmissionType !== "text" && trimmedSubmissionType !== "image" && trimmedSubmissionType !== "pdf") {
+    throw new AppError("Invalid assignment submission type.")
+  }
+
+  return trimmedSubmissionType
+}
+
+function parseDataUrl(value: string) {
+  const trimmedValue = ensureRequiredValue(value, "File")
+  const match = /^data:([^;]+);base64,([\s\S]+)$/.exec(trimmedValue)
+
+  if (!match) {
+    throw new AppError("Invalid file upload format.")
+  }
+
+  return {
+    mimeType: match[1],
+    base64Payload: match[2],
+  }
 }
 
 function matchesAudience(studentCategory: string, audience: string) {
@@ -416,6 +486,33 @@ async function getAssignmentById(id: string) {
   })
 
   return result.rows[0] ? (result.rows[0] as unknown as DatabaseAssignmentRow) : null
+}
+
+async function getAssignmentSubmissionByAssignmentAndUser(assignmentId: string, userId: string) {
+  const result = await turso.execute({
+    sql: "SELECT * FROM assignment_submissions WHERE assignment_id = ? AND user_id = ? LIMIT 1",
+    args: [assignmentId, userId],
+  })
+
+  return result.rows[0] ? (result.rows[0] as unknown as DatabaseAssignmentSubmissionRow) : null
+}
+
+async function listAssignmentSubmissionsByAssignmentId(assignmentId: string) {
+  const result = await turso.execute({
+    sql: "SELECT * FROM assignment_submissions WHERE assignment_id = ? ORDER BY updated_at DESC, created_at DESC",
+    args: [assignmentId],
+  })
+
+  return result.rows.map((row) => mapAssignmentSubmission(row as unknown as DatabaseAssignmentSubmissionRow))
+}
+
+async function getAssignmentSubmissionById(submissionId: string) {
+  const result = await turso.execute({
+    sql: "SELECT * FROM assignment_submissions WHERE id = ? LIMIT 1",
+    args: [submissionId],
+  })
+
+  return result.rows[0] ? (result.rows[0] as unknown as DatabaseAssignmentSubmissionRow) : null
 }
 
 async function seedAdminUser() {
@@ -707,6 +804,30 @@ export async function ensureDatabaseSetup() {
           )
         `,
         `
+          CREATE TABLE IF NOT EXISTS assignment_submissions (
+            id TEXT PRIMARY KEY,
+            assignment_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            student_name TEXT NOT NULL,
+            student_email TEXT NOT NULL,
+            submission_type TEXT NOT NULL,
+            text_content TEXT,
+            file_name TEXT,
+            file_mime_type TEXT,
+            file_data_url TEXT,
+            file_size_bytes INTEGER,
+            score REAL,
+            admin_comment TEXT,
+            reviewed_at TEXT,
+            reviewed_by_name TEXT,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+          )
+        `,
+        "CREATE INDEX IF NOT EXISTS idx_assignment_submissions_assignment_id ON assignment_submissions(assignment_id)",
+        "CREATE INDEX IF NOT EXISTS idx_assignment_submissions_user_id ON assignment_submissions(user_id)",
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_assignment_submissions_assignment_user ON assignment_submissions(assignment_id, user_id)",
+        `
           CREATE TABLE IF NOT EXISTS academy_settings (
             id TEXT PRIMARY KEY,
             academy_name TEXT NOT NULL,
@@ -759,6 +880,23 @@ export async function ensureDatabaseSetup() {
 
         if (!message.includes("duplicate column")) {
           throw error
+        }
+      }
+
+      for (const statement of [
+        "ALTER TABLE assignment_submissions ADD COLUMN score REAL",
+        "ALTER TABLE assignment_submissions ADD COLUMN admin_comment TEXT",
+        "ALTER TABLE assignment_submissions ADD COLUMN reviewed_at TEXT",
+        "ALTER TABLE assignment_submissions ADD COLUMN reviewed_by_name TEXT",
+      ]) {
+        try {
+          await turso.execute(statement)
+        } catch (error) {
+          const message = error instanceof Error ? error.message.toLowerCase() : ""
+
+          if (!message.includes("duplicate column")) {
+            throw error
+          }
         }
       }
 
@@ -1267,6 +1405,7 @@ export async function deleteAdmission(userId: string) {
   }
 
   await turso.execute({ sql: "DELETE FROM notifications WHERE user_id = ?", args: [userId] })
+  await turso.execute({ sql: "DELETE FROM assignment_submissions WHERE user_id = ?", args: [userId] })
   await turso.execute({ sql: "DELETE FROM users WHERE id = ?", args: [userId] })
 }
 
@@ -1516,10 +1655,123 @@ export async function deleteBroadcast(itemId: string) {
   await turso.execute({ sql: "DELETE FROM broadcasts WHERE id = ?", args: [itemId] })
 }
 
+function normalizeAssignmentSubmissionPayload(payload: AssignmentSubmissionPayload) {
+  const submissionType = normalizeAssignmentSubmissionType(payload.submissionType)
+
+  if (submissionType === "text") {
+    return {
+      submissionType,
+      textContent: ensureRequiredValue(payload.textContent || "", "Submission text"),
+      fileName: null,
+      fileMimeType: null,
+      fileDataUrl: null,
+      fileSizeBytes: null,
+    }
+  }
+
+  const fileName = ensureRequiredValue(payload.fileName || "", "File name")
+  const { mimeType, base64Payload } = parseDataUrl(payload.fileDataUrl || "")
+  const fileSizeBytes = Buffer.from(base64Payload, "base64").byteLength
+
+  if (fileSizeBytes > 5 * 1024 * 1024) {
+    throw new AppError("Files must be 5MB or smaller.")
+  }
+
+  if (submissionType === "image" && !mimeType.startsWith("image/")) {
+    throw new AppError("Image submissions must use an image file.")
+  }
+
+  if (submissionType === "pdf" && mimeType !== "application/pdf") {
+    throw new AppError("PDF submissions must use a PDF file.")
+  }
+
+  return {
+    submissionType,
+    textContent: null,
+    fileName,
+    fileMimeType: mimeType,
+    fileDataUrl: ensureRequiredValue(payload.fileDataUrl || "", "File"),
+    fileSizeBytes,
+  }
+}
+
+function normalizeAssignmentSubmissionReviewPayload(payload: AssignmentSubmissionReviewPayload) {
+  const adminComment = payload.adminComment !== undefined ? sanitizeOptionalValue(payload.adminComment) : null
+  const score = payload.score
+
+  if (score === undefined || score === null || Number.isNaN(Number(score))) {
+    return {
+      score: null,
+      adminComment,
+    }
+  }
+
+  const normalizedScore = Number(score)
+
+  if (normalizedScore < 1 || normalizedScore > 10) {
+    throw new AppError("Score must be between 1 and 10.")
+  }
+
+  return {
+    score: normalizedScore,
+    adminComment,
+  }
+}
+
 export async function listAssignments() {
   await ensureDatabaseSetup()
   const result = await turso.execute("SELECT * FROM assignments ORDER BY due_date ASC")
   return result.rows.map((row) => mapAssignment(row as unknown as DatabaseAssignmentRow))
+}
+
+export async function listAssignmentsForAdmin() {
+  await ensureDatabaseSetup()
+
+  const [assignments, submissions] = await Promise.all([
+    listAssignments(),
+    turso.execute(`
+      SELECT assignment_id, COUNT(*) AS submission_count, MAX(updated_at) AS latest_submission_at
+      FROM assignment_submissions
+      GROUP BY assignment_id
+    `),
+  ])
+
+  const submissionMeta = new Map<string, { count: number; latestSubmissionAt: string | null }>()
+
+  for (const row of submissions.rows) {
+    const assignmentId = String((row as { assignment_id?: string }).assignment_id || "")
+
+    if (!assignmentId) {
+      continue
+    }
+
+    submissionMeta.set(assignmentId, {
+      count: Number((row as { submission_count?: number | string }).submission_count ?? 0),
+      latestSubmissionAt: ((row as { latest_submission_at?: string | null }).latest_submission_at ?? null),
+    })
+  }
+
+  return assignments.map((assignment) => {
+    const meta = submissionMeta.get(assignment.id)
+
+    return {
+      ...assignment,
+      submissionCount: meta?.count ?? 0,
+      latestSubmissionAt: meta?.latestSubmissionAt ?? null,
+    }
+  })
+}
+
+export async function listAssignmentSubmissionsForAdmin(assignmentId: string) {
+  await ensureDatabaseSetup()
+
+  const assignment = await getAssignmentById(assignmentId)
+
+  if (!assignment) {
+    throw new AppError("Assignment not found.", 404)
+  }
+
+  return listAssignmentSubmissionsByAssignmentId(assignmentId)
 }
 
 export async function createAssignment(payload: AssignmentPayload) {
@@ -1572,7 +1824,130 @@ export async function updateAssignment(itemId: string, payload: Partial<Assignme
 
 export async function deleteAssignment(itemId: string) {
   await ensureDatabaseSetup()
+  await turso.execute({ sql: "DELETE FROM assignment_submissions WHERE assignment_id = ?", args: [itemId] })
   await turso.execute({ sql: "DELETE FROM assignments WHERE id = ?", args: [itemId] })
+}
+
+export async function submitAssignmentForStudent(userId: string, assignmentId: string, payload: AssignmentSubmissionPayload) {
+  await ensureDatabaseSetup()
+
+  const [user, assignment, existingSubmission] = await Promise.all([
+    getAcademyUser(userId),
+    getAssignmentById(assignmentId),
+    getAssignmentSubmissionByAssignmentAndUser(assignmentId, userId),
+  ])
+
+  if (!user || user.role !== "student") {
+    throw new AppError("Student account not found.", 404)
+  }
+
+  if (!assignment) {
+    throw new AppError("Assignment not found.", 404)
+  }
+
+  if (assignment.audience !== "All Students" && assignment.audience !== user.category) {
+    throw new AppError("You cannot submit this assignment.", 403)
+  }
+
+  const normalizedPayload = normalizeAssignmentSubmissionPayload(payload)
+
+  if (existingSubmission) {
+    await turso.execute({
+      sql: `
+        UPDATE assignment_submissions
+        SET
+          student_name = ?,
+          student_email = ?,
+          submission_type = ?,
+          text_content = ?,
+          file_name = ?,
+          file_mime_type = ?,
+          file_data_url = ?,
+          file_size_bytes = ?,
+          score = NULL,
+          admin_comment = NULL,
+          reviewed_at = NULL,
+          reviewed_by_name = NULL,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `,
+      args: [
+        user.fullName,
+        user.email,
+        normalizedPayload.submissionType,
+        normalizedPayload.textContent,
+        normalizedPayload.fileName,
+        normalizedPayload.fileMimeType,
+        normalizedPayload.fileDataUrl,
+        normalizedPayload.fileSizeBytes,
+        existingSubmission.id,
+      ],
+    })
+  } else {
+    await turso.execute({
+      sql: `
+        INSERT INTO assignment_submissions (
+          id, assignment_id, user_id, student_name, student_email, submission_type,
+          text_content, file_name, file_mime_type, file_data_url, file_size_bytes
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+      args: [
+        randomUUID(),
+        assignmentId,
+        userId,
+        user.fullName,
+        user.email,
+        normalizedPayload.submissionType,
+        normalizedPayload.textContent,
+        normalizedPayload.fileName,
+        normalizedPayload.fileMimeType,
+        normalizedPayload.fileDataUrl,
+        normalizedPayload.fileSizeBytes,
+      ],
+    })
+  }
+
+  const updatedSubmission = await getAssignmentSubmissionByAssignmentAndUser(assignmentId, userId)
+
+  if (!updatedSubmission) {
+    throw new AppError("Assignment submission could not be saved.", 500)
+  }
+
+  return mapAssignmentSubmission(updatedSubmission)
+}
+
+export async function reviewAssignmentSubmission(submissionId: string, adminName: string, payload: AssignmentSubmissionReviewPayload) {
+  await ensureDatabaseSetup()
+
+  const existingSubmission = await getAssignmentSubmissionById(submissionId)
+
+  if (!existingSubmission) {
+    throw new AppError("Assignment submission not found.", 404)
+  }
+
+  const normalizedPayload = normalizeAssignmentSubmissionReviewPayload(payload)
+
+  await turso.execute({
+    sql: `
+      UPDATE assignment_submissions
+      SET
+        score = ?,
+        admin_comment = ?,
+        reviewed_at = CURRENT_TIMESTAMP,
+        reviewed_by_name = ?,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `,
+    args: [normalizedPayload.score, normalizedPayload.adminComment, adminName, submissionId],
+  })
+
+  const updatedSubmission = await getAssignmentSubmissionById(submissionId)
+
+  if (!updatedSubmission) {
+    throw new AppError("Assignment submission not found.", 404)
+  }
+
+  return mapAssignmentSubmission(updatedSubmission)
 }
 
 export async function getAcademySettings() {
@@ -1636,6 +2011,21 @@ export async function getStudentDashboardData(userId: string) {
 
   const visibleCurriculum = curriculum.filter((item) => item.category === "All Students" || item.category === user.category)
   const visibleAssignments = assignments.filter((item) => item.audience === "All Students" || item.audience === user.category)
+  const assignmentSubmissions = await turso.execute({
+    sql: "SELECT * FROM assignment_submissions WHERE user_id = ?",
+    args: [userId],
+  })
+  const submissionsByAssignmentId = new Map(
+    assignmentSubmissions.rows.map((row) => {
+      const submission = mapAssignmentSubmission(row as unknown as DatabaseAssignmentSubmissionRow)
+      return [submission.assignmentId, submission] as const
+    }),
+  )
+
+  const visibleAssignmentsWithSubmissions = visibleAssignments.map((item) => ({
+    ...item,
+    submission: submissionsByAssignmentId.get(item.id) || null,
+  }))
 
   const classSchedule = notifications
     .filter((item) => item.classStartAt)
@@ -1645,7 +2035,7 @@ export async function getStudentDashboardData(userId: string) {
 
   return {
     curriculum: visibleCurriculum,
-    assignments: visibleAssignments,
+    assignments: visibleAssignmentsWithSubmissions,
     notifications,
     classSchedule,
     nextClass,
