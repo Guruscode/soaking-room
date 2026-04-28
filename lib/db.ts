@@ -350,12 +350,14 @@ function chunkArray<T>(items: T[], size: number) {
   return chunks
 }
 
-function ensureRequiredValue(value: string, fieldName: string) {
-  if (!value.trim()) {
+function ensureRequiredValue(value: string | null | undefined, fieldName: string) {
+  const trimmedValue = value?.trim()
+
+  if (!trimmedValue) {
     throw new AppError(`${fieldName} is required.`)
   }
 
-  return value.trim()
+  return trimmedValue
 }
 
 function normalizeAssignmentSubmissionType(submissionType: string): AssignmentSubmissionType {
