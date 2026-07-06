@@ -1,7 +1,7 @@
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
-import { CalendarDays, MapPin, Sparkles, ArrowRight, Droplets } from "lucide-react"
+import { CalendarDays, MapPin, Sparkles, ArrowRight, Flower2 } from "lucide-react"
 import Link from "next/link"
 
 const events = [
@@ -11,19 +11,23 @@ const events = [
     date: "August 29th, 2026",
     venue: "ATW Center, CBD Abuja",
     description:
-      "A sacred gathering for worship, prayer, and spiritual refreshment. Come and be renewed in the presence of God.",
+      "A signature women's worship experience — a sacred space where women can pause, breathe, and be renewed in the presence of God.",
     slug: "spirit-spa",
-    accent: "emerald" as const,
-    icon: Droplets,
+    accent: "blush" as const,
+    icon: Flower2,
   },
 ]
 
 function EventCard({ event }: { event: (typeof events)[number] }) {
   const Icon = event.icon
   const gradientFrom =
-    event.accent === "emerald" ? "from-emerald-950 via-teal-900 to-cyan-950" : "from-blue-950 via-indigo-900 to-violet-950"
-  const accentLight = event.accent === "emerald" ? "text-emerald-300" : "text-blue-300"
-  const badgeBg = event.accent === "emerald" ? "bg-emerald-500/20 border-emerald-300/30" : "bg-blue-500/20 border-blue-300/30"
+    event.accent === "blush"
+      ? "from-[#6B5544] via-[#5C4A3A] to-[#4A3D32]"
+      : event.accent === "emerald"
+        ? "from-emerald-950 via-teal-900 to-cyan-950"
+        : "from-blue-950 via-indigo-900 to-violet-950"
+  const accentLight = event.accent === "blush" ? "text-[#D8A8A0]" : event.accent === "emerald" ? "text-emerald-300" : "text-blue-300"
+  const badgeBg = event.accent === "blush" ? "bg-[#D8A8A0]/20 border-[#D8A8A0]/30" : event.accent === "emerald" ? "bg-emerald-500/20 border-emerald-300/30" : "bg-blue-500/20 border-blue-300/30"
 
   return (
     <Link href={`/events/${event.slug}`} className="group block">
@@ -31,7 +35,7 @@ function EventCard({ event }: { event: (typeof events)[number] }) {
         className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${gradientFrom} p-8 md:p-12 transition-transform duration-500 hover:scale-[1.02]`}
       >
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent" />
-        <div className="absolute top-1/2 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 right-0 w-64 h-64 rounded-full blur-3xl" style={{ backgroundColor: event.accent === "blush" ? "rgba(216,168,160,0.15)" : "rgba(255,255,255,0.05)" }} />
 
         <div className="relative grid md:grid-cols-3 gap-8 items-center">
           <div className="md:col-span-2 space-y-5">
