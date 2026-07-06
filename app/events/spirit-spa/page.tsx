@@ -344,7 +344,7 @@ export default function SpiritSpaPage() {
       <Header />
 
       {/* Back link */}
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 pt-6 relative z-10">
+      {/* <div className="max-w-7xl mx-auto px-6 lg:px-8 pt-6 relative z-10">
         <Button
           variant="ghost"
           size="sm"
@@ -357,7 +357,7 @@ export default function SpiritSpaPage() {
             All Events
           </Link>
         </Button>
-      </div>
+      </div> */}
 
       {/* ── HERO ──────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden">
@@ -402,7 +402,7 @@ export default function SpiritSpaPage() {
 
         <FloatingPetals />
 
-        <div className="relative max-w-7xl mx-auto px-6 lg:px-8 py-16 md:py-28">
+        <div className="relative max-w-7xl mx-auto px-6 lg:px-8 py-12 md:py-24">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             {/* Left content */}
             <div className="space-y-8">
@@ -446,7 +446,7 @@ export default function SpiritSpaPage() {
 
               {/* YOU BELONG HERE */}
               <div
-                className="inline-block px-8 py-4 rounded-2xl"
+                className="w-full sm:w-auto text-center sm:text-left px-8 py-4 rounded-2xl"
                 style={{
                   background: "linear-gradient(135deg, rgba(216,168,160,0.15), rgba(201,166,107,0.1))",
                   border: "1px solid rgba(216,168,160,0.25)",
@@ -461,9 +461,9 @@ export default function SpiritSpaPage() {
               </div>
 
               {/* Date / Venue badges */}
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <div
-                  className="flex items-center gap-3 px-5 py-3 rounded-xl"
+                  className="flex items-center gap-3 px-5 py-3 rounded-xl w-full sm:w-auto"
                   style={{
                     backgroundColor: "rgba(255,255,255,0.6)",
                     border: "1px solid rgba(232,213,200,0.6)",
@@ -480,7 +480,7 @@ export default function SpiritSpaPage() {
                   </div>
                 </div>
                 <div
-                  className="flex items-center gap-3 px-5 py-3 rounded-xl"
+                  className="flex items-center gap-3 px-5 py-3 rounded-xl w-full sm:w-auto"
                   style={{
                     backgroundColor: "rgba(255,255,255,0.6)",
                     border: "1px solid rgba(232,213,200,0.6)",
@@ -604,20 +604,20 @@ export default function SpiritSpaPage() {
       </section>
 
       {/* ── EXPERIENCE GRID ───────────────────────────────────────────────── */}
-      <section className="max-w-7xl mx-auto px-6 lg:px-8 py-16">
+      <section className="max-w-7xl mx-auto px-6 lg:px-8 py-12 md:py-16">
         <div className="max-w-4xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
             {experienceItems.map((item) => (
               <div
                 key={item.label}
-                className="group flex items-center gap-3 px-5 py-4 rounded-xl transition-all duration-300"
+                className="flex items-center gap-3 px-4 md:px-5 py-4 rounded-xl transition-all duration-300 h-full"
                 style={{
                   backgroundColor: "rgba(255,255,255,0.55)",
                   border: "1px solid rgba(232,213,200,0.5)",
                 }}
               >
-                <span className="text-xl">{item.emoji}</span>
-                <span className="text-sm font-medium" style={{ color: "#3D2E24" }}>
+                <span className="text-lg md:text-xl shrink-0">{item.emoji}</span>
+                <span className="text-xs md:text-sm font-medium leading-snug" style={{ color: "#3D2E24" }}>
                   {item.label}
                 </span>
               </div>
@@ -627,18 +627,18 @@ export default function SpiritSpaPage() {
       </section>
 
       {/* ── QUOTE BLOCK ────────────────────────────────────────────────────── */}
-      <section className="max-w-7xl mx-auto px-6 lg:px-8 py-8">
+      <section className="max-w-7xl mx-auto px-6 lg:px-8 py-12 md:py-16">
         <div className="max-w-4xl mx-auto">
           <div
-            className="rounded-2xl p-10 md:p-14 text-center space-y-5"
+            className="rounded-2xl p-8 md:p-14 text-center space-y-5"
             style={{
               backgroundColor: "rgba(216,168,160,0.12)",
               border: "1px solid rgba(216,168,160,0.2)",
             }}
           >
-            <Quote className="w-10 h-10 mx-auto" style={{ color: "#D8A8A0", opacity: 0.5 }} />
+            <Quote className="w-8 h-8 md:w-10 md:h-10 mx-auto" style={{ color: "#D8A8A0", opacity: 0.5 }} />
             <p
-              className="text-xl md:text-2xl lg:text-3xl font-light italic leading-relaxed"
+              className="text-lg md:text-2xl lg:text-3xl font-light italic leading-relaxed"
               style={{ color: "#3D2E24" }}
             >
               &ldquo;Come away by yourselves to a quiet place and rest awhile.&rdquo;
@@ -651,35 +651,35 @@ export default function SpiritSpaPage() {
       </section>
 
       {/* ── THIS IS YOUR TIME TO… ─────────────────────────────────────────── */}
-      <section className="max-w-7xl mx-auto px-6 lg:px-8 py-16">
-        <div className="max-w-4xl mx-auto space-y-10">
+      <section className="max-w-7xl mx-auto px-6 lg:px-8 py-12 md:py-16">
+        <div className="max-w-4xl mx-auto space-y-8 md:space-y-10">
           <h2
-            className="text-3xl md:text-4xl font-bold text-center tracking-tight"
+            className="text-2xl md:text-4xl font-bold text-center tracking-tight"
             style={{ color: "#3D2E24" }}
           >
             THIS IS YOUR TIME TO&hellip;
           </h2>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
             {benefitItems.map(({ emoji, label, icon: Icon }) => (
               <div
                 key={label}
-                className="group text-center space-y-4 px-4 py-8 rounded-2xl transition-all duration-300 hover:-translate-y-1"
+                className="group text-center space-y-3 md:space-y-4 px-3 md:px-4 py-6 md:py-8 rounded-2xl transition-all duration-300 hover:-translate-y-1 h-full"
                 style={{
                   backgroundColor: "rgba(255,255,255,0.55)",
                   border: "1px solid rgba(232,213,200,0.5)",
                 }}
               >
                 <div
-                  className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto transition-transform duration-300 group-hover:scale-110"
+                  className="w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl flex items-center justify-center mx-auto transition-transform duration-300 group-hover:scale-110"
                   style={{
                     background: "linear-gradient(135deg, rgba(216,168,160,0.15), rgba(201,166,107,0.1))",
                     border: "1px solid rgba(216,168,160,0.2)",
                   }}
                 >
-                  <Icon className="w-7 h-7" style={{ color: "#D8A8A0" }} />
+                  <Icon className="w-5 h-5 md:w-7 md:h-7" style={{ color: "#D8A8A0" }} />
                 </div>
-                <p className="text-base font-medium" style={{ color: "#3D2E24" }}>
+                <p className="text-sm md:text-base font-medium" style={{ color: "#3D2E24" }}>
                   {emoji} {label}
                 </p>
               </div>
@@ -688,7 +688,7 @@ export default function SpiritSpaPage() {
 
           {/* Mood tagline */}
           <p
-            className="text-center text-sm tracking-[0.25em] uppercase font-light"
+            className="text-center text-xs md:text-sm tracking-[0.2em] md:tracking-[0.25em] uppercase font-light"
             style={{ color: "#C9A66B" }}
           >
             soft &bull; sacred &bull; powerful &bull; you
@@ -697,8 +697,8 @@ export default function SpiritSpaPage() {
       </section>
 
       {/* ── THREE COLUMNS ──────────────────────────────────────────────────── */}
-      <section className="max-w-7xl mx-auto px-6 lg:px-8 py-16">
-        <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-6">
+      <section className="max-w-7xl mx-auto px-6 lg:px-8 py-12 md:py-16">
+        <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-4 md:gap-6">
           {/* Column 1: THE VIBE */}
           <div
             className="rounded-2xl p-8 space-y-5"
@@ -780,17 +780,17 @@ export default function SpiritSpaPage() {
       </section>
 
       {/* ── CLOSING TAGLINE ────────────────────────────────────────────────── */}
-      <section className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
+      <section className="max-w-7xl mx-auto px-6 lg:px-8 py-12 md:py-16">
         <div className="text-center space-y-6">
           <div
-            className="inline-block px-10 py-5 rounded-2xl"
+            className="inline-block w-full sm:w-auto px-6 sm:px-10 py-5 rounded-2xl"
             style={{
               background: "linear-gradient(135deg, rgba(216,168,160,0.1), rgba(201,166,107,0.08))",
               border: "1px solid rgba(216,168,160,0.15)",
             }}
           >
             <p
-              className="text-lg md:text-xl font-light tracking-[0.15em]"
+              className="text-sm sm:text-lg md:text-xl font-light tracking-[0.1em] sm:tracking-[0.15em] leading-relaxed"
               style={{ color: "#3D2E24" }}
             >
               REST YOUR SOUL &bull; HEAR HIS VOICE &bull; WALK IN YOUR PURPOSE.
@@ -800,18 +800,18 @@ export default function SpiritSpaPage() {
       </section>
 
       {/* ── BOTTOM CTA ────────────────────────────────────────────────────── */}
-      <section className="max-w-7xl mx-auto px-6 lg:px-8 py-12 pb-24">
+      <section className="max-w-7xl mx-auto px-6 lg:px-8 py-12 md:py-16 pb-24">
         <div className="text-center space-y-6">
-          <h3 className="text-3xl md:text-4xl font-bold" style={{ color: "#3D2E24" }}>
+          <h3 className="text-2xl md:text-4xl font-bold" style={{ color: "#3D2E24" }}>
             Don&apos;t Miss This Moment
           </h3>
-          <p className="max-w-md mx-auto" style={{ color: "#5A4A3A" }}>
+          <p className="max-w-md mx-auto text-sm md:text-base" style={{ color: "#5A4A3A" }}>
             Entry is free. Secure your spot today and come ready to encounter God.
           </p>
           <div className="flex flex-col items-center gap-4">
             <Button
               onClick={() => setModalOpen(true)}
-              className="font-medium rounded-xl px-10 py-7 text-lg shadow-lg border-0"
+              className="font-medium rounded-xl px-8 md:px-10 py-6 md:py-7 text-base md:text-lg shadow-lg border-0 w-full sm:w-auto"
               size="lg"
               style={{
                 background: "linear-gradient(135deg, #D8A8A0, #C9A66B)",
