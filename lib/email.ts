@@ -319,6 +319,45 @@ export async function sendAdmissionRejectedEmail(to: string, userName: string) {
   return sendEmail({ to, subject, html })
 }
 
+export async function sendEventTicketEmail(to: string, attendeeName: string, eventDetails: {
+  title: string
+  date: string
+  venue: string
+  time: string
+}) {
+  const subject = `Your Ticket: ${eventDetails.title}`
+  const html = buildEmailTemplate({
+    eyebrow: "You're registered!",
+    title: eventDetails.title,
+    greeting: `Dear ${attendeeName},`,
+    intro: "Thank you for registering! Your ticket is confirmed below.",
+    panelHtml: `
+      <div style="margin: 24px 0; padding: 24px; background: linear-gradient(135deg, #f0fdf4, #ecfdf5); border: 2px dashed #10b981; border-radius: 16px; text-align: center;">
+        <div style="font-size: 40px; margin-bottom: 12px;">🎟️</div>
+        <h2 style="margin: 0 0 8px; font-size: 18px; color: #065f46;">${escapeHtml(eventDetails.title)}</h2>
+        <div style="margin: 16px 0; padding: 12px 0; border-top: 1px dashed #a7f3d0; border-bottom: 1px dashed #a7f3d0;">
+          <p style="margin: 4px 0; font-size: 14px; color: #047857;"><strong>📅 Date:</strong> ${escapeHtml(eventDetails.date)}</p>
+          <p style="margin: 4px 0; font-size: 14px; color: #047857;"><strong>⏰ Time:</strong> ${escapeHtml(eventDetails.time)}</p>
+          <p style="margin: 4px 0; font-size: 14px; color: #047857;"><strong>📍 Venue:</strong> ${escapeHtml(eventDetails.venue)}</p>
+        </div>
+        <p style="margin: 12px 0 0; font-size: 13px; color: #6b7280;">Present this ticket at the entrance</p>
+        <p style="margin: 4px 0 0; font-size: 12px; color: #9ca3af;">Ticket #: ${escapeHtml(to.split("")[0].toUpperCase())}${Math.random().toString(36).substring(2, 8).toUpperCase()}</p>
+      </div>
+    `,
+    body: [
+      "We look forward to having you at this powerful event!",
+      "Doors will open 30 minutes before the start time.",
+    ],
+    accentColor: "#059669",
+    accentSoft: "#a7f3d0",
+    ctaLabel: "Add to Calendar",
+    ctaUrl: `${getAppUrl()}/events/spirit-spa`,
+    closing: "The Soaking Room Team",
+  })
+
+  return sendEmail({ to, subject, html })
+}
+
 export async function sendBroadcastEmail(recipients: string[], payload: {
   title: string
   message: string

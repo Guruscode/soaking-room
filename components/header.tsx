@@ -10,12 +10,13 @@ import { useState } from "react"
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  const navItems = ["Home", "About", "Gallery", "TSR Academy", "Login", "Contact", "Booking"]
+  const navItems = ["Home", "About", "Gallery", "Events", "TSR Academy", "Login", "Contact", "Booking"]
 
   const getNavHref = (item: string) =>
     item === "Home" ? "/" :
     item === "About" ? "/about" :
     item === "Gallery" ? "/gallery" :
+    item === "Events" ? "/events" :
     item === "TSR Academy" ? "/tsr-academy" :
     item === "Login" ? "/tsr-academy/login" :
     item === "Donate" ? "/donate" :

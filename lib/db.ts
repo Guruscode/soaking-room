@@ -178,6 +178,15 @@ type DatabaseSettingsRow = {
   updated_at: string
 }
 
+type DatabaseEventRegistrationRow = {
+  id: string
+  name: string
+  email: string
+  phone: string
+  ticket_sent_at: string | null
+  created_at: string
+}
+
 let setupPromise: Promise<void> | null = null
 
 function mapUser(row: DatabaseUserRow): AcademyUser {
@@ -712,10 +721,59 @@ async function syncExistingBroadcastsForUser(userId: string) {
   }
 }
 
+async function getEventRegistrationByEmail(eventSlug: string, email: string) {
+  const result = await turso.execute({
+    sql: "SELECT * FROM event_registrations WHERE event_slug = ? AND email = ? LIMIT 1",
+    args: [eventSlug, email.toLowerCase()],
+  })
+  return result.rows[0] ? (result.rows[0] as unknown as DatabaseEventRegistrationRow) : null
+}
+
+export async function registerForEvent(payload: { eventSlug: string; name: string; email: string; phone: string }) {
+  await ensureDatabaseSetup()
+
+  const email = ensureRequiredValue(payload.email, "Email").toLowerCase()
+  const name = ensureRequiredValue(payload.name, "Name")
+  const phone = ensureRequiredValue(payload.phone, "Phone")
+
+  const existing = await getEventRegistrationByEmail(payload.eventSlug, email)
+  if (existing) {
+    throw new AppError("You have already registered for this event.", 409)
+  }
+
+  const id = randomUUID()
+  await turso.execute({
+    sql: "INSERT INTO event_registrations (id, event_slug, name, email, phone) VALUES (?, ?, ?, ?, ?)",
+    args: [id, payload.eventSlug, name, email, phone],
+  })
+
+  return { id, name, email, phone }
+}
+
+export async function markEventTicketSent(registrationId: string) {
+  await turso.execute({
+    sql: "UPDATE event_registrations SET ticket_sent_at = CURRENT_TIMESTAMP WHERE id = ?",
+    args: [registrationId],
+  })
+}
+
 export async function ensureDatabaseSetup() {
   if (!setupPromise) {
     setupPromise = (async () => {
       await turso.batch([
+        `
+          CREATE TABLE IF NOT EXISTS event_registrations (
+            id TEXT PRIMARY KEY,
+            event_slug TEXT NOT NULL,
+            name TEXT NOT NULL,
+            email TEXT NOT NULL,
+            phone TEXT NOT NULL,
+            ticket_sent_at TEXT,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+          )
+        `,
+        "CREATE INDEX IF NOT EXISTS idx_event_registrations_email ON event_registrations(email)",
+        "CREATE INDEX IF NOT EXISTS idx_event_registrations_event_slug ON event_registrations(event_slug)",
         `
           CREATE TABLE IF NOT EXISTS users (
             id TEXT PRIMARY KEY,

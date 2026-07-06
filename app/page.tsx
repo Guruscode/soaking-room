@@ -8,14 +8,17 @@ import { YoutubeMinistration } from "@/components/youtube-ministration"
 import { MusicLinks } from "@/components/music-links"
 import { BankDetails } from "@/components/bank-details"
 import { Footer } from "@/components/footer"
+import { SpiritSpaPromo } from "@/components/spirit-spa-promo"
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-background">
       <Header />
+   
       <Hero />
       <About />
        <MusicLinks />
+          <SpiritSpaPromo />
       <Gallery />
       <Testimonials />
       <YoutubeMinistration />
