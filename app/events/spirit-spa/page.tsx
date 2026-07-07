@@ -489,7 +489,7 @@ export default function SpiritSpaPage() {
                   <Clock className="w-5 h-5 shrink-0" style={{ color: "#D8A8A0" }} />
                   <div>
                     <p className="font-medium text-sm" style={{ color: "#3D2E24" }}>
-                      Gate opens: 9:00 AM
+                      Time: 5:00 PM
                     </p>
                     <p className="text-xs" style={{ color: "#5A4A3A" }}>
                       Be on time
