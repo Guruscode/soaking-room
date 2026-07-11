@@ -71,6 +71,8 @@ export function StudentExamClient({ initialData }: { initialData: ExamData }) {
           answerMap[item.questionId] = item.answer
         }
         setAnswers(answerMap)
+        // Update ref immediately so timer auto-submit on first tick has the data
+        answersRef.current = answerMap
       } catch {
         // Answers will be empty
       }
@@ -276,6 +278,14 @@ export function StudentExamClient({ initialData }: { initialData: ExamData }) {
     const startTime = new Date(data.answer.startedAt).getTime()
     const durationMs = data.config.durationMinutes * 60 * 1000
     const endTime = startTime + durationMs
+
+    // If time was already expired when page loaded, don't auto-submit
+    // (answers ref might not be initialized yet, would send empty answers)
+    const initialRemaining = Math.max(0, Math.floor((endTime - Date.now()) / 1000))
+    if (initialRemaining <= 0) {
+      setTimeLeft(0)
+      return
+    }
 
     const tick = () => {
       const now = Date.now()
