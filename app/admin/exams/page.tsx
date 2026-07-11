@@ -354,7 +354,7 @@ export default function AdminExamsPage() {
                   </div>
                 </div>
                 {submission.isSubmitted ? (
-                  <div className="mt-3">
+                  <div className="mt-3 flex flex-wrap gap-2">
                     <Button
                       type="button"
                       variant="outline"
@@ -363,6 +363,38 @@ export default function AdminExamsPage() {
                       onClick={() => openAnswerModal(submission)}
                     >
                       View Answers
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="rounded-lg border-amber-300 text-amber-700 hover:bg-amber-50"
+                      onClick={async () => {
+                        try {
+                          const res = await fetch("/api/admin/exams/reset-submission", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            credentials: "include",
+                            body: JSON.stringify({ answerId: submission.id }),
+                          })
+                          const json = (await res.json()) as { data?: { success: boolean }; error?: string }
+                          if (!res.ok) throw new Error(json.error || "Failed to reopen exam.")
+
+                          toast({
+                            title: "Exam reopened",
+                            description: `${submission.studentName} can now re-enter the exam.`,
+                          })
+                          await loadData()
+                        } catch (error) {
+                          toast({
+                            variant: "destructive",
+                            title: "Failed to reopen",
+                            description: getErrorMessage(error, "Could not reopen the exam."),
+                          })
+                        }
+                      }}
+                    >
+                      Reopen Exam
                     </Button>
                   </div>
                 ) : null}
