@@ -277,6 +277,18 @@ export type ExamConfigPayload = {
   instructions: string
 }
 
+export type ExamMessage = {
+  id: string
+  examId: string
+  userId: string
+  studentName: string
+  studentEmail: string
+  message: string
+  parentId: string | null
+  isFromAdmin: boolean
+  createdAt: string
+}
+
 export type SettingsPayload = {
   academyName: string
   supportEmail: string

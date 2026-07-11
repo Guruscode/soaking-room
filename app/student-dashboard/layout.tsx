@@ -12,6 +12,7 @@ const navItems = [
   { label: "Assignments", href: "/student-dashboard/assignments" },
   { label: "Exams", href: "/student-dashboard/exams" },
   { label: "Score Sheet", href: "/student-dashboard/score-sheet" },
+  { label: "Exam Messages", href: "/student-dashboard/exam-messages" },
 ]
 
 export default async function StudentDashboardLayout({ children }: { children: ReactNode }) {

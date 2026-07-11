@@ -12,6 +12,7 @@ const navItems = [
   { label: "Exams", href: "/admin/exams" },
   { label: "Exam Submissions", href: "/admin/exam-submissions" },
   { label: "Broadcasts", href: "/admin/broadcasts" },
+  { label: "Exam Messages", href: "/admin/exam-messages" },
   { label: "Settings", href: "/admin/settings"},
 
 ]

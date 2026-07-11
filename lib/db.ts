@@ -33,6 +33,7 @@ import type {
   ExamAnswerItem,
   ExamConfig,
   ExamConfigPayload,
+  ExamMessage,
   ExamQuestion,
   ExamStatus,
   ExamSubmitPayload,
@@ -217,6 +218,18 @@ type DatabaseExamQuestionRow = {
   marks: number
 }
 
+type DatabaseExamMessageRow = {
+  id: string
+  exam_id: string
+  user_id: string
+  student_name: string
+  student_email: string
+  message: string
+  parent_id: string | null
+  is_from_admin: number
+  created_at: string
+}
+
 type DatabaseExamAnswerRow = {
   id: string
   exam_id: string
@@ -371,6 +384,20 @@ function mapExamQuestion(row: DatabaseExamQuestionRow): ExamQuestion {
     questionNumber: row.question_number,
     questionText: row.question_text,
     marks: row.marks,
+  }
+}
+
+function mapExamMessage(row: DatabaseExamMessageRow): ExamMessage {
+  return {
+    id: row.id,
+    examId: row.exam_id,
+    userId: row.user_id,
+    studentName: row.student_name,
+    studentEmail: row.student_email,
+    message: row.message,
+    parentId: row.parent_id,
+    isFromAdmin: row.is_from_admin === 1,
+    createdAt: row.created_at,
   }
 }
 
@@ -1129,6 +1156,21 @@ export async function ensureDatabaseSetup() {
         `,
         "CREATE INDEX IF NOT EXISTS idx_exam_answers_user_id ON exam_answers(user_id)",
         "CREATE INDEX IF NOT EXISTS idx_exam_answers_exam_id ON exam_answers(exam_id)",
+        `
+          CREATE TABLE IF NOT EXISTS exam_messages (
+            id TEXT PRIMARY KEY,
+            exam_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            student_name TEXT NOT NULL,
+            student_email TEXT NOT NULL,
+            message TEXT NOT NULL,
+            parent_id TEXT,
+            is_from_admin INTEGER NOT NULL DEFAULT 0,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+          )
+        `,
+        "CREATE INDEX IF NOT EXISTS idx_exam_messages_exam_id ON exam_messages(exam_id)",
+        "CREATE INDEX IF NOT EXISTS idx_exam_messages_user_id ON exam_messages(user_id)",
       ])
 
       try {
@@ -1147,6 +1189,9 @@ export async function ensureDatabaseSetup() {
         "ALTER TABLE assignment_submissions ADD COLUMN reviewed_at TEXT",
         "ALTER TABLE assignment_submissions ADD COLUMN reviewed_by_name TEXT",
         "ALTER TABLE exam_answers ADD COLUMN results_notified INTEGER NOT NULL DEFAULT 0",
+        "ALTER TABLE exam_messages ADD COLUMN parent_id TEXT",
+        "ALTER TABLE exam_messages ADD COLUMN is_from_admin INTEGER NOT NULL DEFAULT 0",
+        "CREATE INDEX IF NOT EXISTS idx_exam_messages_parent_id ON exam_messages(parent_id)",
       ]) {
         try {
           await turso.execute(statement)
@@ -2605,6 +2650,99 @@ export async function pushExamResults() {
   }
 
   return { notifiedCount: answersToNotify.length }
+}
+
+export async function sendExamMessage(userId: string, payload: { message: string }) {
+  await ensureDatabaseSetup()
+
+  const [user, config] = await Promise.all([getAcademyUser(userId), getExamConfig()])
+
+  if (!user || user.role !== "student") {
+    throw new AppError("Student account not found.", 404)
+  }
+
+  const message = ensureRequiredValue(payload.message, "Message")
+
+  const id = randomUUID()
+  await turso.execute({
+    sql: "INSERT INTO exam_messages (id, exam_id, user_id, student_name, student_email, message, is_from_admin) VALUES (?, ?, ?, ?, ?, ?, 0)",
+    args: [id, config.id, userId, user.fullName, user.email, message],
+  })
+
+  const result = await turso.execute({
+    sql: "SELECT * FROM exam_messages WHERE id = ? LIMIT 1",
+    args: [id],
+  })
+
+  return result.rows[0] ? mapExamMessage(result.rows[0] as unknown as DatabaseExamMessageRow) : null
+}
+
+export async function adminReplyToExamMessage(adminName: string, payload: { parentId: string; message: string }) {
+  await ensureDatabaseSetup()
+
+  const config = await getExamConfig()
+  const message = ensureRequiredValue(payload.message, "Message")
+  const parentId = ensureRequiredValue(payload.parentId, "Parent message ID")
+
+  // Check that the parent message exists
+  const parent = await turso.execute({
+    sql: "SELECT * FROM exam_messages WHERE id = ? LIMIT 1",
+    args: [parentId],
+  })
+
+  if (!parent.rows[0]) {
+    throw new AppError("Parent message not found.", 404)
+  }
+
+  const parentRow = parent.rows[0] as unknown as DatabaseExamMessageRow
+
+  const id = randomUUID()
+  await turso.execute({
+    sql: `
+      INSERT INTO exam_messages (id, exam_id, user_id, student_name, student_email, message, parent_id, is_from_admin)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+    `,
+    args: [id, config.id, parentRow.user_id, parentRow.student_name, parentRow.student_email, message, parentId],
+  })
+
+  const result = await turso.execute({
+    sql: "SELECT * FROM exam_messages WHERE id = ? LIMIT 1",
+    args: [id],
+  })
+
+  return result.rows[0] ? mapExamMessage(result.rows[0] as unknown as DatabaseExamMessageRow) : null
+}
+
+export async function listExamMessagesForStudent(userId: string) {
+  await ensureDatabaseSetup()
+  const config = await getExamConfig()
+
+  const result = await turso.execute({
+    sql: `
+      SELECT em.* FROM exam_messages em
+      WHERE em.exam_id = ? AND em.user_id = ?
+      ORDER BY em.created_at ASC
+    `,
+    args: [config.id, userId],
+  })
+
+  return result.rows.map((row) => mapExamMessage(row as unknown as DatabaseExamMessageRow))
+}
+
+export async function listExamMessages() {
+  await ensureDatabaseSetup()
+  const config = await getExamConfig()
+
+  const result = await turso.execute({
+    sql: `
+      SELECT em.* FROM exam_messages em
+      WHERE em.exam_id = ?
+      ORDER BY em.created_at ASC
+    `,
+    args: [config.id],
+  })
+
+  return result.rows.map((row) => mapExamMessage(row as unknown as DatabaseExamMessageRow))
 }
 
 export async function reviewExamAnswer(answerId: string, score: number | null, reviewedBy: string) {
