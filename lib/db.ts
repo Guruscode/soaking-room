@@ -2487,6 +2487,33 @@ export async function startOrResumeExamForStudent(userId: string) {
       throw new AppError("You have already submitted this exam.", 403)
     }
 
+    // Check if the exam time has already expired based on current duration
+    if (existingAnswer.started_at) {
+      const startedAt = new Date(existingAnswer.started_at).getTime()
+      const elapsedMs = Date.now() - startedAt
+      const maxDurationMs = config.durationMinutes * 60 * 1000
+
+      if (elapsedMs >= maxDurationMs) {
+        // Time's up — server-side auto-submit
+        await turso.execute({
+          sql: `
+            UPDATE exam_answers
+            SET submitted_at = CURRENT_TIMESTAMP, is_submitted = 1, updated_at = CURRENT_TIMESTAMP
+            WHERE id = ? AND user_id = ?
+          `,
+          args: [existingAnswer.id, userId],
+        })
+
+        const submitted = await getExamAnswerByUser(config.id, userId)
+
+        if (submitted) {
+          return mapExamAnswer(submitted)
+        }
+
+        throw new AppError("Your exam time has expired.", 403)
+      }
+    }
+
     return mapExamAnswer(existingAnswer)
   }
 
