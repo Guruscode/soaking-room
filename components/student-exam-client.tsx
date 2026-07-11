@@ -15,13 +15,6 @@ type ExamData = {
   answer: ExamAnswerItem | null
 }
 
-function formatTime(seconds: number) {
-  const h = Math.floor(seconds / 3600)
-  const m = Math.floor((seconds % 3600) / 60)
-  const s = seconds % 60
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`
-}
-
 export function StudentExamClient({ initialData }: { initialData: ExamData }) {
   const { toast } = useToast()
   const [data, setData] = useState<ExamData>(initialData)
@@ -515,19 +508,10 @@ export function StudentExamClient({ initialData }: { initialData: ExamData }) {
     )
   }
 
-  const timeWarning = timeLeft !== null && timeLeft < 600 // less than 10 minutes
-  const lastMinuteWarning = timeLeft !== null && timeLeft <= 60 && timeLeft > 0 // less than 1 minute
-
   return (
     <div className="space-y-4">
-      {/* Timer bar */}
-      <div className={`sticky top-0 z-20 -mx-3 -mt-3 rounded-t-2xl border-b px-3 pb-3 pt-3 sm:-mx-6 sm:-mt-6 sm:px-6 sm:pt-6 ${
-        lastMinuteWarning
-          ? "bg-red-100 border-red-300 animate-pulse"
-          : timeWarning
-            ? "bg-red-50 border-red-200"
-            : "bg-white border-slate-200"
-      }`}>
+      {/* Exam header bar */}
+      <div className="sticky top-0 z-20 -mx-3 -mt-3 rounded-t-2xl border-b border-slate-200 bg-white px-3 pb-3 pt-3 sm:-mx-6 sm:-mt-6 sm:px-6 sm:pt-6">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-lg font-semibold text-slate-900">{data.config.title}</h2>
@@ -553,20 +537,8 @@ export function StudentExamClient({ initialData }: { initialData: ExamData }) {
             <div className="text-sm text-slate-600">
               <span className="font-medium">{answeredCount}</span>/{data.questions.length} answered
             </div>
-            <div className={`rounded-lg px-3 py-1.5 font-mono text-lg font-bold tracking-wider ${timeWarning ? "bg-red-100 text-red-800" : "bg-slate-100 text-slate-800"}`}>
-              {timeLeft !== null ? formatTime(timeLeft) : "--:--:--"}
-            </div>
           </div>
         </div>
-        {lastMinuteWarning ? (
-          <p className="mt-2 text-sm font-bold text-red-800">
-            🔴 Less than 1 minute remaining! Your exam will auto-submit when time expires.
-          </p>
-        ) : timeWarning ? (
-          <p className="mt-2 text-sm font-medium text-red-700">
-            ⚠️ Less than 10 minutes remaining! Make sure to submit before time runs out.
-          </p>
-        ) : null}
       </div>
 
       {/* Instructions */}
@@ -664,9 +636,7 @@ export function StudentExamClient({ initialData }: { initialData: ExamData }) {
                 <li>Course: {data.config.courseCode} &middot; {data.config.cohort}</li>
                 <li>Total Questions: {data.questions.length}</li>
                 <li>Total Marks: {data.config.totalMarks}</li>
-                {timeLeft !== null ? (
-                  <li>Time Remaining: {formatTime(timeLeft)}</li>
-                ) : null}
+
               </ul>
             </div>
 
