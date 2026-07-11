@@ -39,6 +39,25 @@ export function StudentExamClient({ initialData }: { initialData: ExamData }) {
   const isSubmittingRef = useRef(false)
   const examEndedByAdminRef = useRef(false)
   const savesInFlightRef = useRef(0)
+  const oneMinuteAlertedRef = useRef(false)
+
+  const playBeep = () => {
+    try {
+      const ctx = new AudioContext()
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.type = "sine"
+      osc.frequency.value = 880
+      gain.gain.value = 0.3
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8)
+      osc.start()
+      osc.stop(ctx.currentTime + 0.8)
+    } catch {
+      // Audio not available — silently skip
+    }
+  }
 
   // Keep refs in sync
   useEffect(() => { answersRef.current = answers }, [answers])
@@ -270,6 +289,17 @@ export function StudentExamClient({ initialData }: { initialData: ExamData }) {
       const remaining = Math.max(0, Math.floor((endTime - now) / 1000))
       setTimeLeft(remaining)
 
+      // 1 minute or less remaining → play beep and show alert (fires once)
+      // Uses <= 60 instead of === 60 to handle timer throttling when tab is backgrounded
+      if (remaining <= 60 && remaining > 0 && !oneMinuteAlertedRef.current) {
+        oneMinuteAlertedRef.current = true
+        playBeep()
+        toast({
+          title: "⏰ 1 minute remaining!",
+          description: "Your exam will be automatically submitted when time runs out. Save any last changes now.",
+        })
+      }
+
       if (remaining <= 0) {
         if (timerRef.current) clearInterval(timerRef.current)
         // Auto-submit when time runs out — use refs for fresh data
@@ -324,6 +354,9 @@ export function StudentExamClient({ initialData }: { initialData: ExamData }) {
         })()
       }
     }
+
+    // Reset the 1-minute alert flag on mount (in case effect re-runs)
+    oneMinuteAlertedRef.current = false
 
     tick()
     timerRef.current = setInterval(tick, 1000)
@@ -483,11 +516,18 @@ export function StudentExamClient({ initialData }: { initialData: ExamData }) {
   }
 
   const timeWarning = timeLeft !== null && timeLeft < 600 // less than 10 minutes
+  const lastMinuteWarning = timeLeft !== null && timeLeft <= 60 && timeLeft > 0 // less than 1 minute
 
   return (
     <div className="space-y-4">
       {/* Timer bar */}
-      <div className={`sticky top-0 z-20 -mx-3 -mt-3 rounded-t-2xl border-b px-3 pb-3 pt-3 sm:-mx-6 sm:-mt-6 sm:px-6 sm:pt-6 ${timeWarning ? "bg-red-50 border-red-200" : "bg-white border-slate-200"}`}>
+      <div className={`sticky top-0 z-20 -mx-3 -mt-3 rounded-t-2xl border-b px-3 pb-3 pt-3 sm:-mx-6 sm:-mt-6 sm:px-6 sm:pt-6 ${
+        lastMinuteWarning
+          ? "bg-red-100 border-red-300 animate-pulse"
+          : timeWarning
+            ? "bg-red-50 border-red-200"
+            : "bg-white border-slate-200"
+      }`}>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-lg font-semibold text-slate-900">{data.config.title}</h2>
@@ -518,7 +558,11 @@ export function StudentExamClient({ initialData }: { initialData: ExamData }) {
             </div>
           </div>
         </div>
-        {timeWarning ? (
+        {lastMinuteWarning ? (
+          <p className="mt-2 text-sm font-bold text-red-800">
+            🔴 Less than 1 minute remaining! Your exam will auto-submit when time expires.
+          </p>
+        ) : timeWarning ? (
           <p className="mt-2 text-sm font-medium text-red-700">
             ⚠️ Less than 10 minutes remaining! Make sure to submit before time runs out.
           </p>
