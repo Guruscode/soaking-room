@@ -30,12 +30,15 @@ export function StudentExamClient({ initialData }: { initialData: ExamData }) {
   const [showSubmitDialog, setShowSubmitDialog] = useState(false)
   const [timeLeft, setTimeLeft] = useState<number | null>(null)
   const [examEndedByAdmin, setExamEndedByAdmin] = useState(false)
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const answersRef = useRef(answers)
   const dataRef = useRef(data)
   const isSubmittingRef = useRef(false)
   const examEndedByAdminRef = useRef(false)
+  const savesInFlightRef = useRef(0)
 
   // Keep refs in sync
   useEffect(() => { answersRef.current = answers }, [answers])
@@ -67,6 +70,9 @@ export function StudentExamClient({ initialData }: { initialData: ExamData }) {
     const current = dataRef.current
     if (!current.answer || current.answer.isSubmitted) return false
 
+    savesInFlightRef.current++
+    setIsSaving(true)
+
     try {
       const answerArray = Object.entries(answerData).map(([questionId, answer]) => ({
         questionId,
@@ -83,9 +89,16 @@ export function StudentExamClient({ initialData }: { initialData: ExamData }) {
         }),
       })
 
+      if (res.ok) {
+        setLastSavedAt(new Date())
+      }
+
       return res.ok
     } catch {
       return false
+    } finally {
+      savesInFlightRef.current--
+      setIsSaving(savesInFlightRef.current > 0)
     }
   }, [])
 
@@ -119,32 +132,92 @@ export function StudentExamClient({ initialData }: { initialData: ExamData }) {
     return () => clearInterval(interval)
   }, [examActive, saveAnswers])
 
-  // beforeunload handler — save draft when tab/ browser is closed
+  // Helper to build the save-draft blob (used by all save-on-exit mechanisms)
+  const buildSaveBlob = useCallback(() => {
+    const currentData = dataRef.current
+    const currentAnswers = answersRef.current
+    if (!currentData.answer || currentData.answer.isSubmitted) return null
+
+    const answerArray = Object.entries(currentAnswers).map(([questionId, answer]) => ({
+      questionId,
+      answer,
+    }))
+
+    return new Blob(
+      [JSON.stringify({ examAnswerId: currentData.answer.id, answers: answerArray })],
+      { type: "application/json" },
+    )
+  }, [])
+
+  // beforeunload handler — save draft when tab/browser is closed
   useEffect(() => {
     if (!examActive) return
 
-    const handleBeforeUnload = () => {
-      // Use sendBeacon for reliable fire-and-forget
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      const blob = buildSaveBlob()
+      if (!blob) return
+
+      navigator.sendBeacon("/api/student/exams/save-draft", blob)
+
+      // Set returnValue to ensure the browser shows the confirmation dialog
+      // and gives the beacon time to complete
+      e.preventDefault()
+      e.returnValue = ""
+    }
+
+    window.addEventListener("beforeunload", handleBeforeUnload)
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload)
+  }, [examActive, buildSaveBlob])
+
+  // visibilitychange handler — save when tab becomes hidden (covers closing, tab switch, phone call, etc.)
+  useEffect(() => {
+    if (!examActive) return
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState !== "hidden") return
+
       const currentData = dataRef.current
       const currentAnswers = answersRef.current
-      if (!currentData.answer || currentData.answer.isSubmitted) return
+      const answerRecord = currentData.answer
+      if (!answerRecord || answerRecord.isSubmitted) return
 
+      // Use fetch instead of sendBeacon here because we have time during visibility change
       const answerArray = Object.entries(currentAnswers).map(([questionId, answer]) => ({
         questionId,
         answer,
       }))
 
-      const blob = new Blob(
-        [JSON.stringify({ examAnswerId: currentData.answer.id, answers: answerArray })],
-        { type: "application/json" },
-      )
+      const payload = JSON.stringify({
+        examAnswerId: answerRecord.id,
+        answers: answerArray,
+      })
 
-      navigator.sendBeacon("/api/student/exams/save-draft", blob)
+      fetch("/api/student/exams/save-draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        keepalive: true,
+        body: payload,
+      }).catch(() => {
+        // Fallback to sendBeacon if fetch fails
+        const blob = new Blob([payload], { type: "application/json" })
+        navigator.sendBeacon("/api/student/exams/save-draft", blob)
+      })
     }
 
-    window.addEventListener("beforeunload", handleBeforeUnload)
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload)
+    document.addEventListener("visibilitychange", handleVisibilityChange)
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange)
   }, [examActive])
+
+  // Save on component unmount — catches SPA navigation (page changes within the app)
+  useEffect(() => {
+    return () => {
+      const blob = buildSaveBlob()
+      if (blob) {
+        navigator.sendBeacon("/api/student/exams/save-draft", blob)
+      }
+    }
+  }, [buildSaveBlob])
 
   // Poll for exam status changes (admin stops/starts exam)
   useEffect(() => {
@@ -421,6 +494,22 @@ export function StudentExamClient({ initialData }: { initialData: ExamData }) {
             <p className="text-xs text-slate-500">{data.config.description} &middot; {data.config.courseCode}</p>
           </div>
           <div className="flex items-center gap-4">
+            <div className="hidden text-right text-xs sm:block">
+              {isSaving ? (
+                <span className="flex items-center gap-1 text-amber-600">
+                  <span className="inline-block size-1.5 animate-pulse rounded-full bg-amber-500" />
+                  Saving...
+                </span>
+              ) : lastSavedAt ? (
+                <span className="text-slate-400">
+                  Saved{" "}
+                  {lastSavedAt.toLocaleTimeString("en-NG", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+              ) : null}
+            </div>
             <div className="text-sm text-slate-600">
               <span className="font-medium">{answeredCount}</span>/{data.questions.length} answered
             </div>
