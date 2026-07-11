@@ -10,6 +10,7 @@ const navItems = [
   { label: "Timetable", href: "/student-dashboard/timetable" },
   { label: "Next Class", href: "/student-dashboard/next-class" },
   { label: "Assignments", href: "/student-dashboard/assignments" },
+  { label: "Exams", href: "/student-dashboard/exams" },
   { label: "Score Sheet", href: "/student-dashboard/score-sheet" },
 ]
 

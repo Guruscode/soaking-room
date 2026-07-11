@@ -8,6 +8,8 @@ import {
   sendAdmissionApprovedEmail,
   sendAdmissionRejectedEmail,
   sendBroadcastEmail,
+  sendExamScoreReleasedEmail,
+  sendExamStartedEmail,
   sendPasswordResetOtpEmail,
   sendRegistrationOtpEmail,
   sendRegistrationSubmittedEmail,
@@ -28,6 +30,12 @@ import type {
   BroadcastPayload,
   CurriculumItem,
   CurriculumPayload,
+  ExamAnswerItem,
+  ExamConfig,
+  ExamConfigPayload,
+  ExamQuestion,
+  ExamStatus,
+  ExamSubmitPayload,
   LoginPayload,
   NotificationItem,
   PasswordResetOtpRequestPayload,
@@ -187,6 +195,46 @@ type DatabaseEventRegistrationRow = {
   created_at: string
 }
 
+type DatabaseExamConfigRow = {
+  id: string
+  status: ExamStatus
+  duration_minutes: number
+  title: string
+  description: string
+  course_code: string
+  cohort: string
+  total_marks: number
+  instructions: string
+  created_at: string
+  updated_at: string
+}
+
+type DatabaseExamQuestionRow = {
+  id: string
+  section_title: string
+  question_number: number
+  question_text: string
+  marks: number
+}
+
+type DatabaseExamAnswerRow = {
+  id: string
+  exam_id: string
+  user_id: string
+  student_name: string
+  student_email: string
+  answers: string
+  started_at: string | null
+  submitted_at: string | null
+  is_submitted: number
+  score: number | null
+  reviewed_at: string | null
+  reviewed_by: string | null
+  results_notified: number
+  created_at: string
+  updated_at: string
+}
+
 let setupPromise: Promise<void> | null = null
 
 function mapUser(row: DatabaseUserRow): AcademyUser {
@@ -295,6 +343,52 @@ function mapAssignmentSubmission(row: DatabaseAssignmentSubmissionRow): Assignme
     adminComment: row.admin_comment,
     reviewedAt: row.reviewed_at,
     reviewedByName: row.reviewed_by_name,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
+}
+
+function mapExamConfig(row: DatabaseExamConfigRow): ExamConfig {
+  return {
+    id: row.id,
+    status: row.status,
+    durationMinutes: row.duration_minutes,
+    title: row.title,
+    description: row.description,
+    courseCode: row.course_code,
+    cohort: row.cohort,
+    totalMarks: row.total_marks,
+    instructions: row.instructions,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
+}
+
+function mapExamQuestion(row: DatabaseExamQuestionRow): ExamQuestion {
+  return {
+    id: row.id,
+    sectionTitle: row.section_title,
+    questionNumber: row.question_number,
+    questionText: row.question_text,
+    marks: row.marks,
+  }
+}
+
+function mapExamAnswer(row: DatabaseExamAnswerRow): ExamAnswerItem {
+  return {
+    id: row.id,
+    examId: row.exam_id,
+    userId: row.user_id,
+    studentName: row.student_name,
+    studentEmail: row.student_email,
+    answers: row.answers,
+    startedAt: row.started_at,
+    submittedAt: row.submitted_at,
+    isSubmitted: row.is_submitted === 1,
+    score: row.score,
+    reviewedAt: row.reviewed_at,
+    reviewedBy: row.reviewed_by,
+    resultsNotified: row.results_notified === 1,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }
@@ -599,6 +693,64 @@ async function seedCurriculum() {
     await turso.execute({
       sql: "INSERT INTO curriculum_items (id, title, category, week, content) VALUES (?, ?, ?, ?, ?)",
       args: [randomUUID(), item[0], item[1], item[2], item[3]],
+    })
+  }
+}
+
+async function seedExamConfig() {
+  const result = await turso.execute("SELECT COUNT(*) AS total FROM exam_config")
+  const total = Number((result.rows[0] as { total?: number | string }).total ?? 0)
+
+  if (total > 0) {
+    return
+  }
+
+  await turso.execute({
+    sql: `
+      INSERT INTO exam_config (
+        id, status, duration_minutes, title, description, course_code, cohort, total_marks, instructions
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `,
+    args: [
+      randomUUID(),
+      "inactive",
+      180,
+      "Final Examination",
+      "Levitical and Davidic Worship",
+      "LW-101",
+      "Cohort 1",
+      165,
+      `This examination is designed to assess your comprehension of the historical foundations, theological frameworks, and practical applications of Levitical and Davidic worship. Answer all questions with thoroughness and precision. Where scriptural references are requested, please provide the specific verse, the context of the passage, and a detailed explanation of its theological significance to your answer. This exam evaluates your ability to synthesize biblical truth with the responsibilities of modern worship leadership.`,
+    ],
+  })
+}
+
+async function seedExamQuestions() {
+  const result = await turso.execute("SELECT COUNT(*) AS total FROM exam_questions")
+  const total = Number((result.rows[0] as { total?: number | string }).total ?? 0)
+
+  if (total > 0) {
+    return
+  }
+
+  const questions: [string, number, string, number][] = [
+    ["Section I — The Theology of Priesthood and Worship", 1, 'The Nature of Service (leitourgeo): The Greek term leitourgeo (Acts 13:2; Hebrews 10:11) describes a specific, solemn priestly function. Explain the linguistic and functional differences between this term and the common understanding of "serving" (diakonos). In what specific ways does this shift your perspective on what is truly occurring during the musical and liturgical portions of a modern church service?', 15],
+    ["Section I — The Theology of Priesthood and Worship", 2, 'Royal Priesthood Purpose: Utilizing 1 Peter 2:9, Isaiah 60:21, and 61:3, provide a comprehensive outline of the purpose and mandate of the Royal Priesthood. How do these scriptures fundamentally redefine the "job description" of a modern believer, moving the focus away from mere corporate attendance toward a lifestyle of constant priestly ministry?', 15],
+    ["Section I — The Theology of Priesthood and Worship", 3, 'Praise versus Worship: Synthesize the relationship between praise and worship based on your research into the titles in 1 Peter 2:9 and the foundational intentions of God described in Exodus 19:6. Define the boundaries of each: where does praise conclude, and where does the threshold of true worship begin?', 15],
+    ["Section I — The Theology of Priesthood and Worship", 4, 'The Dwelling Place: Since the presence of God is no longer contained within a physical tent or temple structure (John 14:23), argue for the continued necessity of studying the Tabernacle of Moses and the protocols established by King David. Why is this historical study essential for maintaining the "proper order" of worship in a New Covenant environment?', 15],
+    ["Section II — The Levitical Order and Davidic Patterns", 5, 'The Genealogy of Worship: Discuss the profound significance of the three main worship leaders appointed by David: Heman, Asaph, and Jeduthun. Explain why David placed such heavy emphasis on genealogy, appointment, and accountability. What does the "three-fold relationship" between their ministry and the gift of prophecy teach us about the structure of a worship ministry team?', 15],
+    ["Section II — The Levitical Order and Davidic Patterns", 6, 'The Tabernacle of David: Analyze the prophetic weight behind the restoration of the "Tabernacle of David" as a key indicator of the End Times (Amos 9:11-12; Acts 15:16-18). What are the implications of this restoration for the "final harvest" of souls, and how should this understanding influence the way we facilitate worship in our local churches?', 15],
+    ["Section II — The Levitical Order and Davidic Patterns", 7, 'Musical Stewardship: Defend the necessity of musical excellence and technical skill in the house of the Lord. Using 1 Chronicles 15:22 and 25:6-8 as your primary sources, explain why anointing is not a substitute for — nor does it negate the requirement for — technical proficiency, diligent practice, and musical stewardship.', 15],
+    ["Section II — The Levitical Order and Davidic Patterns", 8, 'The Instrument of the Prophet: Describe the role of various instrument families (wind, string, and percussion) as they relate to the biblical concept of worship. How does the "Morning Star" narrative found in Ezekiel 28 and Isaiah 14 inform your theology regarding the inherent power, purpose, and spiritual danger associated with music?', 15],
+    ["Section III — Practical Leadership and Case Studies", 9, 'Scenario A (Service Structure): You are tasked with leading the dedication service for a new ministry facility. Drawing from the dedication patterns established by Solomon (2 Chronicles 5-7) and Nehemiah (Nehemiah 12:27-43), design a comprehensive three-part program. Define your intended order of service, explain the specific worship forms you will utilize, and detail the primary theological focus of the songs chosen for this occasion.', 15],
+    ["Section III — Practical Leadership and Case Studies", 10, "The Worshipper's Heart: Explain the practical outworking of the \"living sacrifice\" mandate (Romans 12:1) in the life of a worship leader. How do you maintain the integrity of a personal, private life of worship when the technical and public demands of a high-performance music ministry begin to take precedence?", 15],
+    ["Section III — Practical Leadership and Case Studies", 11, 'Reflective Application: Based on the "Ancient Landmarks" established by David, how would you counsel a team member who insists that their personal artistic preference should dictate the worship set, rather than the established order of the house? How do you balance the need for artistic expression with the biblical command to maintain a worship service that is "decent and in order"?', 15],
+  ]
+
+  for (const [sectionTitle, questionNumber, questionText, marks] of questions) {
+    await turso.execute({
+      sql: "INSERT INTO exam_questions (id, section_title, question_number, question_text, marks) VALUES (?, ?, ?, ?, ?)",
+      args: [randomUUID(), sectionTitle, questionNumber, questionText, marks],
     })
   }
 }
@@ -931,6 +1083,52 @@ export async function ensureDatabaseSetup() {
           )
         `,
         "CREATE INDEX IF NOT EXISTS idx_pending_password_resets_email ON pending_password_resets(email)",
+        `
+          CREATE TABLE IF NOT EXISTS exam_config (
+            id TEXT PRIMARY KEY,
+            status TEXT NOT NULL DEFAULT 'inactive',
+            duration_minutes INTEGER NOT NULL DEFAULT 180,
+            title TEXT NOT NULL,
+            description TEXT NOT NULL,
+            course_code TEXT NOT NULL,
+            cohort TEXT NOT NULL,
+            total_marks INTEGER NOT NULL,
+            instructions TEXT NOT NULL,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+          )
+        `,
+        `
+          CREATE TABLE IF NOT EXISTS exam_questions (
+            id TEXT PRIMARY KEY,
+            section_title TEXT NOT NULL,
+            question_number INTEGER NOT NULL,
+            question_text TEXT NOT NULL,
+            marks INTEGER NOT NULL DEFAULT 15,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+          )
+        `,
+        "CREATE INDEX IF NOT EXISTS idx_exam_questions_number ON exam_questions(question_number)",
+        `
+          CREATE TABLE IF NOT EXISTS exam_answers (
+            id TEXT PRIMARY KEY,
+            exam_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            student_name TEXT NOT NULL,
+            student_email TEXT NOT NULL,
+            answers TEXT NOT NULL DEFAULT '[]',
+            started_at TEXT,
+            submitted_at TEXT,
+            is_submitted INTEGER NOT NULL DEFAULT 0,
+            score REAL,
+            reviewed_at TEXT,
+            reviewed_by TEXT,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+          )
+        `,
+        "CREATE INDEX IF NOT EXISTS idx_exam_answers_user_id ON exam_answers(user_id)",
+        "CREATE INDEX IF NOT EXISTS idx_exam_answers_exam_id ON exam_answers(exam_id)",
       ])
 
       try {
@@ -948,6 +1146,7 @@ export async function ensureDatabaseSetup() {
         "ALTER TABLE assignment_submissions ADD COLUMN admin_comment TEXT",
         "ALTER TABLE assignment_submissions ADD COLUMN reviewed_at TEXT",
         "ALTER TABLE assignment_submissions ADD COLUMN reviewed_by_name TEXT",
+        "ALTER TABLE exam_answers ADD COLUMN results_notified INTEGER NOT NULL DEFAULT 0",
       ]) {
         try {
           await turso.execute(statement)
@@ -964,6 +1163,8 @@ export async function ensureDatabaseSetup() {
       await seedSettings()
       await seedCurriculum()
       await seedTeachersGuides()
+      await seedExamConfig()
+      await seedExamQuestions()
     })()
   }
 
@@ -2100,6 +2301,339 @@ export async function getStudentDashboardData(userId: string) {
     classSchedule,
     nextClass,
   }
+}
+
+export async function getExamConfig() {
+  await ensureDatabaseSetup()
+  const result = await turso.execute("SELECT * FROM exam_config LIMIT 1")
+  const row = result.rows[0]
+
+  if (!row) {
+    throw new AppError("Exam configuration not found.", 404)
+  }
+
+  return mapExamConfig(row as unknown as DatabaseExamConfigRow)
+}
+
+export async function updateExamConfig(payload: { status?: ExamStatus } & Partial<ExamConfigPayload>) {
+  await ensureDatabaseSetup()
+  const config = await getExamConfig()
+
+  const updates: string[] = []
+  const args: (string | number)[] = []
+
+  if (payload.status !== undefined) {
+    if (payload.status !== "active" && payload.status !== "inactive") {
+      throw new AppError("Invalid exam status.")
+    }
+    updates.push("status = ?")
+    args.push(payload.status)
+  }
+
+  if (payload.title !== undefined) {
+    updates.push("title = ?")
+    args.push(ensureRequiredValue(payload.title, "Title"))
+  }
+  if (payload.description !== undefined) {
+    updates.push("description = ?")
+    args.push(ensureRequiredValue(payload.description, "Description"))
+  }
+  if (payload.courseCode !== undefined) {
+    updates.push("course_code = ?")
+    args.push(ensureRequiredValue(payload.courseCode, "Course code"))
+  }
+  if (payload.cohort !== undefined) {
+    updates.push("cohort = ?")
+    args.push(ensureRequiredValue(payload.cohort, "Cohort"))
+  }
+  if (payload.totalMarks !== undefined) {
+    const marks = Number(payload.totalMarks)
+    if (Number.isNaN(marks) || marks < 1) {
+      throw new AppError("Total marks must be at least 1.")
+    }
+    updates.push("total_marks = ?")
+    args.push(marks)
+  }
+  if (payload.durationMinutes !== undefined) {
+    const duration = Number(payload.durationMinutes)
+    if (Number.isNaN(duration) || duration < 1) {
+      throw new AppError("Duration must be at least 1 minute.")
+    }
+    updates.push("duration_minutes = ?")
+    args.push(duration)
+  }
+  if (payload.instructions !== undefined) {
+    updates.push("instructions = ?")
+    args.push(ensureRequiredValue(payload.instructions, "Instructions"))
+  }
+
+  if (updates.length === 0) {
+    return config
+  }
+
+  const prevStatus = config.status
+
+  updates.push("updated_at = CURRENT_TIMESTAMP")
+  args.push(config.id)
+
+  await turso.execute({
+    sql: `UPDATE exam_config SET ${updates.join(", ")} WHERE id = ?`,
+    args,
+  })
+
+  const updatedConfig = await getExamConfig()
+
+  // Send exam started email to all approved students when status changes to active
+  if (payload.status === "active" && prevStatus !== "active") {
+    const students = await turso.execute({
+      sql: "SELECT full_name, email FROM users WHERE role = 'student' AND admission_status = 'approved'",
+    })
+
+    for (const student of students.rows) {
+      const row = student as unknown as { full_name: string; email: string }
+      void sendEmailSafely("exam started", () =>
+        sendExamStartedEmail(row.email, row.full_name, {
+          title: updatedConfig.title,
+          description: updatedConfig.description,
+          courseCode: updatedConfig.courseCode,
+          cohort: updatedConfig.cohort,
+          durationMinutes: updatedConfig.durationMinutes,
+          totalMarks: updatedConfig.totalMarks,
+        }),
+      )
+    }
+  }
+
+  return updatedConfig
+}
+
+export async function getExamQuestions() {
+  await ensureDatabaseSetup()
+  const result = await turso.execute("SELECT * FROM exam_questions ORDER BY question_number ASC")
+  return result.rows.map((row) => mapExamQuestion(row as unknown as DatabaseExamQuestionRow))
+}
+
+async function getExamAnswerByUser(examId: string, userId: string) {
+  const result = await turso.execute({
+    sql: "SELECT * FROM exam_answers WHERE exam_id = ? AND user_id = ? LIMIT 1",
+    args: [examId, userId],
+  })
+
+  return result.rows[0] ? (result.rows[0] as unknown as DatabaseExamAnswerRow) : null
+}
+
+export async function startOrResumeExamForStudent(userId: string) {
+  await ensureDatabaseSetup()
+
+  const [user, config] = await Promise.all([getAcademyUser(userId), getExamConfig()])
+
+  if (!user || user.role !== "student") {
+    throw new AppError("Student account not found.", 404)
+  }
+
+  if (config.status !== "active") {
+    throw new AppError("The exam is not currently available.", 403)
+  }
+
+  const existingAnswer = await getExamAnswerByUser(config.id, userId)
+
+  if (existingAnswer) {
+    if (existingAnswer.is_submitted) {
+      throw new AppError("You have already submitted this exam.", 403)
+    }
+
+    return mapExamAnswer(existingAnswer)
+  }
+
+  const id = randomUUID()
+  await turso.execute({
+    sql: `
+      INSERT INTO exam_answers (id, exam_id, user_id, student_name, student_email, answers, started_at, is_submitted)
+      VALUES (?, ?, ?, ?, ?, '[]', CURRENT_TIMESTAMP, 0)
+    `,
+    args: [id, config.id, userId, user.fullName, user.email],
+  })
+
+  const created = await getExamAnswerByUser(config.id, userId)
+
+  if (!created) {
+    throw new AppError("Could not start the exam.", 500)
+  }
+
+  return mapExamAnswer(created)
+}
+
+export async function saveExamAnswersDraft(userId: string, payload: ExamSubmitPayload) {
+  await ensureDatabaseSetup()
+
+  const user = await getAcademyUser(userId)
+
+  if (!user || user.role !== "student") {
+    throw new AppError("Student account not found.", 404)
+  }
+
+  const result = await turso.execute({
+    sql: "SELECT * FROM exam_answers WHERE id = ? AND user_id = ? AND is_submitted = 0 LIMIT 1",
+    args: [payload.examAnswerId, userId],
+  })
+
+  const answer = result.rows[0] as unknown as DatabaseExamAnswerRow | undefined
+
+  if (!answer) {
+    throw new AppError("Exam answer record not found or already submitted.", 404)
+  }
+
+  const answersJson = JSON.stringify(payload.answers)
+
+  await turso.execute({
+    sql: `
+      UPDATE exam_answers
+      SET answers = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ? AND user_id = ? AND is_submitted = 0
+    `,
+    args: [answersJson, payload.examAnswerId, userId],
+  })
+
+  const updated = await turso.execute({
+    sql: "SELECT * FROM exam_answers WHERE id = ?",
+    args: [payload.examAnswerId],
+  })
+
+  return updated.rows[0] ? mapExamAnswer(updated.rows[0] as unknown as DatabaseExamAnswerRow) : null
+}
+
+export async function submitExamAnswers(userId: string, payload: ExamSubmitPayload) {
+  await ensureDatabaseSetup()
+
+  const [user, answer] = await Promise.all([
+    getAcademyUser(userId),
+    (async () => {
+      const result = await turso.execute({
+        sql: "SELECT * FROM exam_answers WHERE id = ? AND user_id = ? LIMIT 1",
+        args: [payload.examAnswerId, userId],
+      })
+      return result.rows[0] ? (result.rows[0] as unknown as DatabaseExamAnswerRow) : null
+    })(),
+  ])
+
+  if (!user || user.role !== "student") {
+    throw new AppError("Student account not found.", 404)
+  }
+
+  if (!answer) {
+    throw new AppError("Exam answer record not found.", 404)
+  }
+
+  if (answer.is_submitted) {
+    throw new AppError("You have already submitted this exam.", 403)
+  }
+
+  const config = await getExamConfig()
+
+  const answersJson = JSON.stringify(payload.answers)
+
+  await turso.execute({
+    sql: `
+      UPDATE exam_answers
+      SET answers = ?, submitted_at = CURRENT_TIMESTAMP, is_submitted = 1, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ? AND user_id = ?
+    `,
+    args: [answersJson, payload.examAnswerId, userId],
+  })
+
+  const updated = await getExamAnswerByUser(config.id, userId)
+
+  if (!updated) {
+    throw new AppError("Could not submit your exam.", 500)
+  }
+
+  return mapExamAnswer(updated)
+}
+
+export async function listExamSubmissions() {
+  await ensureDatabaseSetup()
+  const config = await getExamConfig()
+
+  const result = await turso.execute({
+    sql: "SELECT * FROM exam_answers WHERE exam_id = ? ORDER BY is_submitted ASC, updated_at DESC",
+    args: [config.id],
+  })
+
+  return result.rows.map((row) => mapExamAnswer(row as unknown as DatabaseExamAnswerRow))
+}
+
+export async function pushExamResults() {
+  await ensureDatabaseSetup()
+  const config = await getExamConfig()
+
+  // Find all scored answers that haven't been notified yet
+  const result = await turso.execute({
+    sql: "SELECT * FROM exam_answers WHERE exam_id = ? AND score IS NOT NULL AND results_notified = 0",
+    args: [config.id],
+  })
+
+  const answersToNotify = result.rows.map((row) => mapExamAnswer(row as unknown as DatabaseExamAnswerRow))
+
+  if (answersToNotify.length === 0) {
+    return { notifiedCount: 0 }
+  }
+
+  for (const answer of answersToNotify) {
+    // Try sending the email first — only mark as notified if it succeeds
+    const emailSent = await (async () => {
+      try {
+        await sendExamScoreReleasedEmail(answer.studentEmail, answer.studentName, {
+          examTitle: config.title,
+          courseCode: config.courseCode,
+          totalMarks: config.totalMarks,
+          score: answer.score!,
+          reviewedBy: answer.reviewedBy || "Admin",
+        })
+        return true
+      } catch (error) {
+        console.error(`Failed to send score email to ${answer.studentEmail}:`, error)
+        return false
+      }
+    })()
+
+    if (emailSent) {
+      await turso.execute({
+        sql: "UPDATE exam_answers SET results_notified = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+        args: [answer.id],
+      })
+    }
+  }
+
+  return { notifiedCount: answersToNotify.length }
+}
+
+export async function reviewExamAnswer(answerId: string, score: number | null, reviewedBy: string) {
+  await ensureDatabaseSetup()
+
+  const result = await turso.execute({
+    sql: "SELECT * FROM exam_answers WHERE id = ? LIMIT 1",
+    args: [answerId],
+  })
+
+  const answer = result.rows[0] as unknown as DatabaseExamAnswerRow | undefined
+
+  if (!answer) {
+    throw new AppError("Exam answer not found.", 404)
+  }
+
+  await turso.execute({
+    sql: "UPDATE exam_answers SET score = ?, reviewed_at = CURRENT_TIMESTAMP, reviewed_by = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+    args: [score, reviewedBy, answerId],
+  })
+
+  const updated = await turso.execute({
+    sql: "SELECT * FROM exam_answers WHERE id = ? LIMIT 1",
+    args: [answerId],
+  })
+
+  const mappedAnswer = updated.rows[0] ? mapExamAnswer(updated.rows[0] as unknown as DatabaseExamAnswerRow) : null
+
+  return mappedAnswer
 }
 
 export async function getOverviewMetrics() {

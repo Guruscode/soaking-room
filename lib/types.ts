@@ -220,6 +220,63 @@ export type AssignmentSubmissionReviewPayload = {
   adminComment?: string
 }
 
+export type ExamStatus = "inactive" | "active"
+
+export type ExamConfig = {
+  id: string
+  status: ExamStatus
+  durationMinutes: number
+  title: string
+  description: string
+  courseCode: string
+  cohort: string
+  totalMarks: number
+  instructions: string
+  createdAt: string
+  updatedAt: string
+}
+
+export type ExamQuestion = {
+  id: string
+  sectionTitle: string
+  questionNumber: number
+  questionText: string
+  marks: number
+}
+
+export type ExamAnswerItem = {
+  id: string
+  examId: string
+  userId: string
+  studentName: string
+  studentEmail: string
+  answers: string
+  startedAt: string | null
+  submittedAt: string | null
+  isSubmitted: boolean
+  score: number | null
+  reviewedAt: string | null
+  reviewedBy: string | null
+  resultsNotified: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export type ExamSubmitPayload = {
+  examAnswerId: string
+  answers: Array<{ questionId: string; answer: string }>
+}
+
+export type ExamConfigPayload = {
+  title: string
+  description: string
+  courseCode: string
+  cohort: string
+  totalMarks: number
+  durationMinutes: number
+  instructions: string
+}
+
 export type SettingsPayload = {
   academyName: string
   supportEmail: string

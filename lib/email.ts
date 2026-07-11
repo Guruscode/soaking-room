@@ -358,6 +358,68 @@ export async function sendEventTicketEmail(to: string, attendeeName: string, eve
   return sendEmail({ to, subject, html })
 }
 
+export async function sendExamStartedEmail(to: string, studentName: string, examConfig: {
+  title: string
+  description: string
+  courseCode: string
+  cohort: string
+  durationMinutes: number
+  totalMarks: number
+}) {
+  const subject = `${examConfig.title} is now available - ${examConfig.courseCode}`
+  const html = buildEmailTemplate({
+    title: "Exam is now open",
+    greeting: `Dear ${studentName},`,
+    intro: `The ${examConfig.title} (${examConfig.description}) is now available for you to take.`,
+    body: [
+      `Course: ${examConfig.courseCode} - ${examConfig.cohort}`,
+      `Duration: ${examConfig.durationMinutes} minutes`,
+      `Total Marks: ${examConfig.totalMarks}`,
+      `Number of Questions: 11 across 3 sections`,
+      "You can start the exam at any time before it closes. Make sure you have enough uninterrupted time to complete it.",
+      "Your answers are automatically saved as you type, so you won't lose your work if you lose connection.",
+    ],
+    accentColor: "#0f766e",
+    accentSoft: "#ccfbf1",
+    ctaLabel: "Open Exam",
+    ctaUrl: `${getAppUrl()}/student-dashboard/exams`,
+  })
+
+  return sendEmail({ to, subject, html })
+}
+
+export async function sendExamScoreReleasedEmail(to: string, studentName: string, payload: {
+  examTitle: string
+  courseCode: string
+  totalMarks: number
+  score: number
+  reviewedBy: string
+}) {
+  const subject = `Your ${payload.examTitle} score has been released`
+  const html = buildEmailTemplate({
+    title: "Your exam score is ready",
+    greeting: `Dear ${studentName},`,
+    intro: `Your score for the ${payload.examTitle} (${payload.courseCode}) has been released.`,
+    panelHtml: `
+      <div style="margin: 24px 0; padding: 24px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; text-align: center;">
+        <p style="margin: 0 0 8px; font-size: 14px; color: #475569;">Your Score</p>
+        <p style="margin: 0; font-size: 48px; font-weight: 700; color: #0f766e;">${payload.score}<span style="font-size: 24px; color: #94a3b8;">/${payload.totalMarks}</span></p>
+        <p style="margin: 12px 0 0; font-size: 13px; color: #94a3b8;">Reviewed by ${payload.reviewedBy}</p>
+      </div>
+    `,
+    body: [
+      "You can view your score and any feedback in your student dashboard.",
+      "If you have any questions about your results, please contact the academy team.",
+    ],
+    accentColor: "#0f766e",
+    accentSoft: "#ccfbf1",
+    ctaLabel: "View Results",
+    ctaUrl: `${getAppUrl()}/student-dashboard/exams`,
+  })
+
+  return sendEmail({ to, subject, html })
+}
+
 export async function sendBroadcastEmail(recipients: string[], payload: {
   title: string
   message: string
