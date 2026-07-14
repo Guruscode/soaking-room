@@ -299,15 +299,6 @@ export type ProctoringCameraSnapshot = {
   capturedAt: string
 }
 
-export type ProctoringScreenRecording = {
-  id: string
-  examId: string
-  userId: string
-  filePath: string
-  durationSeconds: number
-  capturedAt: string
-}
-
 export type ProctoringEvent = {
   id: string
   examId: string

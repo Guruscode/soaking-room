@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Spinner } from "@/components/ui/spinner"
 import { useToast } from "@/hooks/use-toast"
 import { getErrorMessage } from "@/lib/errors"
-import type { ExamConfig, ExamQuestion, ProctoringCameraSnapshot, ProctoringEvent, ProctoringScreenRecording } from "@/lib/types"
+import type { ExamConfig, ExamQuestion, ProctoringCameraSnapshot, ProctoringEvent } from "@/lib/types"
 
 type SummaryItem = {
   userId: string
@@ -14,7 +14,6 @@ type SummaryItem = {
   studentEmail: string
   isSubmitted: boolean
   snapshotCount: number
-  recordings: { count: number; totalDuration: number }
   events: Record<string, number>
 }
 
@@ -26,7 +25,6 @@ type ProctoringPageData = {
 
 type StudentProctoringData = {
   snapshots: ProctoringCameraSnapshot[]
-  recordings: ProctoringScreenRecording[]
   events: ProctoringEvent[]
 }
 
@@ -37,7 +35,7 @@ export default function AdminExamProctoringPage() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
   const [studentData, setStudentData] = useState<StudentProctoringData | null>(null)
   const [isLoadingStudent, setIsLoadingStudent] = useState(false)
-  const [activeTab, setActiveTab] = useState<"snapshots" | "recordings" | "events">("snapshots")
+  const [activeTab, setActiveTab] = useState<"snapshots" | "events">("snapshots")
 
   const loadData = useCallback(async () => {
     setIsLoading(true)
@@ -108,8 +106,8 @@ export default function AdminExamProctoringPage() {
   // Group summaries: on-proctoring first, then by snapshot count
   const sortedSummaries = [...data.summaries].sort((a, b) => {
     // Students with no proctoring data go to the bottom
-    const aHasData = a.snapshotCount > 0 || a.recordings.count > 0
-    const bHasData = b.snapshotCount > 0 || b.recordings.count > 0
+    const aHasData = a.snapshotCount > 0
+    const bHasData = b.snapshotCount > 0
     if (aHasData && !bHasData) return -1
     if (!aHasData && bHasData) return 1
     return 0
@@ -152,12 +150,7 @@ export default function AdminExamProctoringPage() {
             {data.summaries.filter((s) => s.snapshotCount > 0).length}
           </p>
         </div>
-        <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
-          <p className="text-sm text-blue-600">With Screen Recordings</p>
-          <p className="mt-1 text-lg font-semibold text-blue-900">
-            {data.summaries.filter((s) => s.recordings.count > 0).length}
-          </p>
-        </div>
+
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
           <p className="text-sm text-amber-600">Flagged (tab switches)</p>
           <p className="mt-1 text-lg font-semibold text-amber-900">
@@ -198,7 +191,7 @@ export default function AdminExamProctoringPage() {
                     <p className="mt-0.5 text-sm text-slate-500">{summary.studentEmail}</p>
                     <div className="mt-1 flex flex-wrap gap-2 text-xs text-slate-500">
                       <span>📷 {summary.snapshotCount} snapshots</span>
-                      <span>🎥 {summary.recordings.count} recordings ({Math.round(summary.recordings.totalDuration / 60)} min)</span>
+
                       {tabSwitchCount(summary.events) > 0 && (
                         <span className={tabSwitchCount(summary.events) > 3 ? "text-red-600 font-medium" : ""}>
                           🔄 {tabSwitchCount(summary.events)} tab switches
@@ -243,7 +236,7 @@ export default function AdminExamProctoringPage() {
             <div className="space-y-4">
               {/* Tabs */}
               <div className="flex gap-1 rounded-lg bg-slate-100 p-1">
-                {(["snapshots", "recordings", "events"] as const).map((tab) => (
+                {(["snapshots", "events"] as const).map((tab) => (
                   <button
                     key={tab}
                     type="button"
@@ -255,7 +248,6 @@ export default function AdminExamProctoringPage() {
                     }`}
                   >
                     {tab === "snapshots" ? `📷 Snapshots (${studentData.snapshots.length})` : ""}
-                    {tab === "recordings" ? `🎥 Recordings (${studentData.recordings.length})` : ""}
                     {tab === "events" ? `📋 Events (${studentData.events.length})` : ""}
                   </button>
                 ))}
@@ -287,39 +279,7 @@ export default function AdminExamProctoringPage() {
                 </div>
               )}
 
-              {/* Recordings tab */}
-              {activeTab === "recordings" && (
-                <div>
-                  {studentData.recordings.length === 0 ? (
-                    <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-500">
-                      No screen recordings captured.
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {studentData.recordings.map((rec) => (
-                        <div key={rec.id} className="rounded-xl border border-slate-200 p-3">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-sm font-medium text-slate-900">
-                                Recording — {Math.round(rec.durationSeconds)}s
-                              </p>
-                              <p className="text-xs text-slate-500">
-                                {new Date(rec.capturedAt).toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "medium" })}
-                              </p>
-                            </div>
-                            <video
-                              src={`/api/proctoring/file?path=${encodeURIComponent(rec.filePath)}`}
-                              controls
-                              className="w-48 rounded-lg border border-slate-200"
-                              preload="metadata"
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+
 
               {/* Events tab */}
               {activeTab === "events" && (

@@ -492,7 +492,7 @@ export default function AdminExamsPage() {
               <label htmlFor="requiresProctoring" className="cursor-pointer">
                 <p className="text-sm font-medium text-slate-900">Requires Proctoring</p>
                 <p className="text-xs text-slate-500">
-                  When enabled, students must grant camera and screen sharing permissions before starting the exam. Proctoring data (camera snapshots and screen recordings) will be captured every 60 seconds. If proctoring is interrupted, the exam will be auto-submitted.
+                  When enabled, students must grant camera permissions before starting the exam. Camera snapshots will be captured every 60 seconds for monitoring. If camera monitoring is interrupted, the exam will be auto-submitted.
                 </p>
               </label>
             </div>

@@ -1,15 +1,12 @@
 "use client"
 
 import { useEffect, useRef, useState, useCallback } from "react"
-import { useToast } from "@/hooks/use-toast"
 
 export type ProctoringState = {
-  /** Whether proctoring has been granted (camera + screen) */
+  /** Whether proctoring has been granted (camera) */
   isGranted: boolean
   /** Whether camera is currently active */
   isCameraActive: boolean
-  /** Whether screen share is currently active */
-  isScreenActive: boolean
   /** Whether proctoring has been lost (stream interrupted) */
   isLost: boolean
   /** Whether proctoring is currently starting */
@@ -29,11 +26,9 @@ export function useExamProctoring({
   isExamActive: boolean
   onProctoringLost: () => void
 }) {
-  const { toast } = useToast()
   const [state, setState] = useState<ProctoringState>({
     isGranted: false,
     isCameraActive: false,
-    isScreenActive: false,
     isLost: false,
     isStarting: false,
     error: null,
@@ -41,11 +36,8 @@ export function useExamProctoring({
   })
 
   const cameraStreamRef = useRef<MediaStream | null>(null)
-  const screenStreamRef = useRef<MediaStream | null>(null)
   const cameraVideoRef = useRef<HTMLVideoElement | null>(null)
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const captureIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const screenChunkIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const lostNotifiedRef = useRef(false)
   const stateRef = useRef(state)
   const onProctoringLostRef = useRef(onProctoringLost)
@@ -156,130 +148,7 @@ export function useExamProctoring({
     return () => clearInterval(checkCamera)
   }, [state.isCameraActive, isExamActive])
 
-  // Monitor screen stream for interruptions
-  useEffect(() => {
-    if (!state.isScreenActive || !isExamActive) return
-
-    const checkScreen = setInterval(() => {
-      const stream = screenStreamRef.current
-      if (!stream) {
-        if (!lostNotifiedRef.current) {
-          lostNotifiedRef.current = true
-          setState((prev) => ({ ...prev, isLost: true, isScreenActive: false }))
-
-          fetch("/api/student/exams/proctoring-event", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ eventType: "screen_share_stopped", eventData: "Screen share stream was interrupted" }),
-          }).catch(() => {})
-
-          onProctoringLostRef.current()
-        }
-        return
-      }
-
-      const tracks = stream.getVideoTracks()
-      if (tracks.length === 0 || !tracks[0].enabled || tracks[0].readyState === "ended") {
-        if (!lostNotifiedRef.current) {
-          lostNotifiedRef.current = true
-          setState((prev) => ({ ...prev, isLost: true, isScreenActive: false }))
-
-          fetch("/api/student/exams/proctoring-event", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ eventType: "screen_share_stopped", eventData: "Screen share track ended" }),
-          }).catch(() => {})
-
-          onProctoringLostRef.current()
-        }
-      }
-    }, 5000)
-
-    return () => clearInterval(checkScreen)
-  }, [state.isScreenActive, isExamActive])
-
-  // Record screen in chunks
-  const startScreenRecording = useCallback(() => {
-    const stream = screenStreamRef.current
-    if (!stream) return
-
-    let recordingChunks: Blob[] = []
-    let chunkStartTime = Date.now()
-
-    const recorder = new MediaRecorder(stream, {
-      mimeType: MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
-        ? "video/webm;codecs=vp9"
-        : MediaRecorder.isTypeSupported("video/webm;codecs=vp8")
-          ? "video/webm;codecs=vp8"
-          : "video/webm",
-    })
-
-    recorder.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        recordingChunks.push(event.data)
-      }
-    }
-
-    recorder.onstop = () => {
-      // Upload any remaining chunk
-      if (recordingChunks.length > 0) {
-        const blob = new Blob(recordingChunks, { type: "video/webm" })
-        const durationSeconds = (Date.now() - chunkStartTime) / 1000
-
-        const formData = new FormData()
-        formData.append("chunk", blob, `screen_${chunkStartTime}.webm`)
-        formData.append("durationSeconds", String(durationSeconds))
-
-        navigator.sendBeacon("/api/student/exams/screen-recording", formData)
-        recordingChunks = []
-      }
-    }
-
-    // Record in 60-second chunks
-    mediaRecorderRef.current = recorder
-    chunkStartTime = Date.now()
-    recorder.start()
-
-    if (screenChunkIntervalRef.current) {
-      clearInterval(screenChunkIntervalRef.current)
-    }
-
-    screenChunkIntervalRef.current = setInterval(() => {
-      if (recorder.state === "recording") {
-        const currentDuration = (Date.now() - chunkStartTime) / 1000
-        recorder.requestData() // Get current data without stopping
-
-        // Every 60 seconds, stop and restart to create a new chunk
-        if (currentDuration >= 60) {
-          recorder.stop()
-
-          // Upload the completed chunk
-          if (recordingChunks.length > 0) {
-            const blob = new Blob(recordingChunks, { type: "video/webm" })
-
-            const formData = new FormData()
-            formData.append("chunk", blob, `screen_${chunkStartTime}.webm`)
-            formData.append("durationSeconds", String(currentDuration))
-
-            fetch("/api/student/exams/screen-recording", {
-              method: "POST",
-              credentials: "include",
-              body: formData,
-            }).catch(() => {})
-
-            recordingChunks = []
-          }
-
-          chunkStartTime = Date.now()
-          recorder.start()
-        }
-      }
-    }, 10_000) // Check every 10 seconds
-  }, [])
-
-  // Start proctoring (camera + screen share). Returns true if successful, false if failed.
+  // Start proctoring (camera only). Returns true if successful, false if failed.
   const startProctoring = useCallback(async (): Promise<boolean> => {
     setState((prev) => ({ ...prev, isStarting: true, error: null }))
 
@@ -304,36 +173,10 @@ export function useExamProctoring({
 
       await video.play()
 
-      // Request screen share
-      const screenStream = await navigator.mediaDevices.getDisplayMedia({
-        video: { width: { ideal: 1280 }, height: { ideal: 720 } },
-        audio: false,
-      })
-
-      screenStreamRef.current = screenStream
-
-      // Handle screen share stop from browser UI
-      screenStream.getVideoTracks()[0].onended = () => {
-        if (!lostNotifiedRef.current) {
-          lostNotifiedRef.current = true
-          setState((prev) => ({ ...prev, isLost: true, isScreenActive: false }))
-
-          fetch("/api/student/exams/proctoring-event", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ eventType: "screen_share_stopped", eventData: "User stopped screen share via browser UI" }),
-          }).catch(() => {})
-
-          onProctoringLostRef.current()
-        }
-      }
-
       setState((prev) => ({
         ...prev,
         isGranted: true,
         isCameraActive: true,
-        isScreenActive: true,
         isStarting: false,
         needsConsent: false,
         isLost: false,
@@ -346,15 +189,12 @@ export function useExamProctoring({
       const captureInterval = setInterval(captureSnapshot, CAPTURE_INTERVAL_MS)
       captureIntervalRef.current = captureInterval
 
-      // Start screen recording
-      startScreenRecording()
-
       // Log successful start
       await fetch("/api/student/exams/proctoring-event", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ eventType: "proctoring_started", eventData: "Camera and screen share activated" }),
+        body: JSON.stringify({ eventType: "proctoring_started", eventData: "Camera monitoring activated" }),
       })
 
       return true
@@ -363,10 +203,6 @@ export function useExamProctoring({
       if (cameraStreamRef.current) {
         cameraStreamRef.current.getTracks().forEach((t) => t.stop())
         cameraStreamRef.current = null
-      }
-      if (screenStreamRef.current) {
-        screenStreamRef.current.getTracks().forEach((t) => t.stop())
-        screenStreamRef.current = null
       }
       if (cameraVideoRef.current) {
         cameraVideoRef.current.remove()
@@ -377,7 +213,7 @@ export function useExamProctoring({
 
       if (error instanceof DOMException) {
         if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
-          errorMessage = "Camera or screen share permission was denied. Please allow both to take the exam."
+          errorMessage = "Camera permission was denied. Please allow camera access to take the exam."
         } else if (error.name === "NotFoundError") {
           errorMessage = "No camera found on this device."
         }
@@ -391,12 +227,11 @@ export function useExamProctoring({
         isStarting: false,
         error: errorMessage,
         isCameraActive: false,
-        isScreenActive: false,
       }))
 
       return false
     }
-  }, [captureSnapshot, startScreenRecording])
+  }, [captureSnapshot])
 
   // Stop proctoring — clean up all streams
   const stopProctoring = useCallback(() => {
@@ -405,24 +240,9 @@ export function useExamProctoring({
       captureIntervalRef.current = null
     }
 
-    if (screenChunkIntervalRef.current) {
-      clearInterval(screenChunkIntervalRef.current)
-      screenChunkIntervalRef.current = null
-    }
-
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
-      mediaRecorderRef.current.stop()
-      mediaRecorderRef.current = null
-    }
-
     if (cameraStreamRef.current) {
       cameraStreamRef.current.getTracks().forEach((t) => t.stop())
       cameraStreamRef.current = null
-    }
-
-    if (screenStreamRef.current) {
-      screenStreamRef.current.getTracks().forEach((t) => t.stop())
-      screenStreamRef.current = null
     }
 
     if (cameraVideoRef.current) {
@@ -433,7 +253,6 @@ export function useExamProctoring({
     setState({
       isGranted: false,
       isCameraActive: false,
-      isScreenActive: false,
       isLost: false,
       isStarting: false,
       error: null,
@@ -448,20 +267,8 @@ export function useExamProctoring({
         clearInterval(captureIntervalRef.current)
       }
 
-      if (screenChunkIntervalRef.current) {
-        clearInterval(screenChunkIntervalRef.current)
-      }
-
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
-        mediaRecorderRef.current.stop()
-      }
-
       if (cameraStreamRef.current) {
         cameraStreamRef.current.getTracks().forEach((t) => t.stop())
-      }
-
-      if (screenStreamRef.current) {
-        screenStreamRef.current.getTracks().forEach((t) => t.stop())
       }
 
       if (cameraVideoRef.current) {

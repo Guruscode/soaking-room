@@ -50,7 +50,6 @@ import type {
   TeachersGuidePayload,
   ProctoringCameraSnapshot,
   ProctoringEvent,
-  ProctoringScreenRecording,
 } from "@/lib/types"
 
 type DatabaseUserRow = {
@@ -242,14 +241,6 @@ type DatabaseProctoringCameraSnapshotRow = {
   captured_at: string
 }
 
-type DatabaseProctoringScreenRecordingRow = {
-  id: string
-  exam_id: string
-  user_id: string
-  file_path: string
-  duration_seconds: number
-  captured_at: string
-}
 
 type DatabaseProctoringEventRow = {
   id: string
@@ -426,17 +417,6 @@ function mapProctoringSnapshot(row: DatabaseProctoringCameraSnapshotRow): Procto
     examId: row.exam_id,
     userId: row.user_id,
     imageBase64: row.image_base64,
-    capturedAt: row.captured_at,
-  }
-}
-
-function mapProctoringRecording(row: DatabaseProctoringScreenRecordingRow): ProctoringScreenRecording {
-  return {
-    id: row.id,
-    examId: row.exam_id,
-    userId: row.user_id,
-    filePath: row.file_path,
-    durationSeconds: row.duration_seconds,
     capturedAt: row.captured_at,
   }
 }
@@ -1273,17 +1253,7 @@ export async function ensureDatabaseSetup() {
         `,
         "CREATE INDEX IF NOT EXISTS idx_proctoring_snapshots_user ON exam_proctoring_camera_snapshots(user_id)",
         "CREATE INDEX IF NOT EXISTS idx_proctoring_snapshots_captured ON exam_proctoring_camera_snapshots(captured_at)",
-        `
-          CREATE TABLE IF NOT EXISTS exam_proctoring_screen_recordings (
-            id TEXT PRIMARY KEY,
-            exam_id TEXT NOT NULL,
-            user_id TEXT NOT NULL,
-            file_path TEXT NOT NULL,
-            duration_seconds REAL NOT NULL DEFAULT 0,
-            captured_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-          )
-        `,
-        "CREATE INDEX IF NOT EXISTS idx_proctoring_recordings_user ON exam_proctoring_screen_recordings(user_id)",
+
         `
           CREATE TABLE IF NOT EXISTS exam_proctoring_events (
             id TEXT PRIMARY KEY,
@@ -2963,29 +2933,6 @@ export async function saveCameraSnapshot(userId: string, imageBase64: string) {
   return result.rows[0] ? mapProctoringSnapshot(result.rows[0] as unknown as DatabaseProctoringCameraSnapshotRow) : null
 }
 
-export async function saveScreenRecording(userId: string, filePath: string, durationSeconds: number) {
-  await ensureDatabaseSetup()
-
-  const [user, config] = await Promise.all([getAcademyUser(userId), getExamConfig()])
-
-  if (!user || user.role !== "student") {
-    throw new AppError("Student account not found.", 404)
-  }
-
-  const id = randomUUID()
-  await turso.execute({
-    sql: "INSERT INTO exam_proctoring_screen_recordings (id, exam_id, user_id, file_path, duration_seconds) VALUES (?, ?, ?, ?, ?)",
-    args: [id, config.id, userId, filePath, durationSeconds],
-  })
-
-  const result = await turso.execute({
-    sql: "SELECT * FROM exam_proctoring_screen_recordings WHERE id = ? LIMIT 1",
-    args: [id],
-  })
-
-  return result.rows[0] ? mapProctoringRecording(result.rows[0] as unknown as DatabaseProctoringScreenRecordingRow) : null
-}
-
 export async function saveProctoringEvent(userId: string, eventType: string, eventData?: string | null) {
   await ensureDatabaseSetup()
 
@@ -3012,13 +2959,9 @@ export async function saveProctoringEvent(userId: string, eventType: string, eve
 export async function getProctoringDataForStudent(userId: string) {
   await ensureDatabaseSetup()
 
-  const [snapshots, recordings, events] = await Promise.all([
+  const [snapshots, events] = await Promise.all([
     turso.execute({
       sql: "SELECT * FROM exam_proctoring_camera_snapshots WHERE user_id = ? ORDER BY captured_at ASC",
-      args: [userId],
-    }),
-    turso.execute({
-      sql: "SELECT * FROM exam_proctoring_screen_recordings WHERE user_id = ? ORDER BY captured_at ASC",
       args: [userId],
     }),
     turso.execute({
@@ -3029,7 +2972,6 @@ export async function getProctoringDataForStudent(userId: string) {
 
   return {
     snapshots: snapshots.rows.map((row) => mapProctoringSnapshot(row as unknown as DatabaseProctoringCameraSnapshotRow)),
-    recordings: recordings.rows.map((row) => mapProctoringRecording(row as unknown as DatabaseProctoringScreenRecordingRow)),
     events: events.rows.map((row) => mapProctoringEvent(row as unknown as DatabaseProctoringEventRow)),
   }
 }
@@ -3065,24 +3007,6 @@ export async function listProctoringSummariesByExam() {
     ]),
   )
 
-  // Get recording counts per user
-  const recordingCounts = await turso.execute({
-    sql: `SELECT user_id, COUNT(*) AS count, COALESCE(SUM(duration_seconds), 0) AS total_duration
-          FROM exam_proctoring_screen_recordings
-          WHERE exam_id = ? GROUP BY user_id`,
-    args: [config.id],
-  })
-
-  const recordingCountMap = new Map(
-    recordingCounts.rows.map((row) => [
-      String((row as { user_id?: string }).user_id || ""),
-      {
-        count: Number((row as { count?: number | string }).count ?? 0),
-        totalDuration: Number((row as { total_duration?: number | string }).total_duration ?? 0),
-      },
-    ]),
-  )
-
   // Get event counts per user (esp. tab switches)
   const eventCounts = await turso.execute({
     sql: `SELECT user_id, event_type, COUNT(*) AS count
@@ -3115,7 +3039,7 @@ export async function listProctoringSummariesByExam() {
       studentEmail: answer?.student_email || "",
       isSubmitted: answer?.is_submitted === 1,
       snapshotCount: snapshotCountMap.get(userId) || 0,
-      recordings: recordingCountMap.get(userId) || { count: 0, totalDuration: 0 },
+      recordings: { count: 0, totalDuration: 0 },
       events: Object.fromEntries(userEvents),
     }
   })

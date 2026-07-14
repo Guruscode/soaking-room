@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast"
 import { getErrorMessage } from "@/lib/errors"
 import { useExamProctoring } from "@/hooks/use-exam-proctoring"
 import type { ExamAnswerItem, ExamConfig, ExamQuestion } from "@/lib/types"
-import { Camera, MonitorUp } from "lucide-react"
+import { Camera } from "lucide-react"
 
 type ExamData = {
   config: ExamConfig
@@ -310,7 +310,7 @@ export function StudentExamClient({ initialData }: { initialData: ExamData }) {
     toast({
       variant: "destructive",
       title: "🛑 Proctoring lost!",
-      description: "Camera or screen share was interrupted. Your exam will be submitted automatically.",
+      description: "Camera monitoring was interrupted. Your exam will be submitted automatically.",
     })
 
     void (async () => {
@@ -624,7 +624,7 @@ export function StudentExamClient({ initialData }: { initialData: ExamData }) {
             </div>
             <h2 className="text-2xl font-semibold text-indigo-900">Proctoring Required</h2>
             <p className="mt-2 text-sm text-indigo-700">
-              This exam requires camera monitoring and screen sharing to ensure academic integrity.
+              This exam requires camera monitoring to ensure academic integrity.
             </p>
 
             <div className="mt-6 space-y-3 text-left">
@@ -639,21 +639,11 @@ export function StudentExamClient({ initialData }: { initialData: ExamData }) {
                   </div>
                 </div>
               </div>
-              <div className="rounded-lg border border-indigo-200 bg-white p-4">
-                <div className="flex items-start gap-3">
-                  <MonitorUp className="mt-0.5 size-5 text-indigo-500" />
-                  <div>
-                    <p className="font-medium text-indigo-900">Screen Sharing</p>
-                    <p className="mt-0.5 text-xs text-slate-500">
-                      Your screen will be recorded in 60-second chunks. This allows the admin to review your activity during the exam.
-                    </p>
-                  </div>
-                </div>
-              </div>
+
               <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
                 <p className="text-xs font-medium text-amber-800">⚠️ Important</p>
                 <p className="mt-0.5 text-xs text-amber-700">
-                  If camera or screen sharing is interrupted at any point during the exam, your exam will be automatically submitted. Ensure you have a working camera and stable internet connection before starting.
+                  If camera monitoring is interrupted at any point during the exam, your exam will be automatically submitted. Ensure you have a working camera and stable internet connection before starting.
                 </p>
               </div>
             </div>
@@ -687,7 +677,7 @@ export function StudentExamClient({ initialData }: { initialData: ExamData }) {
           <h2 className="text-2xl font-semibold text-red-900">Proctoring Unavailable</h2>
           <p className="mt-2 text-sm text-red-700">{proctoringState.error}</p>
           <p className="mt-1 text-sm text-red-600">
-            This exam requires camera and screen sharing. Please ensure you have granted the necessary permissions and try again.
+            This exam requires camera access. Please ensure you have granted the necessary permissions and try again.
           </p>
           <Button
             type="button"
@@ -727,7 +717,7 @@ export function StudentExamClient({ initialData }: { initialData: ExamData }) {
         <div>
           <h2 className="text-xl font-semibold text-slate-900">Starting Proctoring...</h2>
           <p className="mt-1 text-sm text-slate-500">
-            Please allow camera and screen sharing when prompted by your browser. The exam will begin once permissions are granted.
+            Please allow camera access when prompted by your browser. The exam will begin once permissions are granted.
           </p>
         </div>
       </div>
@@ -744,7 +734,7 @@ export function StudentExamClient({ initialData }: { initialData: ExamData }) {
         <div>
           <h2 className="text-xl font-semibold text-red-900">Proctoring Interrupted</h2>
           <p className="mt-1 text-sm text-red-700">
-            Camera or screen sharing was stopped. Your exam is being submitted.
+            Camera monitoring was stopped. Your exam is being submitted.
           </p>
           {isSubmitting && (
             <div className="mt-4 flex items-center justify-center gap-2 text-sm text-red-600">
@@ -864,19 +854,7 @@ export function StudentExamClient({ initialData }: { initialData: ExamData }) {
                   <Camera className="size-3" />
                   {proctoringState.isCameraActive ? "Camera" : "No Camera"}
                 </span>
-                <span
-                  className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
-                    proctoringState.isScreenActive
-                      ? "bg-blue-100 text-blue-700"
-                      : "bg-red-100 text-red-700"
-                  }`}
-                >
-                  <span className={`inline-block size-1.5 rounded-full ${
-                    proctoringState.isScreenActive ? "bg-blue-500 animate-pulse" : "bg-red-500"
-                  }`} />
-                  <MonitorUp className="size-3" />
-                  {proctoringState.isScreenActive ? "Screen" : "No Screen"}
-                </span>
+
               </div>
             )}
             <div className="hidden text-right text-xs sm:block">
@@ -926,7 +904,7 @@ export function StudentExamClient({ initialData }: { initialData: ExamData }) {
               <span className="inline-block size-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Recording Active
             </span>
-            <span>Camera snapshots and screen recordings are being captured every 60 seconds.</span>
+            <span>Camera snapshots are being captured every 60 seconds for monitoring purposes.</span>
           </div>
         </div>
       )}
