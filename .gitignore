@@ -19,6 +19,9 @@ yarn-error.log*
 # env files
 .env*
 
+# proctoring data (contains potentially sensitive student recordings)
+/proctoring-data
+
 # vercel
 .vercel
 

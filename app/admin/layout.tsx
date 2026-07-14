@@ -13,6 +13,7 @@ const navItems = [
   { label: "Exam Submissions", href: "/admin/exam-submissions" },
   { label: "Broadcasts", href: "/admin/broadcasts" },
   { label: "Exam Messages", href: "/admin/exam-messages" },
+  { label: "Exam Proctoring", href: "/admin/exam-proctoring" },
   { label: "Settings", href: "/admin/settings"},
 
 ]

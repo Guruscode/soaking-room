@@ -48,6 +48,9 @@ import type {
   SettingsPayload,
   TeachersGuideItem,
   TeachersGuidePayload,
+  ProctoringCameraSnapshot,
+  ProctoringEvent,
+  ProctoringScreenRecording,
 } from "@/lib/types"
 
 type DatabaseUserRow = {
@@ -206,6 +209,7 @@ type DatabaseExamConfigRow = {
   cohort: string
   total_marks: number
   instructions: string
+  requires_proctoring: number
   created_at: string
   updated_at: string
 }
@@ -227,6 +231,34 @@ type DatabaseExamMessageRow = {
   message: string
   parent_id: string | null
   is_from_admin: number
+  created_at: string
+}
+
+type DatabaseProctoringCameraSnapshotRow = {
+  id: string
+  exam_id: string
+  user_id: string
+  image_base64: string
+  captured_at: string
+}
+
+type DatabaseProctoringScreenRecordingRow = {
+  id: string
+  exam_id: string
+  user_id: string
+  file_path: string
+  duration_seconds: number
+  captured_at: string
+}
+
+type DatabaseProctoringEventRow = {
+  id: string
+  exam_id: string
+  user_id: string
+  student_name: string
+  student_email: string
+  event_type: string
+  event_data: string | null
   created_at: string
 }
 
@@ -372,6 +404,7 @@ function mapExamConfig(row: DatabaseExamConfigRow): ExamConfig {
     cohort: row.cohort,
     totalMarks: row.total_marks,
     instructions: row.instructions,
+    requiresProctoring: row.requires_proctoring === 1,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }
@@ -384,6 +417,40 @@ function mapExamQuestion(row: DatabaseExamQuestionRow): ExamQuestion {
     questionNumber: row.question_number,
     questionText: row.question_text,
     marks: row.marks,
+  }
+}
+
+function mapProctoringSnapshot(row: DatabaseProctoringCameraSnapshotRow): ProctoringCameraSnapshot {
+  return {
+    id: row.id,
+    examId: row.exam_id,
+    userId: row.user_id,
+    imageBase64: row.image_base64,
+    capturedAt: row.captured_at,
+  }
+}
+
+function mapProctoringRecording(row: DatabaseProctoringScreenRecordingRow): ProctoringScreenRecording {
+  return {
+    id: row.id,
+    examId: row.exam_id,
+    userId: row.user_id,
+    filePath: row.file_path,
+    durationSeconds: row.duration_seconds,
+    capturedAt: row.captured_at,
+  }
+}
+
+function mapProctoringEvent(row: DatabaseProctoringEventRow): ProctoringEvent {
+  return {
+    id: row.id,
+    examId: row.exam_id,
+    userId: row.user_id,
+    studentName: row.student_name,
+    studentEmail: row.student_email,
+    eventType: row.event_type,
+    eventData: row.event_data,
+    createdAt: row.created_at,
   }
 }
 
@@ -735,8 +802,8 @@ async function seedExamConfig() {
   await turso.execute({
     sql: `
       INSERT INTO exam_config (
-        id, status, duration_minutes, title, description, course_code, cohort, total_marks, instructions
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        id, status, duration_minutes, title, description, course_code, cohort, total_marks, instructions, requires_proctoring
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `,
     args: [
       randomUUID(),
@@ -748,6 +815,7 @@ async function seedExamConfig() {
       "Cohort 1",
       165,
       `This examination is designed to assess your comprehension of the historical foundations, theological frameworks, and practical applications of Levitical and Davidic worship. Answer all questions with thoroughness and precision. Where scriptural references are requested, please provide the specific verse, the context of the passage, and a detailed explanation of its theological significance to your answer. This exam evaluates your ability to synthesize biblical truth with the responsibilities of modern worship leadership.`,
+      1,
     ],
   })
 }
@@ -1121,6 +1189,7 @@ export async function ensureDatabaseSetup() {
             cohort TEXT NOT NULL,
             total_marks INTEGER NOT NULL,
             instructions TEXT NOT NULL,
+            requires_proctoring INTEGER NOT NULL DEFAULT 0,
             created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
           )
@@ -1188,10 +1257,47 @@ export async function ensureDatabaseSetup() {
         "ALTER TABLE assignment_submissions ADD COLUMN admin_comment TEXT",
         "ALTER TABLE assignment_submissions ADD COLUMN reviewed_at TEXT",
         "ALTER TABLE assignment_submissions ADD COLUMN reviewed_by_name TEXT",
+        "ALTER TABLE exam_config ADD COLUMN requires_proctoring INTEGER NOT NULL DEFAULT 1",
         "ALTER TABLE exam_answers ADD COLUMN results_notified INTEGER NOT NULL DEFAULT 0",
         "ALTER TABLE exam_messages ADD COLUMN parent_id TEXT",
         "ALTER TABLE exam_messages ADD COLUMN is_from_admin INTEGER NOT NULL DEFAULT 0",
         "CREATE INDEX IF NOT EXISTS idx_exam_messages_parent_id ON exam_messages(parent_id)",
+        `
+          CREATE TABLE IF NOT EXISTS exam_proctoring_camera_snapshots (
+            id TEXT PRIMARY KEY,
+            exam_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            image_base64 TEXT NOT NULL,
+            captured_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+          )
+        `,
+        "CREATE INDEX IF NOT EXISTS idx_proctoring_snapshots_user ON exam_proctoring_camera_snapshots(user_id)",
+        "CREATE INDEX IF NOT EXISTS idx_proctoring_snapshots_captured ON exam_proctoring_camera_snapshots(captured_at)",
+        `
+          CREATE TABLE IF NOT EXISTS exam_proctoring_screen_recordings (
+            id TEXT PRIMARY KEY,
+            exam_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            file_path TEXT NOT NULL,
+            duration_seconds REAL NOT NULL DEFAULT 0,
+            captured_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+          )
+        `,
+        "CREATE INDEX IF NOT EXISTS idx_proctoring_recordings_user ON exam_proctoring_screen_recordings(user_id)",
+        `
+          CREATE TABLE IF NOT EXISTS exam_proctoring_events (
+            id TEXT PRIMARY KEY,
+            exam_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            student_name TEXT NOT NULL,
+            student_email TEXT NOT NULL,
+            event_type TEXT NOT NULL,
+            event_data TEXT,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+          )
+        `,
+        "CREATE INDEX IF NOT EXISTS idx_proctoring_events_user ON exam_proctoring_events(user_id)",
+        "CREATE INDEX IF NOT EXISTS idx_proctoring_events_type ON exam_proctoring_events(event_type)",
       ]) {
         try {
           await turso.execute(statement)
@@ -2412,6 +2518,11 @@ export async function updateExamConfig(payload: { status?: ExamStatus } & Partia
     args.push(ensureRequiredValue(payload.instructions, "Instructions"))
   }
 
+  if (payload.requiresProctoring !== undefined) {
+    updates.push("requires_proctoring = ?")
+    args.push(payload.requiresProctoring ? 1 : 0)
+  }
+
   if (updates.length === 0) {
     return config
   }
@@ -2575,6 +2686,32 @@ export async function submitExamAnswers(userId: string, payload: ExamSubmitPaylo
 
   const config = await getExamConfig()
 
+  // Server-side time check: reject submission if the student's time has expired
+  if (answer.started_at) {
+    const startedAt = new Date(answer.started_at).getTime()
+    const deadline = startedAt + config.durationMinutes * 60 * 1000
+
+    if (Date.now() > deadline) {
+      // Time has expired — force-submit with whatever answers they have
+      await turso.execute({
+        sql: `
+          UPDATE exam_answers
+          SET answers = ?, submitted_at = CURRENT_TIMESTAMP, is_submitted = 1, updated_at = CURRENT_TIMESTAMP
+          WHERE id = ? AND user_id = ?
+        `,
+        args: [JSON.stringify(payload.answers), payload.examAnswerId, userId],
+      })
+
+      const updated = await getExamAnswerByUser(config.id, userId)
+
+      if (!updated) {
+        throw new AppError("Could not submit your exam.", 500)
+      }
+
+      return mapExamAnswer(updated)
+    }
+  }
+
   const answersJson = JSON.stringify(payload.answers)
 
   await turso.execute({
@@ -2600,7 +2737,7 @@ export async function listExamSubmissions() {
   const config = await getExamConfig()
 
   const result = await turso.execute({
-    sql: "SELECT * FROM exam_answers WHERE exam_id = ? ORDER BY is_submitted ASC, updated_at DESC",
+    sql: "SELECT * FROM exam_answers WHERE exam_id = ? AND is_submitted = 1 ORDER BY submitted_at DESC, updated_at DESC",
     args: [config.id],
   })
 
@@ -2773,6 +2910,218 @@ export async function reviewExamAnswer(answerId: string, score: number | null, r
 
   return mappedAnswer
 }
+
+
+export async function autoSubmitOverdueExams(): Promise<number> {
+  await ensureDatabaseSetup()
+  const config = await getExamConfig()
+
+  // Find all in-progress exams where started_at + duration_minutes has passed
+  const result = await turso.execute({
+    sql: `
+      SELECT * FROM exam_answers
+      WHERE exam_id = ? AND is_submitted = 0 AND started_at IS NOT NULL
+        AND datetime(started_at, '+' || ? || ' minutes') < datetime('now')
+    `.trim(),
+    args: [config.id, config.durationMinutes],
+  })
+
+  const overdue = result.rows as unknown as DatabaseExamAnswerRow[]
+
+  for (const answer of overdue) {
+    await turso.execute({
+      sql: "UPDATE exam_answers SET submitted_at = CURRENT_TIMESTAMP, is_submitted = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+      args: [answer.id],
+    })
+  }
+
+  return overdue.length
+}
+
+// #region Proctoring
+
+export async function saveCameraSnapshot(userId: string, imageBase64: string) {
+  await ensureDatabaseSetup()
+
+  const [user, config] = await Promise.all([getAcademyUser(userId), getExamConfig()])
+
+  if (!user || user.role !== "student") {
+    throw new AppError("Student account not found.", 404)
+  }
+
+  const id = randomUUID()
+  await turso.execute({
+    sql: "INSERT INTO exam_proctoring_camera_snapshots (id, exam_id, user_id, image_base64) VALUES (?, ?, ?, ?)",
+    args: [id, config.id, userId, imageBase64],
+  })
+
+  const result = await turso.execute({
+    sql: "SELECT * FROM exam_proctoring_camera_snapshots WHERE id = ? LIMIT 1",
+    args: [id],
+  })
+
+  return result.rows[0] ? mapProctoringSnapshot(result.rows[0] as unknown as DatabaseProctoringCameraSnapshotRow) : null
+}
+
+export async function saveScreenRecording(userId: string, filePath: string, durationSeconds: number) {
+  await ensureDatabaseSetup()
+
+  const [user, config] = await Promise.all([getAcademyUser(userId), getExamConfig()])
+
+  if (!user || user.role !== "student") {
+    throw new AppError("Student account not found.", 404)
+  }
+
+  const id = randomUUID()
+  await turso.execute({
+    sql: "INSERT INTO exam_proctoring_screen_recordings (id, exam_id, user_id, file_path, duration_seconds) VALUES (?, ?, ?, ?, ?)",
+    args: [id, config.id, userId, filePath, durationSeconds],
+  })
+
+  const result = await turso.execute({
+    sql: "SELECT * FROM exam_proctoring_screen_recordings WHERE id = ? LIMIT 1",
+    args: [id],
+  })
+
+  return result.rows[0] ? mapProctoringRecording(result.rows[0] as unknown as DatabaseProctoringScreenRecordingRow) : null
+}
+
+export async function saveProctoringEvent(userId: string, eventType: string, eventData?: string | null) {
+  await ensureDatabaseSetup()
+
+  const [user, config] = await Promise.all([getAcademyUser(userId), getExamConfig()])
+
+  if (!user || user.role !== "student") {
+    throw new AppError("Student account not found.", 404)
+  }
+
+  const id = randomUUID()
+  await turso.execute({
+    sql: "INSERT INTO exam_proctoring_events (id, exam_id, user_id, student_name, student_email, event_type, event_data) VALUES (?, ?, ?, ?, ?, ?, ?)",
+    args: [id, config.id, userId, user.fullName, user.email, eventType, eventData ?? null],
+  })
+
+  const result = await turso.execute({
+    sql: "SELECT * FROM exam_proctoring_events WHERE id = ? LIMIT 1",
+    args: [id],
+  })
+
+  return result.rows[0] ? mapProctoringEvent(result.rows[0] as unknown as DatabaseProctoringEventRow) : null
+}
+
+export async function getProctoringDataForStudent(userId: string) {
+  await ensureDatabaseSetup()
+
+  const [snapshots, recordings, events] = await Promise.all([
+    turso.execute({
+      sql: "SELECT * FROM exam_proctoring_camera_snapshots WHERE user_id = ? ORDER BY captured_at ASC",
+      args: [userId],
+    }),
+    turso.execute({
+      sql: "SELECT * FROM exam_proctoring_screen_recordings WHERE user_id = ? ORDER BY captured_at ASC",
+      args: [userId],
+    }),
+    turso.execute({
+      sql: "SELECT * FROM exam_proctoring_events WHERE user_id = ? ORDER BY created_at ASC",
+      args: [userId],
+    }),
+  ])
+
+  return {
+    snapshots: snapshots.rows.map((row) => mapProctoringSnapshot(row as unknown as DatabaseProctoringCameraSnapshotRow)),
+    recordings: recordings.rows.map((row) => mapProctoringRecording(row as unknown as DatabaseProctoringScreenRecordingRow)),
+    events: events.rows.map((row) => mapProctoringEvent(row as unknown as DatabaseProctoringEventRow)),
+  }
+}
+
+export async function listProctoringSummariesByExam() {
+  await ensureDatabaseSetup()
+
+  const config = await getExamConfig()
+
+  // Get all exam answers to know which students are involved
+  const answers = await turso.execute({
+    sql: "SELECT * FROM exam_answers WHERE exam_id = ?",
+    args: [config.id],
+  })
+
+  const userIds = [...new Set(answers.rows.map((row) => String((row as unknown as DatabaseExamAnswerRow).user_id)))]
+
+  if (userIds.length === 0) {
+    return []
+  }
+
+  // Get snapshot counts per user
+  const snapshotCounts = await turso.execute({
+    sql: `SELECT user_id, COUNT(*) AS count FROM exam_proctoring_camera_snapshots
+          WHERE exam_id = ? GROUP BY user_id`,
+    args: [config.id],
+  })
+
+  const snapshotCountMap = new Map(
+    snapshotCounts.rows.map((row) => [
+      String((row as { user_id?: string }).user_id || ""),
+      Number((row as { count?: number | string }).count ?? 0),
+    ]),
+  )
+
+  // Get recording counts per user
+  const recordingCounts = await turso.execute({
+    sql: `SELECT user_id, COUNT(*) AS count, COALESCE(SUM(duration_seconds), 0) AS total_duration
+          FROM exam_proctoring_screen_recordings
+          WHERE exam_id = ? GROUP BY user_id`,
+    args: [config.id],
+  })
+
+  const recordingCountMap = new Map(
+    recordingCounts.rows.map((row) => [
+      String((row as { user_id?: string }).user_id || ""),
+      {
+        count: Number((row as { count?: number | string }).count ?? 0),
+        totalDuration: Number((row as { total_duration?: number | string }).total_duration ?? 0),
+      },
+    ]),
+  )
+
+  // Get event counts per user (esp. tab switches)
+  const eventCounts = await turso.execute({
+    sql: `SELECT user_id, event_type, COUNT(*) AS count
+          FROM exam_proctoring_events
+          WHERE exam_id = ?
+          GROUP BY user_id, event_type`,
+    args: [config.id],
+  })
+
+  const eventMap = new Map<string, Map<string, number>>()
+  for (const row of eventCounts.rows) {
+    const userId = String((row as { user_id?: string }).user_id || "")
+    const eventType = String((row as { event_type?: string }).event_type || "")
+    const count = Number((row as { count?: number | string }).count ?? 0)
+
+    if (!eventMap.has(userId)) {
+      eventMap.set(userId, new Map())
+    }
+    eventMap.get(userId)!.set(eventType, count)
+  }
+
+  // Build summary per student
+  return userIds.map((userId) => {
+    const answer = answers.rows.find((r) => String((r as unknown as DatabaseExamAnswerRow).user_id) === userId) as unknown as DatabaseExamAnswerRow | undefined
+    const userEvents = eventMap.get(userId) || new Map()
+
+    return {
+      userId,
+      studentName: answer?.student_name || "Unknown",
+      studentEmail: answer?.student_email || "",
+      isSubmitted: answer?.is_submitted === 1,
+      snapshotCount: snapshotCountMap.get(userId) || 0,
+      recordings: recordingCountMap.get(userId) || { count: 0, totalDuration: 0 },
+      events: Object.fromEntries(userEvents),
+    }
+  })
+}
+
+// #endregion
 
 export async function getOverviewMetrics() {
   await ensureDatabaseSetup()

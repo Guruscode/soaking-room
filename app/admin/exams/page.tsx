@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
@@ -113,6 +114,7 @@ export default function AdminExamsPage() {
       totalMarks: data.config.totalMarks,
       durationMinutes: data.config.durationMinutes,
       instructions: data.config.instructions,
+      requiresProctoring: data.config.requiresProctoring,
     })
     setIsEditConfigOpen(true)
   }
@@ -478,6 +480,21 @@ export default function AdminExamsPage() {
                 onChange={(e) => setConfigForm((prev) => ({ ...prev, instructions: e.target.value }))}
                 required
               />
+            </div>
+            <div className="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <Checkbox
+                id="requiresProctoring"
+                checked={configForm.requiresProctoring ?? false}
+                onCheckedChange={(checked) =>
+                  setConfigForm((prev) => ({ ...prev, requiresProctoring: checked === true }))
+                }
+              />
+              <label htmlFor="requiresProctoring" className="cursor-pointer">
+                <p className="text-sm font-medium text-slate-900">Requires Proctoring</p>
+                <p className="text-xs text-slate-500">
+                  When enabled, students must grant camera and screen sharing permissions before starting the exam. Proctoring data (camera snapshots and screen recordings) will be captured every 60 seconds. If proctoring is interrupted, the exam will be auto-submitted.
+                </p>
+              </label>
             </div>
           </div>
           <DialogFooter className="gap-2">

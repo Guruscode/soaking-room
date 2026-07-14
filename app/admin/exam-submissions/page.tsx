@@ -24,6 +24,7 @@ export default function AdminExamSubmissionsPage() {
   const [scoreInput, setScoreInput] = useState("")
   const [isSavingScore, setIsSavingScore] = useState(false)
   const [isPushingResults, setIsPushingResults] = useState(false)
+  const [isSubmittingOverdue, setIsSubmittingOverdue] = useState(false)
 
   const loadData = async () => {
     setIsLoading(true)
@@ -180,8 +181,7 @@ export default function AdminExamSubmissionsPage() {
     )
   }
 
-  const submittedCount = data.submissions.filter((s) => s.isSubmitted).length
-  const unsubmittedCount = data.submissions.filter((s) => !s.isSubmitted).length
+  const submittedCount = data.submissions.length
   const scoredCount = data.submissions.filter((s) => s.score !== null).length
   const notifyPendingCount = data.submissions.filter((s) => s.score !== null && !s.resultsNotified).length
 
@@ -257,6 +257,44 @@ export default function AdminExamSubmissionsPage() {
             </Button>
             <Button
               type="button"
+              variant="outline"
+              className="rounded-xl border-amber-300 text-amber-700 hover:bg-amber-50"
+              onClick={async () => {
+                setIsSubmittingOverdue(true)
+                try {
+                  const res = await fetch("/api/admin/exams/auto-submit-overdue", {
+                    method: "POST",
+                    credentials: "include",
+                  })
+                  const json = (await res.json()) as { data?: { count: number }; error?: string }
+                  if (!res.ok) throw new Error(json.error || "Failed to submit overdue exams.")
+                  const count = json.data?.count ?? 0
+                  toast({
+                    title: count > 0 ? `${count} overdue exam(s) submitted` : "No overdue exams to submit",
+                    description: count > 0
+                      ? `Students whose time had expired have been auto-submitted. Refresh to see them.`
+                      : `All pending exams are still within their time limit.`,
+                  })
+                  if (count > 0) {
+                    void loadData()
+                  }
+                } catch (error) {
+                  toast({
+                    variant: "destructive",
+                    title: "Auto-submit failed",
+                    description: getErrorMessage(error, "Failed to submit overdue exams."),
+                  })
+                } finally {
+                  setIsSubmittingOverdue(false)
+                }
+              }}
+              disabled={isSubmittingOverdue}
+            >
+              {isSubmittingOverdue ? <Spinner className="size-4" /> : null}
+              Force Submit Overdue
+            </Button>
+            <Button
+              type="button"
               className="rounded-xl bg-indigo-600 hover:bg-indigo-700"
               onClick={pushResults}
               disabled={isPushingResults || notifyPendingCount === 0}
@@ -274,28 +312,26 @@ export default function AdminExamSubmissionsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid gap-3 sm:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-3">
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <p className="text-sm text-slate-500">Total</p>
-          <p className="mt-1 text-lg font-semibold text-slate-900">{data.submissions.length}</p>
+          <p className="text-sm text-slate-500">Submitted</p>
+          <p className="mt-1 text-lg font-semibold text-slate-900">{submittedCount}</p>
         </div>
         <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-          <p className="text-sm text-emerald-600">Submitted</p>
-          <p className="mt-1 text-lg font-semibold text-emerald-900">{submittedCount}</p>
-        </div>
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
-          <p className="text-sm text-amber-600">In Progress</p>
-          <p className="mt-1 text-lg font-semibold text-amber-900">{unsubmittedCount}</p>
-        </div>
-        <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
-          <p className="text-sm text-blue-600">Scored</p>
-          <p className="mt-1 text-lg font-semibold text-blue-900">
+          <p className="text-sm text-emerald-600">Scored</p>
+          <p className="mt-1 text-lg font-semibold text-emerald-900">
             {scoredCount}
             {notifyPendingCount > 0 ? (
-              <span className="ml-2 text-sm font-normal text-blue-500">
+              <span className="ml-2 text-sm font-normal text-emerald-500">
                 ({notifyPendingCount} pending notify)
               </span>
             ) : null}
+          </p>
+        </div>
+        <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
+          <p className="text-sm text-blue-600">Email Notified</p>
+          <p className="mt-1 text-lg font-semibold text-blue-900">
+            {data.submissions.filter((s) => s.resultsNotified).length}
           </p>
         </div>
       </div>
@@ -306,7 +342,7 @@ export default function AdminExamSubmissionsPage() {
 
         {data.submissions.length === 0 ? (
           <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
-            No submissions yet. Students will appear here once they start the exam.
+            No submissions yet. Submissions will appear here once students submit their exam or the timer runs out.
           </div>
         ) : (
           <div className="mt-3 space-y-3">

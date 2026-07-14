@@ -232,6 +232,7 @@ export type ExamConfig = {
   cohort: string
   totalMarks: number
   instructions: string
+  requiresProctoring: boolean
   createdAt: string
   updatedAt: string
 }
@@ -275,6 +276,7 @@ export type ExamConfigPayload = {
   totalMarks: number
   durationMinutes: number
   instructions: string
+  requiresProctoring?: boolean
 }
 
 export type ExamMessage = {
@@ -286,6 +288,34 @@ export type ExamMessage = {
   message: string
   parentId: string | null
   isFromAdmin: boolean
+  createdAt: string
+}
+
+export type ProctoringCameraSnapshot = {
+  id: string
+  examId: string
+  userId: string
+  imageBase64: string
+  capturedAt: string
+}
+
+export type ProctoringScreenRecording = {
+  id: string
+  examId: string
+  userId: string
+  filePath: string
+  durationSeconds: number
+  capturedAt: string
+}
+
+export type ProctoringEvent = {
+  id: string
+  examId: string
+  userId: string
+  studentName: string
+  studentEmail: string
+  eventType: string
+  eventData: string | null
   createdAt: string
 }
 
