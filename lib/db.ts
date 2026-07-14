@@ -2632,7 +2632,11 @@ export async function saveExamAnswersDraft(userId: string, payload: ExamSubmitPa
   const answer = result.rows[0] as unknown as DatabaseExamAnswerRow | undefined
 
   if (!answer) {
-    throw new AppError("Exam answer record not found or already submitted.", 404)
+    // Draft is a best-effort background operation — if the exam was already submitted
+    // or the record was removed, silently return null instead of throwing an error.
+    // This prevents race conditions between auto-submit and auto-save from surfacing
+    // as error responses to the user.
+    return null
   }
 
   const answersJson = JSON.stringify(payload.answers)
@@ -2684,7 +2688,8 @@ export async function submitExamAnswers(userId: string, payload: ExamSubmitPaylo
 
   // Server-side time check: reject submission if the student's time has expired
   if (answer.started_at) {
-    const startedAt = new Date(answer.started_at).getTime()
+    // started_at is stored as UTC by SQLite (CURRENT_TIMESTAMP), so parse explicitly as UTC
+    const startedAt = new Date(answer.started_at.replace(" ", "T") + "Z").getTime()
     const deadline = startedAt + config.durationMinutes * 60 * 1000
 
     if (Date.now() > deadline) {

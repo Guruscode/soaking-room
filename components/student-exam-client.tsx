@@ -410,7 +410,10 @@ export function StudentExamClient({ initialData }: { initialData: ExamData }) {
   useEffect(() => {
     if (!examActive || !data.answer?.startedAt) return
 
-    const startTime = new Date(data.answer.startedAt).getTime()
+    // started_at is stored as UTC by SQLite (CURRENT_TIMESTAMP), so parse it explicitly as UTC
+    // to avoid the browser treating it as local time (which would shift the deadline by the
+    // user's timezone offset and cause premature or delayed auto-submit).
+    const startTime = new Date(data.answer.startedAt.replace(" ", "T") + "Z").getTime()
     const durationMs = data.config.durationMinutes * 60 * 1000
     const endTime = startTime + durationMs
 
