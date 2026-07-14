@@ -2548,6 +2548,32 @@ async function getExamAnswerByUser(examId: string, userId: string) {
   return result.rows[0] ? (result.rows[0] as unknown as DatabaseExamAnswerRow) : null
 }
 
+export async function getExistingExamAnswerForStudent(userId: string) {
+  await ensureDatabaseSetup()
+
+  const [user, config] = await Promise.all([getAcademyUser(userId), getExamConfig()])
+
+  if (!user || user.role !== "student") {
+    throw new AppError("Student account not found.", 404)
+  }
+
+  if (config.status !== "active") {
+    throw new AppError("The exam is not currently available.", 403)
+  }
+
+  const existingAnswer = await getExamAnswerByUser(config.id, userId)
+
+  if (existingAnswer) {
+    if (existingAnswer.is_submitted) {
+      throw new AppError("You have already submitted this exam.", 403)
+    }
+    return mapExamAnswer(existingAnswer)
+  }
+
+  // Return null if no existing answer — does NOT create a new one
+  return null
+}
+
 export async function startOrResumeExamForStudent(userId: string) {
   await ensureDatabaseSetup()
 

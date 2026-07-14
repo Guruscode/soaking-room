@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation"
 import { getSessionUser } from "@/lib/session"
-import { getExamConfig, getExamQuestions, startOrResumeExamForStudent } from "@/lib/db"
+import { getExamConfig, getExamQuestions, getExistingExamAnswerForStudent, startOrResumeExamForStudent } from "@/lib/db"
 import { StudentExamClient } from "@/components/student-exam-client"
 
 export default async function StudentExamsPage() {
@@ -27,15 +27,12 @@ export default async function StudentExamsPage() {
     }
   }
 
-  // If proctoring is required and there's an existing draft, still resume it
+  // If proctoring is required and there's an existing draft, load it without starting the timer
+  // The exam answer will be created only after the student grants camera permissions
   if (config.status === "active" && config.requiresProctoring) {
     try {
-      // Only resume if there's already an answer (draft) — don't create a new one
-      const existing = await startOrResumeExamForStudent(sessionUser.id).catch(() => null)
-      if (existing && existing.isSubmitted) {
-        answer = existing
-      } else if (existing && !existing.isSubmitted) {
-        // There's an existing draft — the student had already started with proctoring
+      const existing = await getExistingExamAnswerForStudent(sessionUser.id)
+      if (existing) {
         answer = existing
       }
     } catch {
