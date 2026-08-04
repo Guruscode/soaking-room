@@ -35,6 +35,7 @@ export default function AdminExamProctoringPage() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
   const [studentData, setStudentData] = useState<StudentProctoringData | null>(null)
   const [isLoadingStudent, setIsLoadingStudent] = useState(false)
+  const [isDeleting, setIsDeleting] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<"snapshots" | "events">("snapshots")
 
   const loadData = useCallback(async () => {
@@ -58,6 +59,42 @@ export default function AdminExamProctoringPage() {
   useEffect(() => {
     void loadData()
   }, [loadData])
+
+  const handleDeleteProctoring = async (userId: string, studentName: string) => {
+    if (!window.confirm(`Delete all proctoring data for ${studentName}? This cannot be undone.`)) {
+      return
+    }
+
+    setIsDeleting(userId)
+
+    try {
+      const response = await fetch(`/api/admin/exams/proctoring?userId=${encodeURIComponent(userId)}`, {
+        method: "DELETE",
+        credentials: "include",
+      })
+      const json = (await response.json()) as { error?: string }
+
+      if (!response.ok) {
+        throw new Error(json.error || "Failed to delete proctoring data.")
+      }
+
+      toast({
+        title: "Proctoring data deleted",
+        description: `All proctoring records for ${studentName} have been removed.`,
+      })
+
+      // Reload the data to refresh the summaries
+      await loadData()
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Delete failed",
+        description: getErrorMessage(error, "Failed to delete proctoring data."),
+      })
+    } finally {
+      setIsDeleting(null)
+    }
+  }
 
   const openStudentProctoring = async (userId: string) => {
     setSelectedUserId(userId)
@@ -199,15 +236,27 @@ export default function AdminExamProctoringPage() {
                       )}
                     </div>
                   </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="rounded-lg"
-                    onClick={() => openStudentProctoring(summary.userId)}
-                  >
-                    Review
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="rounded-lg"
+                      onClick={() => openStudentProctoring(summary.userId)}
+                    >
+                      Review
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="rounded-lg border-red-300 text-red-700 hover:bg-red-50"
+                      disabled={isDeleting === summary.userId}
+                      onClick={() => handleDeleteProctoring(summary.userId, summary.studentName)}
+                    >
+                      {isDeleting === summary.userId ? <Spinner className="size-4" /> : "Delete"}
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -323,6 +372,30 @@ export default function AdminExamProctoringPage() {
               Could not load student proctoring data.
             </div>
           )}
+
+          <div className="mt-4 flex items-center justify-between gap-2 border-t border-slate-200 pt-4">
+            {selectedUserId && data.summaries.find((s) => s.userId === selectedUserId) && (
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                className="rounded-lg"
+                disabled={isDeleting === selectedUserId}
+                onClick={async () => {
+                  const studentName = data.summaries.find((s) => s.userId === selectedUserId)!.studentName
+                  await handleDeleteProctoring(selectedUserId, studentName)
+                  setSelectedUserId(null)
+                  setStudentData(null)
+                }}
+              >
+                {isDeleting === selectedUserId ? <Spinner className="size-4" /> : null}
+                Delete All Proctoring Data
+              </Button>
+            )}
+            <Button type="button" variant="outline" onClick={() => { setSelectedUserId(null); setStudentData(null) }}>
+              Close
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

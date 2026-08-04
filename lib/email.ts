@@ -420,6 +420,165 @@ export async function sendExamScoreReleasedEmail(to: string, studentName: string
   return sendEmail({ to, subject, html })
 }
 
+type BookingEmailDetails = {
+  eventName: string
+  eventType: string
+  eventDates: string
+  venue: string
+  adminNote?: string
+  bookerName?: string
+  bookerEmail?: string
+  bookerPhone?: string
+}
+
+function buildBookingPanel(details: BookingEmailDetails) {
+  const rows = [
+    ["Event", details.eventName],
+    ["Type", details.eventType],
+    ["Date(s)", details.eventDates],
+    ["Venue", details.venue],
+  ]
+
+  if (details.bookerName) {
+    rows.push(["Booker", details.bookerName])
+  }
+
+  if (details.bookerEmail) {
+    rows.push(["Email", details.bookerEmail])
+  }
+
+  if (details.bookerPhone) {
+    rows.push(["Phone", details.bookerPhone])
+  }
+
+  const rowsHtml = rows
+    .map(
+      ([label, value]) => `
+        <tr>
+          <td style="padding: 8px 12px; border-bottom: 1px solid #eef2f7; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: #94a3b8; white-space: nowrap;">${escapeHtml(label)}</td>
+          <td style="padding: 8px 12px; border-bottom: 1px solid #eef2f7; font-size: 14px; color: #0f172a;">${escapeHtml(value)}</td>
+        </tr>
+      `,
+    )
+    .join("")
+
+  const adminNoteHtml = details.adminNote
+    ? `
+      <div style="margin-top: 18px; padding: 14px 16px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px;">
+        <p style="margin: 0; font-size: 14px; color: #92400e;"><strong>Note from the team:</strong> ${escapeHtml(details.adminNote)}</p>
+      </div>
+    `
+    : ""
+
+  return `
+    <div style="margin: 24px 0; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden;">
+      <table style="width: 100%; border-collapse: collapse;">
+        ${rowsHtml}
+      </table>
+    </div>
+    ${adminNoteHtml}
+  `
+}
+
+export async function sendBookingReceivedEmail(to: string, bookerName: string, details: Omit<BookingEmailDetails, "bookerName" | "bookerEmail" | "bookerPhone">) {
+  const subject = "We've received your booking request"
+  const html = buildEmailTemplate({
+    eyebrow: "Booking request received",
+    title: "Thank you, your request is pending",
+    greeting: `Dear ${bookerName},`,
+    intro: "Your request to host Minister Moses Akoh has been received and is now awaiting approval from the ministry team.",
+    panelHtml: buildBookingPanel({ ...details, bookerName }),
+    body: [
+      "Please note that your date(s) are not confirmed until the ministry team approves your request. You will receive a confirmation email once a decision has been made.",
+      "If you have any questions in the meantime, simply reply to this email.",
+    ],
+    accentColor: "#0891b2",
+    accentSoft: "#cffafe",
+    closing: "The Soaking Room Team",
+  })
+
+  return sendEmail({ to, subject, html })
+}
+
+export async function sendNewBookingNotificationEmail(recipients: string[], details: BookingEmailDetails) {
+  if (!recipients.length) {
+    return { success: true, messageId: null }
+  }
+
+  const subject = `New booking request: ${details.eventName}`
+  const html = buildEmailTemplate({
+    eyebrow: "New booking request",
+    title: "A new ministry booking needs review",
+    intro: `${details.bookerName || "Someone"} has submitted a new hosting request. Review the details below and approve or decline it from the admin dashboard.`,
+    panelHtml: buildBookingPanel(details),
+    accentColor: "#0f766e",
+    accentSoft: "#ccfbf1",
+    closing: "The Soaking Room Team",
+  })
+
+  const [primary = "", ...rest] = recipients.filter(Boolean)
+
+  if (!primary) {
+    return { success: true, messageId: null }
+  }
+
+  return sendEmail({
+    to: primary,
+    bcc: rest.length ? rest : undefined,
+    subject,
+    html,
+  })
+}
+
+export async function sendBookingApprovedEmail(to: string, bookerName: string, details: Omit<BookingEmailDetails, "bookerName" | "bookerEmail" | "bookerPhone">) {
+  const subject = `Booking confirmed: ${details.eventName}`
+  const html = buildEmailTemplate({
+    eyebrow: "Booking confirmed",
+    title: "Your booking has been approved",
+    greeting: `Dear ${bookerName},`,
+    intro: "Great news! Your request to host Minister Moses Akoh has been approved.",
+    panelHtml: buildBookingPanel({ ...details, bookerName }),
+    body: [
+      "The ministry team will be in touch to finalize travel, technical, and program details closer to the date.",
+      "Thank you for partnering with this ministry.",
+    ],
+    accentColor: "#15803d",
+    accentSoft: "#bbf7d0",
+    closing: "The Soaking Room Team",
+  })
+
+  return sendEmail({ to, subject, html })
+}
+
+export async function sendBookingRejectedEmail(to: string, bookerName: string, details: {
+  eventName: string
+  adminNote?: string
+}) {
+  const subject = `Update on your booking request: ${details.eventName}`
+  const html = buildEmailTemplate({
+    eyebrow: "Booking update",
+    title: "About your booking request",
+    greeting: `Dear ${bookerName},`,
+    intro: `Unfortunately, the ministry team was unable to approve your request to host Minister Moses Akoh for ${details.eventName}.`,
+    panelHtml: details.adminNote
+      ? `
+        <div style="margin: 24px 0; padding: 14px 16px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px;">
+          <p style="margin: 0; font-size: 14px; color: #92400e;"><strong>Reason:</strong> ${escapeHtml(details.adminNote)}</p>
+        </div>
+      `
+      : "",
+    body: [
+      "This may be due to scheduling conflicts or availability. If you would like to explore an alternative date, please reply to this email and the team will gladly assist.",
+      "Thank you for your interest and understanding.",
+    ],
+    accentColor: "#b45309",
+    accentSoft: "#fde68a",
+    closing: "The Soaking Room Team",
+  })
+
+  return sendEmail({ to, subject, html })
+}
+
 export async function sendBroadcastEmail(recipients: string[], payload: {
   title: string
   message: string

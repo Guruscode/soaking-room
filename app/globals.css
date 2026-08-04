@@ -20,7 +20,7 @@
   --accent: oklch(0.55 0.18 25);
   --accent-foreground: oklch(1 0 0);
   --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(1 0 0);
   --border: oklch(0.92 0 0);
   --input: oklch(0.96 0 0);
   --ring: oklch(0.45 0.15 30);
@@ -133,3 +133,33 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Booking calendar date markers */
+.rdp-booking-booked button[data-day] {
+  background-color: oklch(0.7 0.17 25);
+  color: white;
+}
+
+.rdp-booking-blocked button[data-day] {
+  background-color: oklch(0.72 0 0);
+  color: white;
+}
+
+.rdp-booking-pending button[data-day] {
+  background-color: oklch(0.92 0.13 85);
+  color: oklch(0.4 0.1 85);
+}
+
+.rdp-booking-selected button[data-day] {
+  background-color: oklch(0.55 0.16 195);
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 0 0 2px oklch(0.55 0.16 195 / 0.35);
+}
+
+.rdp-booking-booked button[data-day]:hover,
+.rdp-booking-blocked button[data-day]:hover {
+  background-color: oklch(0.6 0.17 25);
+  cursor: not-allowed;
+}
+

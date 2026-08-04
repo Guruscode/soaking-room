@@ -110,6 +110,7 @@ export type AcademySettings = {
   timezone: string
   defaultOnlineLink: string
   defaultVenue: string
+  bookingNotificationEmails: string
   updatedAt: string
 }
 
@@ -316,4 +317,106 @@ export type SettingsPayload = {
   timezone: string
   defaultOnlineLink: string
   defaultVenue: string
+  bookingNotificationEmails: string
+}
+
+export type MinistryBookingStatus = "pending" | "approved" | "rejected"
+
+export type MinistryQuestionnaire = {
+  // Section 1 — Event Overview
+  eventNameAndPurpose: string
+  eventDates: string[]
+  programSchedule: string
+  venueNameAndAddress: string
+  primaryContact: string
+  eventType: string
+  eventTypeOther: string
+  ministerRole: string
+  ministerRoleOther: string
+  // Section 3 — Musical & Technical Requirements
+  soundSystem: string
+  soundSystemSpecs: string
+  soundEngineerContact: string
+  bandOption: string
+  localMusiciansDetails: string
+  additionalMusicalNeeds: string
+  equipmentTransportHelp: string
+  equipmentLogistics: string
+  rehearsalSoundcheck: string
+  rehearsalSchedule: string
+  soundEngineerAvailable: string
+  secureStorage: string
+  // Section 4 — Travel & Transportation
+  transportMode: string
+  baggageFeesCovered: string
+  pickupDropOff: string
+  itineraryDeadline: string
+  parking: string
+  // Section 5 — Accommodation
+  hotel: string
+  alternativeAccommodation: string
+  runningWater: string
+  electricity: string
+  wifiAccess: string
+  dietaryPreferences: string
+  // Section 6 — Financial Arrangements
+  honorariumProvided: string
+  paymentMethod: string
+  cancellationPolicy: string
+  // Section 7 — Ministration Details
+  requestedTopics: string
+  stageTime: string
+  ministrationDuration: string
+  programOrder: string
+  // Section 8 — Intellectual Property
+  recordedBroadcast: string
+  recordingDetails: string
+  usageRights: string
+  mediaCopies: string
+  // Section 9 — Welfare & Team Support
+  foodRefreshments: string
+  additionalNeeds: string
+}
+
+export type MinistryBooking = {
+  id: string
+  fullName: string
+  email: string
+  phone: string
+  eventName: string
+  eventType: string
+  venue: string
+  eventDates: string[]
+  questionnaire: MinistryQuestionnaire
+  status: MinistryBookingStatus
+  adminNote: string | null
+  reviewedAt: string | null
+  reviewedBy: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export type MinistryBookingPayload = {
+  fullName: string
+  email: string
+  phone: string
+  questionnaire: MinistryQuestionnaire
+}
+
+export type BookingStatusPayload = {
+  status: MinistryBookingStatus
+  adminNote?: string
+}
+
+export type BlockedBookingDate = {
+  id: string
+  date: string
+  reason: string | null
+  createdAt: string
+}
+
+export type BookingAvailability = {
+  approvedDates: string[]
+  pendingDates: string[]
+  blockedDates: string[]
 }

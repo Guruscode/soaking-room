@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { Spinner } from "@/components/ui/spinner"
 import { useToast } from "@/hooks/use-toast"
 import { getErrorMessage } from "@/lib/errors"
@@ -22,6 +23,7 @@ const initialFormState: SettingsPayload = {
   timezone: "",
   defaultOnlineLink: "",
   defaultVenue: "",
+  bookingNotificationEmails: "",
 }
 
 export default function AdminSettingsPage() {
@@ -39,6 +41,7 @@ export default function AdminSettingsPage() {
       timezone: nextSettings.timezone,
       defaultOnlineLink: nextSettings.defaultOnlineLink,
       defaultVenue: nextSettings.defaultVenue,
+      bookingNotificationEmails: nextSettings.bookingNotificationEmails || "",
     })
   }
 
@@ -152,6 +155,7 @@ export default function AdminSettingsPage() {
             <Info label="Timezone" value={settings.timezone} />
             <Info label="Default Online Link" value={settings.defaultOnlineLink} />
             <Info label="Default Venue" value={settings.defaultVenue} />
+            <Info label="Booking Notification Emails" value={settings.bookingNotificationEmails || "—"} />
             <Info label="Last Updated" value={new Date(settings.updatedAt).toLocaleString("en-NG")} />
           </div>
         </div>
@@ -178,6 +182,16 @@ export default function AdminSettingsPage() {
             <Field label="Default Online Link" value={formState.defaultOnlineLink} onChange={(value) => setFormState((prev) => ({ ...prev, defaultOnlineLink: value }))} />
             <div className="md:col-span-2">
               <Field label="Default Venue" value={formState.defaultVenue} onChange={(value) => setFormState((prev) => ({ ...prev, defaultVenue: value }))} />
+            </div>
+            <div className="md:col-span-2">
+              <label className="mb-1 block text-sm font-medium text-slate-700">Booking Notification Emails</label>
+              <Textarea
+                value={formState.bookingNotificationEmails}
+                onChange={(event) => setFormState((prev) => ({ ...prev, bookingNotificationEmails: event.target.value }))}
+                rows={2}
+                className="rounded-xl"
+                placeholder="Extra emails notified on new bookings. Separate multiple addresses with commas or new lines."
+              />
             </div>
             <DialogFooter className="md:col-span-2">
               <Button

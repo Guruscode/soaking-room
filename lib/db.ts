@@ -7,9 +7,13 @@ import {
   sendAdminCreatedAccountEmail,
   sendAdmissionApprovedEmail,
   sendAdmissionRejectedEmail,
+  sendBookingApprovedEmail,
+  sendBookingReceivedEmail,
+  sendBookingRejectedEmail,
   sendBroadcastEmail,
   sendExamScoreReleasedEmail,
   sendExamStartedEmail,
+  sendNewBookingNotificationEmail,
   sendPasswordResetOtpEmail,
   sendRegistrationOtpEmail,
   sendRegistrationSubmittedEmail,
@@ -26,6 +30,9 @@ import type {
   AssignmentSubmissionPayload,
   AssignmentSubmissionReviewPayload,
   AssignmentSubmissionType,
+  BlockedBookingDate,
+  BookingAvailability,
+  BookingStatusPayload,
   BroadcastItem,
   BroadcastPayload,
   CurriculumItem,
@@ -38,6 +45,10 @@ import type {
   ExamStatus,
   ExamSubmitPayload,
   LoginPayload,
+  MinistryBooking,
+  MinistryBookingPayload,
+  MinistryBookingStatus,
+  MinistryQuestionnaire,
   NotificationItem,
   PasswordResetOtpRequestPayload,
   PasswordResetOtpRequestResult,
@@ -186,7 +197,33 @@ type DatabaseSettingsRow = {
   timezone: string
   default_online_link: string
   default_venue: string
+  booking_notification_emails: string
   updated_at: string
+}
+
+type DatabaseMinistryBookingRow = {
+  id: string
+  full_name: string
+  email: string
+  phone: string
+  event_name: string
+  event_type: string
+  venue: string
+  event_dates: string
+  questionnaire: string
+  status: MinistryBookingStatus
+  admin_note: string | null
+  reviewed_at: string | null
+  reviewed_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+type DatabaseBlockedBookingDateRow = {
+  id: string
+  date: string
+  reason: string | null
+  created_at: string
 }
 
 type DatabaseEventRegistrationRow = {
@@ -476,7 +513,102 @@ function mapSettings(row: DatabaseSettingsRow): AcademySettings {
     timezone: row.timezone,
     defaultOnlineLink: row.default_online_link,
     defaultVenue: row.default_venue,
+    bookingNotificationEmails: row.booking_notification_emails ?? "",
     updatedAt: row.updated_at,
+  }
+}
+
+function mapMinistryBooking(row: DatabaseMinistryBookingRow): MinistryBooking {
+  let questionnaire: MinistryQuestionnaire = {
+    eventNameAndPurpose: "",
+    eventDates: [],
+    programSchedule: "",
+    venueNameAndAddress: "",
+    primaryContact: "",
+    eventType: "",
+    eventTypeOther: "",
+    ministerRole: "",
+    ministerRoleOther: "",
+    soundSystem: "",
+    soundSystemSpecs: "",
+    soundEngineerContact: "",
+    bandOption: "",
+    localMusiciansDetails: "",
+    additionalMusicalNeeds: "",
+    equipmentTransportHelp: "",
+    equipmentLogistics: "",
+    rehearsalSoundcheck: "",
+    rehearsalSchedule: "",
+    soundEngineerAvailable: "",
+    secureStorage: "",
+    transportMode: "",
+    baggageFeesCovered: "",
+    pickupDropOff: "",
+    itineraryDeadline: "",
+    parking: "",
+    hotel: "",
+    alternativeAccommodation: "",
+    runningWater: "",
+    electricity: "",
+    wifiAccess: "",
+    dietaryPreferences: "",
+    honorariumProvided: "",
+    paymentMethod: "",
+    cancellationPolicy: "",
+    requestedTopics: "",
+    stageTime: "",
+    ministrationDuration: "",
+    programOrder: "",
+    recordedBroadcast: "",
+    recordingDetails: "",
+    usageRights: "",
+    mediaCopies: "",
+    foodRefreshments: "",
+    additionalNeeds: "",
+  }
+
+  try {
+    questionnaire = {
+      ...questionnaire,
+      ...(JSON.parse(row.questionnaire) as Partial<MinistryQuestionnaire>),
+    }
+  } catch {
+    // Keep the empty questionnaire shape if stored JSON is unreadable
+  }
+
+  let eventDates: string[] = []
+  try {
+    const parsed = JSON.parse(row.event_dates)
+    eventDates = Array.isArray(parsed) ? parsed.map(String) : []
+  } catch {
+    eventDates = []
+  }
+
+  return {
+    id: row.id,
+    fullName: row.full_name,
+    email: row.email,
+    phone: row.phone,
+    eventName: row.event_name,
+    eventType: row.event_type,
+    venue: row.venue,
+    eventDates,
+    questionnaire,
+    status: row.status,
+    adminNote: row.admin_note,
+    reviewedAt: row.reviewed_at,
+    reviewedBy: row.reviewed_by,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
+}
+
+function mapBlockedBookingDate(row: DatabaseBlockedBookingDateRow): BlockedBookingDate {
+  return {
+    id: row.id,
+    date: row.date,
+    reason: row.reason,
+    createdAt: row.created_at,
   }
 }
 
@@ -742,10 +874,10 @@ async function seedSettings() {
   await turso.execute({
     sql: `
       INSERT INTO academy_settings (
-        id, academy_name, support_email, timezone, default_online_link, default_venue
-      ) VALUES (?, ?, ?, ?, ?, ?)
+        id, academy_name, support_email, timezone, default_online_link, default_venue, booking_notification_emails
+      ) VALUES (?, ?, ?, ?, ?, ?, ?)
     `,
-    args: [randomUUID(), "The Soaking Room Academy", "academy@soakingroom.org", "Africa/Lagos", "https://meet.google.com", "The Soaking Room Auditorium"],
+    args: [randomUUID(), "The Soaking Room Academy", "academy@soakingroom.org", "Africa/Lagos", "https://meet.google.com", "The Soaking Room Auditorium", ""],
   })
 }
 
@@ -1122,9 +1254,40 @@ export async function ensureDatabaseSetup() {
             timezone TEXT NOT NULL,
             default_online_link TEXT NOT NULL,
             default_venue TEXT NOT NULL,
+            booking_notification_emails TEXT NOT NULL DEFAULT '',
             updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
           )
         `,
+        `
+          CREATE TABLE IF NOT EXISTS ministry_bookings (
+            id TEXT PRIMARY KEY,
+            full_name TEXT NOT NULL,
+            email TEXT NOT NULL,
+            phone TEXT NOT NULL,
+            event_name TEXT NOT NULL,
+            event_type TEXT NOT NULL,
+            venue TEXT NOT NULL,
+            event_dates TEXT NOT NULL DEFAULT '[]',
+            questionnaire TEXT NOT NULL DEFAULT '{}',
+            status TEXT NOT NULL DEFAULT 'pending',
+            admin_note TEXT,
+            reviewed_at TEXT,
+            reviewed_by TEXT,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+          )
+        `,
+        "CREATE INDEX IF NOT EXISTS idx_ministry_bookings_status ON ministry_bookings(status)",
+        "CREATE INDEX IF NOT EXISTS idx_ministry_bookings_email ON ministry_bookings(email)",
+        `
+          CREATE TABLE IF NOT EXISTS blocked_booking_dates (
+            id TEXT PRIMARY KEY,
+            date TEXT NOT NULL UNIQUE,
+            reason TEXT,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+          )
+        `,
+        "CREATE INDEX IF NOT EXISTS idx_blocked_booking_dates_date ON blocked_booking_dates(date)",
         `
           CREATE TABLE IF NOT EXISTS pending_registrations (
             id TEXT PRIMARY KEY,
@@ -1233,6 +1396,7 @@ export async function ensureDatabaseSetup() {
       }
 
       for (const statement of [
+        "ALTER TABLE academy_settings ADD COLUMN booking_notification_emails TEXT NOT NULL DEFAULT ''",
         "ALTER TABLE assignment_submissions ADD COLUMN score REAL",
         "ALTER TABLE assignment_submissions ADD COLUMN admin_comment TEXT",
         "ALTER TABLE assignment_submissions ADD COLUMN reviewed_at TEXT",
@@ -2351,7 +2515,8 @@ export async function updateAcademySettings(payload: SettingsPayload) {
   await turso.execute({
     sql: `
       UPDATE academy_settings
-      SET academy_name = ?, support_email = ?, timezone = ?, default_online_link = ?, default_venue = ?, updated_at = CURRENT_TIMESTAMP
+      SET academy_name = ?, support_email = ?, timezone = ?, default_online_link = ?, default_venue = ?,
+          booking_notification_emails = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `,
     args: [
@@ -2360,6 +2525,7 @@ export async function updateAcademySettings(payload: SettingsPayload) {
       ensureRequiredValue(payload.timezone, "Timezone"),
       ensureRequiredValue(payload.defaultOnlineLink, "Default online link"),
       ensureRequiredValue(payload.defaultVenue, "Default venue"),
+      payload.bookingNotificationEmails?.trim() || "",
       settings.id,
     ],
   })
@@ -3073,6 +3239,306 @@ export async function listProctoringSummariesByExam() {
       recordings: { count: 0, totalDuration: 0 },
       events: Object.fromEntries(userEvents),
     }
+  })
+}
+
+// #endregion
+
+export async function deleteStudentProctoringData(userId: string) {
+  await ensureDatabaseSetup()
+
+  await turso.execute({
+    sql: "DELETE FROM exam_proctoring_camera_snapshots WHERE user_id = ?",
+    args: [userId],
+  })
+
+  await turso.execute({
+    sql: "DELETE FROM exam_proctoring_events WHERE user_id = ?",
+    args: [userId],
+  })
+}
+
+// #region Minister Booking
+
+function formatQuestionnaireDates(dates: string[]) {
+  return dates
+    .map((date) => {
+      const parsed = new Date(`${date}T00:00:00`)
+      return Number.isNaN(parsed.getTime())
+        ? date
+        : parsed.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })
+    })
+    .join(", ")
+}
+
+async function getMinistryBookingById(id: string) {
+  const result = await turso.execute({
+    sql: "SELECT * FROM ministry_bookings WHERE id = ? LIMIT 1",
+    args: [id],
+  })
+
+  return result.rows[0] ? (result.rows[0] as unknown as DatabaseMinistryBookingRow) : null
+}
+
+function normalizeEventDate(date: string) {
+  const normalized = String(date).slice(0, 10)
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(normalized)) {
+    throw new AppError("Invalid event date format. Expected YYYY-MM-DD.")
+  }
+
+  const [year, month, day] = normalized.split("-").map(Number)
+  const parsed = new Date(year, month - 1, day)
+
+  if (
+    Number.isNaN(parsed.getTime()) ||
+    parsed.getFullYear() !== year ||
+    parsed.getMonth() !== month - 1 ||
+    parsed.getDate() !== day
+  ) {
+    throw new AppError("Invalid event date.")
+  }
+
+  return normalized
+}
+
+function normalizeBandOption(option: string, venue: string) {
+  if (option !== "Ideal (Full band of 10 members)" && option !== "Alternative 1 (6 team members)" && option !== "Alternative 2 (5 team members)" && option !== "Minimal (4 team members)") {
+    throw new AppError("Invalid band option.")
+  }
+
+  if (/abuja/i.test(venue) && option !== "Ideal (Full band of 10 members)") {
+    throw new AppError("Bookings within Abuja must use the full band (Ideal option).")
+  }
+
+  return option
+}
+
+export async function createMinistryBooking(payload: MinistryBookingPayload) {
+  await ensureDatabaseSetup()
+
+  const q = payload.questionnaire
+  const fullName = ensureRequiredValue(payload.fullName, "Full name")
+  const email = ensureRequiredValue(payload.email, "Email").toLowerCase()
+  const phone = ensureRequiredValue(payload.phone, "Phone")
+
+  if (!Array.isArray(q.eventDates) || q.eventDates.length === 0) {
+    throw new AppError("Please select at least one event date.")
+  }
+
+  const normalizedDates = q.eventDates.map(normalizeEventDate)
+  const venue = ensureRequiredValue(q.venueNameAndAddress, "Venue")
+  normalizeBandOption(q.bandOption, venue)
+
+  const availability = await getBookingAvailability()
+  const unavailableDates = [...availability.approvedDates, ...availability.blockedDates]
+
+  for (const date of normalizedDates) {
+    if (unavailableDates.includes(date)) {
+      throw new AppError("One or more of the selected dates is no longer available. Please pick another date.", 409)
+    }
+
+    const [year, month, day] = date.split("-").map(Number)
+    const requested = new Date(year, month - 1, day)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    if (requested < today) {
+      throw new AppError("Please select a date in the future.")
+    }
+  }
+
+  const id = randomUUID()
+
+  await turso.execute({
+    sql: `
+      INSERT INTO ministry_bookings (
+        id, full_name, email, phone, event_name, event_type, venue, event_dates, questionnaire, status
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+    `,
+    args: [
+      id,
+      fullName,
+      email,
+      phone,
+      ensureRequiredValue(q.eventNameAndPurpose, "Event name"),
+      q.eventType === "Other" ? ensureRequiredValue(q.eventTypeOther, "Event type") : ensureRequiredValue(q.eventType, "Event type"),
+      venue,
+      JSON.stringify(normalizedDates),
+      JSON.stringify(q),
+    ],
+  })
+
+  const booking = await getMinistryBookingById(id)
+  if (!booking) {
+    throw new AppError("Your booking could not be created. Please try again.", 500)
+  }
+
+  const mappedBooking = mapMinistryBooking(booking)
+
+  await sendEmailSafely("booking received", () =>
+    sendBookingReceivedEmail(mappedBooking.email, mappedBooking.fullName, {
+      eventName: mappedBooking.eventName,
+      eventType: mappedBooking.eventType,
+      eventDates: formatQuestionnaireDates(mappedBooking.eventDates),
+      venue: mappedBooking.venue,
+    }),
+  )
+
+  return mappedBooking
+}
+
+export async function listMinistryBookings(status?: MinistryBookingStatus) {
+  await ensureDatabaseSetup()
+
+  const result =
+    status === "pending" || status === "approved" || status === "rejected"
+      ? await turso.execute({
+          sql: "SELECT * FROM ministry_bookings WHERE status = ? ORDER BY created_at DESC",
+          args: [status],
+        })
+      : await turso.execute("SELECT * FROM ministry_bookings ORDER BY created_at DESC")
+
+  return result.rows.map((row) => mapMinistryBooking(row as unknown as DatabaseMinistryBookingRow))
+}
+
+export async function updateMinistryBookingStatus(id: string, payload: BookingStatusPayload, adminName: string) {
+  await ensureDatabaseSetup()
+
+  if (payload.status !== "pending" && payload.status !== "approved" && payload.status !== "rejected") {
+    throw new AppError("Invalid booking status.")
+  }
+
+  const existing = await getMinistryBookingById(id)
+  if (!existing) {
+    throw new AppError("Booking not found.", 404)
+  }
+
+  // Guard against double approval: don't approve a booking that overlaps an already-approved date
+  if (payload.status === "approved" && existing.status !== "approved") {
+    let existingDates: string[] = []
+    try {
+      const parsedDates = JSON.parse(existing.event_dates)
+      existingDates = Array.isArray(parsedDates) ? parsedDates.map(String) : []
+    } catch {
+      existingDates = []
+    }
+
+    const availability = await getBookingAvailability()
+
+    for (const date of existingDates) {
+      if (availability.approvedDates.includes(date)) {
+        throw new AppError("This booking's date is already approved for another event. Choose a different booking or reject this one first.", 409)
+      }
+    }
+  }
+
+  await turso.execute({
+    sql: `
+      UPDATE ministry_bookings
+      SET status = ?, admin_note = ?, reviewed_at = CURRENT_TIMESTAMP, reviewed_by = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `,
+    args: [payload.status, payload.adminNote?.trim() || null, adminName, id],
+  })
+
+  const updated = await getMinistryBookingById(id)
+  if (!updated) {
+    throw new AppError("Booking not found.", 404)
+  }
+
+  const mappedBooking = mapMinistryBooking(updated)
+  const formattedDates = formatQuestionnaireDates(mappedBooking.eventDates)
+
+  if (mappedBooking.status === "approved") {
+    void sendEmailSafely("booking approved", () =>
+      sendBookingApprovedEmail(mappedBooking.email, mappedBooking.fullName, {
+        eventName: mappedBooking.eventName,
+        eventType: mappedBooking.eventType,
+        eventDates: formattedDates,
+        venue: mappedBooking.venue,
+        adminNote: mappedBooking.adminNote || undefined,
+      }),
+    )
+  }
+
+  if (mappedBooking.status === "rejected") {
+    void sendEmailSafely("booking rejected", () =>
+      sendBookingRejectedEmail(mappedBooking.email, mappedBooking.fullName, {
+        eventName: mappedBooking.eventName,
+        adminNote: mappedBooking.adminNote || undefined,
+      }),
+    )
+  }
+
+  return mappedBooking
+}
+
+export async function getBookingAvailability(): Promise<BookingAvailability> {
+  await ensureDatabaseSetup()
+
+  const [bookings, blockedRows] = await Promise.all([
+    turso.execute("SELECT id, event_dates, status FROM ministry_bookings"),
+    turso.execute("SELECT date FROM blocked_booking_dates"),
+  ])
+
+  const approvedDates = new Set<string>()
+  const pendingDates = new Set<string>()
+
+  for (const row of bookings.rows) {
+    const bookingRow = row as unknown as { event_dates: string; status: string }
+    let dates: string[] = []
+
+    try {
+      const parsed = JSON.parse(bookingRow.event_dates)
+      dates = Array.isArray(parsed) ? parsed.map(String) : []
+    } catch {
+      dates = []
+    }
+
+    const target = bookingRow.status === "approved" ? approvedDates : bookingRow.status === "pending" ? pendingDates : null
+    if (!target) continue
+    for (const date of dates) {
+      target.add(date)
+    }
+  }
+
+  const blockedDates = blockedRows.rows.map((row) => String((row as unknown as { date: string }).date))
+
+  return {
+    approvedDates: [...approvedDates].sort(),
+    pendingDates: [...pendingDates].sort(),
+    blockedDates: [...blockedDates].sort(),
+  }
+}
+
+export async function listBlockedBookingDates() {
+  await ensureDatabaseSetup()
+  const result = await turso.execute("SELECT * FROM blocked_booking_dates ORDER BY date ASC")
+  return result.rows.map((row) => mapBlockedBookingDate(row as unknown as DatabaseBlockedBookingDateRow))
+}
+
+export async function blockBookingDate(date: string, reason?: string) {
+  await ensureDatabaseSetup()
+
+  const normalizedDate = date.slice(0, 10)
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(normalizedDate)) {
+    throw new AppError("Invalid date. Expected YYYY-MM-DD.")
+  }
+
+  await turso.execute({
+    sql: "INSERT INTO blocked_booking_dates (id, date, reason) VALUES (?, ?, ?) ON CONFLICT(date) DO NOTHING",
+    args: [randomUUID(), normalizedDate, reason?.trim() || null],
+  })
+
+  return listBlockedBookingDates()
+}
+
+export async function unblockBookingDate(date: string) {
+  await ensureDatabaseSetup()
+  await turso.execute({
+    sql: "DELETE FROM blocked_booking_dates WHERE date = ?",
+    args: [date.slice(0, 10)],
   })
 }
 
