@@ -622,3 +622,36 @@ export async function sendBroadcastEmail(recipients: string[], payload: {
     text: `${payload.title}\n\n${payload.message}`,
   })
 }
+
+export async function sendSpiritSpaWelcomeEmail(to: string, attendeeName: string) {
+  const subject = "Spirit Spa; We're excited to have you!"
+  const html = buildEmailTemplate({
+    eyebrow: "The Soaking Room",
+    title: "We're excited to have you!",
+    greeting: `Dear Beautiful Ladies,`,
+    intro: "Thank you so much for signing up for Spirit Spa! We're so excited to have you join us for this special time of refreshing, intimate worship, prophecy and becoming all that God has called us to be. It promises to be an exciting time in the presence of the Lord and in the fellowship of other beautiful women!",
+    body: [
+      "We'd love for everyone to come dressed in their most girly, Godly attire. Feminine, beautiful, modest, and absolutely YOU! Think pretty, classy, joyful, and Jesus-approved.",
+      "We're looking forward to seeing you, spending time together, and having an amazing time in God's presence.",
+      "Spirit Spa is almost here, and we can't wait! Here's a quick reminder of the details:",
+    ],
+    panelHtml: `
+      <div style="margin: 24px 0; padding: 28px; background: linear-gradient(135deg, #FDF8F5, #F8F1E9); border: 2px dashed #D8A8A0; border-radius: 16px; text-align: center;">
+        <div style="font-size: 40px; margin-bottom: 12px;">🌸</div>
+        <h2 style="margin: 0 0 8px; font-size: 18px; color: #8B7355; font-weight: 600;">Spirit Spa</h2>
+        <div style="margin: 16px 0; padding: 14px 0; border-top: 1px dashed #E8D5C8; border-bottom: 1px dashed #E8D5C8;">
+          <p style="margin: 4px 0; font-size: 14px; color: #B38B6B;"><strong style="color: #8B7355;">📅 Date:</strong> Saturday 29th August, 2026</p>
+          <p style="margin: 4px 0; font-size: 14px; color: #B38B6B;"><strong style="color: #8B7355;">⏰ Time:</strong> 5pm (WAT)</p>
+          <p style="margin: 4px 0; font-size: 14px; color: #B38B6B;"><strong style="color: #8B7355;">📍 Venue:</strong> ATW Center, CBD Abuja</p>
+        </div>
+      </div>
+    `,
+    accentColor: "#D8A8A0",
+    accentSoft: "#FDF8F5",
+    ctaLabel: "Event Details",
+    ctaUrl: `${getAppUrl()}/events/spirit-spa`,
+    closing: "The Soaking Room Team",
+  })
+
+  return sendEmail({ to, subject, html })
+}

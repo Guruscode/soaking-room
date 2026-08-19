@@ -205,6 +205,11 @@ export function DatesStep({
 
   return (
     <div className="space-y-6">
+      <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800 sm:text-sm">
+        <Info className="mr-1 inline size-3.5" />
+        Due to the high demand and limited availability, we strongly recommend submitting your booking request at least <strong>30 days</strong> before the proposed date of your programme to allow sufficient time for scheduling and confirmation.
+      </div>
+
       {isLoading ? (
         <div className="flex items-center justify-center rounded-2xl border border-slate-200 py-12 text-sm text-slate-500">
           Loading calendar...
@@ -646,6 +651,20 @@ export function FinanceStep({ q, set }: { q: MinistryQuestionnaire; set: Questio
           onChange={(v) => set("honorariumProvided", v)}
           options={["Yes", "No"]}
         />
+        {q.honorariumProvided === "Yes" ? (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+            <p className="font-semibold">Honorarium payment terms</p>
+            <p className="mt-1">
+              If Yes, kindly remit the agreed honorarium to the account details that will be provided subsequently.
+            </p>
+            <p className="mt-1">
+              Payment is expected to be made within <strong>24–48 hours maximum</strong>. Any failure by the host church to
+              remit the honorarium within this stipulated timeframe will be considered a breach of integrity and professional
+              commitment, and the host church should consider the honorarium forfeited, with no further obligation to make the
+              payment thereafter.
+            </p>
+          </div>
+        ) : null}
         <OptionGroup
           label="Payment method for any agreed expenses"
           required

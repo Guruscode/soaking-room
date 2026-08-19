@@ -32,6 +32,14 @@ export default function BookingPage() {
                 people into His presence through music that blends Gospel, Contemporary, Rock, and African styles. Select
                 your preferred date(s) on the calendar, complete the questionnaire, and our team will review your request.
               </p>
+
+              <div className="mt-6 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 sm:text-base">
+                <p>
+                  <strong>Important:</strong> Due to the high demand and limited availability in Minister Moses Akoh&rsquo;s
+                  booking schedule, we strongly recommend submitting your booking request at least <strong>30 days</strong> before
+                  the proposed date of your programme to allow sufficient time for scheduling and confirmation.
+                </p>
+              </div>
             </div>
           </motion.div>
 

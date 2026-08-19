@@ -1116,6 +1116,64 @@ export async function markEventTicketSent(registrationId: string) {
   })
 }
 
+export type EventRegistration = {
+  id: string
+  name: string
+  email: string
+  phone: string
+  ticketSentAt: string | null
+  createdAt: string
+}
+
+export async function listEventRegistrations(eventSlug: string): Promise<EventRegistration[]> {
+  await ensureDatabaseSetup()
+
+  const result = await turso.execute({
+    sql: "SELECT * FROM event_registrations WHERE event_slug = ? ORDER BY created_at DESC",
+    args: [eventSlug],
+  })
+
+  return result.rows.map((row) => {
+    const r = row as unknown as DatabaseEventRegistrationRow
+    return {
+      id: r.id,
+      name: r.name,
+      email: r.email,
+      phone: r.phone,
+      ticketSentAt: r.ticket_sent_at,
+      createdAt: r.created_at,
+    }
+  })
+}
+
+export async function sendSpiritSpaBulkEmail(eventSlug: string, sendFn: (email: string, name: string) => Promise<unknown>) {
+  await ensureDatabaseSetup()
+
+  const registrations = await listEventRegistrations(eventSlug)
+  let sent = 0
+  let failed = 0
+
+  for (const batch of chunkArray(registrations, 25)) {
+    await Promise.all(
+      batch.map(async (reg) => {
+        try {
+          await sendFn(reg.email, reg.name)
+          await turso.execute({
+            sql: "UPDATE event_registrations SET ticket_sent_at = CURRENT_TIMESTAMP WHERE id = ?",
+            args: [reg.id],
+          })
+          sent += 1
+        } catch (error) {
+          console.error(`Failed to send email to ${reg.email}:`, error)
+          failed += 1
+        }
+      }),
+    )
+  }
+
+  return { total: registrations.length, sent, failed }
+}
+
 export async function ensureDatabaseSetup() {
   if (!setupPromise) {
     setupPromise = (async () => {
