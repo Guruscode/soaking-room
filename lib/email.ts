@@ -641,7 +641,7 @@ export async function sendSpiritSpaWelcomeEmail(to: string, attendeeName: string
         <h2 style="margin: 0 0 8px; font-size: 18px; color: #8B7355; font-weight: 600;">Spirit Spa</h2>
         <div style="margin: 16px 0; padding: 14px 0; border-top: 1px dashed #E8D5C8; border-bottom: 1px dashed #E8D5C8;">
           <p style="margin: 4px 0; font-size: 14px; color: #B38B6B;"><strong style="color: #8B7355;">📅 Date:</strong> Saturday 29th August, 2026</p>
-          <p style="margin: 4px 0; font-size: 14px; color: #B38B6B;"><strong style="color: #8B7355;">⏰ Time:</strong> 5pm (WAT)</p>
+          <p style="margin: 4px 0; font-size: 14px; color: #B38B6B;"><strong style="color: #8B7355;">⏰ Time:</strong> 4pm (WAT)</p>
           <p style="margin: 4px 0; font-size: 14px; color: #B38B6B;"><strong style="color: #8B7355;">📍 Venue:</strong> ATW Center, CBD Abuja</p>
         </div>
       </div>
