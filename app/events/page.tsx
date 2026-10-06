@@ -1,10 +1,35 @@
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
-import { CalendarDays, MapPin, Sparkles, ArrowRight, Flower2 } from "lucide-react"
+import { CalendarDays, MapPin, Sparkles, ArrowRight, Flower2, Waves, UtensilsCrossed } from "lucide-react"
+import Image from "next/image"
 import Link from "next/link"
 
 const events = [
+  {
+    title: "The Soaking Room",
+    subtitle: "A Sacred Gathering",
+    date: "Sunday 18th October, 2026 · 4PM Prompt",
+    venue: "Charis Hub, Atlantic Mall, Utako, Abuja",
+    description:
+      "An afternoon of deep worship, rest and encounter — come and soak in God's presence.",
+    slug: "soaking-room",
+    accent: "emerald" as const,
+    icon: Waves,
+    image: "/soaking-room.webp",
+  },
+  {
+    title: "A Kitchen in the Sky",
+    subtitle: "Jesus My Kingsman Redeemer",
+    date: "Sunday 1st November, 2026 · 6PM – 8PM",
+    venue: "Strictly by registration",
+    description:
+      "A call to dine with the divine — an evening set apart to feast in the presence of the King.",
+    slug: "kitchen-in-the-sky",
+    accent: "royal" as const,
+    icon: UtensilsCrossed,
+    image: "/kitchen-in-the-sky.webp",
+  },
   {
     title: "The Spirit Spa",
     subtitle: "The Soaking Room Presents",
@@ -25,9 +50,25 @@ function EventCard({ event }: { event: (typeof events)[number] }) {
       ? "from-[#6B5544] via-[#5C4A3A] to-[#4A3D32]"
       : event.accent === "emerald"
         ? "from-emerald-950 via-teal-900 to-cyan-950"
-        : "from-blue-950 via-indigo-900 to-violet-950"
-  const accentLight = event.accent === "blush" ? "text-[#D8A8A0]" : event.accent === "emerald" ? "text-emerald-300" : "text-blue-300"
-  const badgeBg = event.accent === "blush" ? "bg-[#D8A8A0]/20 border-[#D8A8A0]/30" : event.accent === "emerald" ? "bg-emerald-500/20 border-emerald-300/30" : "bg-blue-500/20 border-blue-300/30"
+        : event.accent === "royal"
+          ? "from-[#1E1B4B] via-[#312E81] to-[#4C1D95]"
+          : "from-blue-950 via-indigo-900 to-violet-950"
+  const accentLight =
+    event.accent === "blush"
+      ? "text-[#D8A8A0]"
+      : event.accent === "emerald"
+        ? "text-emerald-300"
+        : event.accent === "royal"
+          ? "text-amber-300"
+          : "text-blue-300"
+  const badgeBg =
+    event.accent === "blush"
+      ? "bg-[#D8A8A0]/20 border-[#D8A8A0]/30"
+      : event.accent === "emerald"
+        ? "bg-emerald-500/20 border-emerald-300/30"
+        : event.accent === "royal"
+          ? "bg-amber-400/20 border-amber-300/30"
+          : "bg-blue-500/20 border-blue-300/30"
 
   return (
     <Link href={`/events/${event.slug}`} className="group block">
@@ -71,9 +112,24 @@ function EventCard({ event }: { event: (typeof events)[number] }) {
           </div>
 
           <div className="hidden md:flex items-center justify-center">
-            <div className={`w-32 h-32 rounded-full ${badgeBg} backdrop-blur-sm border flex items-center justify-center`}>
-              <Icon className="w-14 h-14 text-white/80" />
-            </div>
+            {"image" in event && event.image ? (
+              <div
+                className="w-44 rounded-2xl overflow-hidden shadow-2xl"
+                style={{ backgroundColor: "rgba(255,255,255,0.08)" }}
+              >
+                <Image
+                  src={event.image}
+                  alt={`${event.title} flyer`}
+                  width={400}
+                  height={500}
+                  className="w-full h-auto object-cover"
+                />
+              </div>
+            ) : (
+              <div className={`w-32 h-32 rounded-full ${badgeBg} backdrop-blur-sm border flex items-center justify-center`}>
+                <Icon className="w-14 h-14 text-white/80" />
+              </div>
+            )}
           </div>
         </div>
       </div>
