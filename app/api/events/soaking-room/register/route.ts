@@ -25,6 +25,7 @@ export async function POST(request: Request) {
     // Send ticket email (non-blocking)
     try {
       await sendEventTicketEmail(registration.email, registration.name, {
+        slug: "soaking-room",
         title: "The Soaking Room",
         date: "Sunday 18th October, 2026",
         venue: "Charis Hub, Atlantic Mall, Utako, Abuja",

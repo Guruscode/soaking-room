@@ -320,6 +320,7 @@ export async function sendAdmissionRejectedEmail(to: string, userName: string) {
 }
 
 export async function sendEventTicketEmail(to: string, attendeeName: string, eventDetails: {
+  slug: string
   title: string
   date: string
   venue: string
@@ -332,26 +333,23 @@ export async function sendEventTicketEmail(to: string, attendeeName: string, eve
     greeting: `Dear ${attendeeName},`,
     intro: "Thank you for registering! Your ticket is confirmed below.",
     panelHtml: `
-      <div style="margin: 24px 0; padding: 28px; background: linear-gradient(135deg, #FDF8F5, #F8F1E9); border: 2px dashed #D8A8A0; border-radius: 16px; text-align: center;">
-        <div style="font-size: 40px; margin-bottom: 12px;">🌸</div>
-        <h2 style="margin: 0 0 8px; font-size: 18px; color: #8B7355; font-weight: 600;">${escapeHtml(eventDetails.title)}</h2>
-        <div style="margin: 16px 0; padding: 14px 0; border-top: 1px dashed #E8D5C8; border-bottom: 1px dashed #E8D5C8;">
-          <p style="margin: 4px 0; font-size: 14px; color: #B38B6B;"><strong style="color: #8B7355;">📅 Date:</strong> ${escapeHtml(eventDetails.date)}</p>
-          <p style="margin: 4px 0; font-size: 14px; color: #B38B6B;"><strong style="color: #8B7355;">⏰ Time:</strong> ${escapeHtml(eventDetails.time)}</p>
-          <p style="margin: 4px 0; font-size: 14px; color: #B38B6B;"><strong style="color: #8B7355;">📍 Venue:</strong> ${escapeHtml(eventDetails.venue)}</p>
+      <div style="margin: 24px 0; padding: 28px; background: linear-gradient(135deg, #f0fdfa, #f8fafc); border: 1px solid #99f6e4; border-radius: 16px; text-align: center;">
+        <p style="margin: 0 0 12px; font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: #0f766e;">Event ticket</p>
+        <h2 style="margin: 0 0 8px; font-size: 18px; color: #134e4a; font-weight: 600;">${escapeHtml(eventDetails.title)}</h2>
+        <div style="margin: 16px 0; padding: 14px 0; border-top: 1px solid #ccfbf1; border-bottom: 1px solid #ccfbf1;">
+          <p style="margin: 4px 0; font-size: 14px; color: #334155;"><strong style="color: #0f172a;">Date:</strong> ${escapeHtml(eventDetails.date)}</p>
+          <p style="margin: 4px 0; font-size: 14px; color: #334155;"><strong style="color: #0f172a;">Time:</strong> ${escapeHtml(eventDetails.time)}</p>
+          <p style="margin: 4px 0; font-size: 14px; color: #334155;"><strong style="color: #0f172a;">Venue:</strong> ${escapeHtml(eventDetails.venue)}</p>
         </div>
-        <p style="margin: 12px 0 0; font-size: 13px; color: #B38B6B;">Present this ticket at the entrance</p>
-        <p style="margin: 4px 0 0; font-size: 12px; color: #C9A66B;">Ticket #: ${escapeHtml(to.split("")[0].toUpperCase())}${Math.random().toString(36).substring(2, 8).toUpperCase()}</p>
+        <p style="margin: 12px 0 0; font-size: 13px; color: #475569;">Please keep this email for your event details.</p>
+        <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">Ticket reference: ${escapeHtml(to[0].toUpperCase())}${Math.random().toString(36).substring(2, 8).toUpperCase()}</p>
       </div>
     `,
-    body: [
-      "We look forward to having you at this powerful event!",
-      "Doors will open 30 minutes before the start time.",
-    ],
-    accentColor: "#D8A8A0",
-    accentSoft: "#FDF8F5",
+    body: ["We look forward to welcoming you!"],
+    accentColor: "#0f766e",
+    accentSoft: "#ccfbf1",
     ctaLabel: "Event Details",
-    ctaUrl: `${getAppUrl()}/events/spirit-spa`,
+    ctaUrl: `${getAppUrl()}/events/${encodeURIComponent(eventDetails.slug)}`,
     closing: "The Soaking Room Team",
   })
 
