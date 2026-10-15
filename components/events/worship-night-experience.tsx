@@ -10,6 +10,7 @@ import {
   CalendarDays,
   CheckCircle2,
   Clock3,
+  Cross,
   Heart,
   MapPin,
   Music2,
@@ -189,7 +190,9 @@ export function WorshipNightExperience() {
         <div className="absolute -left-40 bottom-0 -z-10 h-96 w-96 rounded-full bg-[#8f2f1b]/20 blur-3xl" />
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#e0b661]/70 to-transparent" />
 
-        <div className="mx-auto grid max-w-7xl gap-12 px-5 pb-16 pt-12 sm:px-8 md:min-h-[calc(100svh-88px)] md:grid-cols-[1.05fr_0.95fr] md:items-center md:py-16 lg:px-12">
+        <WorshipAtmosphere />
+
+        <div className="relative z-10 mx-auto grid max-w-7xl gap-12 px-5 pb-16 pt-12 sm:px-8 md:min-h-[calc(100svh-88px)] md:grid-cols-[1.05fr_0.95fr] md:items-center md:py-16 lg:px-12">
           <div className="relative z-10 mx-auto w-full max-w-2xl space-y-8">
             <Link href="/" className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-[#d2ae78] transition hover:text-[#f3d194]">
               <span className="h-px w-8 bg-[#d2ae78]" />
@@ -396,5 +399,133 @@ export function WorshipNightExperience() {
 
       <RegistrationDialog open={registrationOpen} onOpenChange={setRegistrationOpen} />
     </main>
+  )
+}
+
+function WorshipAtmosphere() {
+  const symbols = [
+    { Icon: Cross, className: "left-[8%] top-[18%]", delay: "0s", duration: "12s", size: "h-5 w-5" },
+    { Icon: Music2, className: "left-[45%] top-[12%]", delay: "2s", duration: "10s", size: "h-4 w-4" },
+    { Icon: Heart, className: "left-[4%] top-[68%]", delay: "4s", duration: "14s", size: "h-4 w-4" },
+    { Icon: Sparkles, className: "right-[46%] top-[72%]", delay: "1s", duration: "11s", size: "h-5 w-5" },
+    { Icon: Music2, className: "right-[7%] top-[24%]", delay: "3s", duration: "13s", size: "h-5 w-5" },
+    { Icon: Cross, className: "right-[8%] top-[78%]", delay: "5s", duration: "15s", size: "h-4 w-4" },
+  ]
+
+  return (
+    <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
+      <svg
+        className="absolute inset-0 h-full w-full opacity-70"
+        viewBox="0 0 1440 900"
+        preserveAspectRatio="none"
+        fill="none"
+      >
+        <defs>
+          <linearGradient id="worship-trail" x1="0" y1="0" x2="1440" y2="900" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#F1D28C" stopOpacity="0" />
+            <stop offset=".48" stopColor="#F1D28C" stopOpacity=".48" />
+            <stop offset="1" stopColor="#C65C3B" stopOpacity="0" />
+          </linearGradient>
+          <radialGradient id="worship-glow">
+            <stop stopColor="#F1D28C" stopOpacity=".85" />
+            <stop offset="1" stopColor="#F1D28C" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+        <path className="worship-trail worship-trail-one" d="M-80 250C190 40 390 440 675 253S1120 40 1520 230" stroke="url(#worship-trail)" strokeWidth="1" />
+        <path className="worship-trail worship-trail-two" d="M-60 690C245 840 395 390 720 590S1170 830 1510 560" stroke="url(#worship-trail)" strokeWidth="1" />
+        <path className="worship-trail worship-trail-three" d="M150 -60C340 190 190 450 500 510S920 340 1270 980" stroke="url(#worship-trail)" strokeWidth=".8" />
+        <path d="M0 450H1440" stroke="url(#worship-trail)" strokeOpacity=".18" strokeWidth=".5" />
+        <circle className="worship-particle worship-particle-one" cx="18%" cy="31%" r="42" fill="url(#worship-glow)" />
+        <circle className="worship-particle worship-particle-two" cx="76%" cy="19%" r="34" fill="url(#worship-glow)" />
+        <circle className="worship-particle worship-particle-three" cx="59%" cy="78%" r="28" fill="url(#worship-glow)" />
+        <circle className="worship-particle worship-particle-four" cx="89%" cy="62%" r="38" fill="url(#worship-glow)" />
+      </svg>
+
+      {symbols.map(({ Icon, className, delay, duration, size }, index) => (
+        <span
+          key={`${className}-${index}`}
+          className={`worship-symbol pointer-events-auto absolute flex h-10 w-10 items-center justify-center rounded-full border border-[#e5c37c]/20 bg-[#e5c37c]/[0.045] text-[#e9ca88]/70 shadow-[0_0_30px_rgba(229,195,124,0.08)] backdrop-blur-sm transition duration-500 hover:scale-125 hover:border-[#e5c37c]/50 hover:bg-[#e5c37c]/10 hover:text-[#ffe3a4] hover:shadow-[0_0_32px_rgba(229,195,124,0.2)] ${className}`}
+          style={{ animationDelay: delay, animationDuration: duration }}
+        >
+          <Icon className={size} strokeWidth={1.4} />
+        </span>
+      ))}
+
+      <style jsx>{`
+        .worship-trail {
+          stroke-dasharray: 6 18;
+          animation: worship-line-drift 28s linear infinite;
+        }
+
+        .worship-trail-two {
+          animation-duration: 34s;
+          animation-direction: reverse;
+        }
+
+        .worship-trail-three {
+          animation-duration: 40s;
+        }
+
+        .worship-particle {
+          opacity: 0.38;
+          animation: worship-pulse 7s ease-in-out infinite;
+        }
+
+        .worship-particle-two {
+          animation-delay: 1.5s;
+          animation-duration: 9s;
+        }
+
+        .worship-particle-three {
+          animation-delay: 3s;
+          animation-duration: 8s;
+        }
+
+        .worship-particle-four {
+          animation-delay: 2s;
+          animation-duration: 10s;
+        }
+
+        .worship-symbol {
+          animation: worship-float 8s ease-in-out infinite;
+        }
+
+        @keyframes worship-line-drift {
+          to {
+            stroke-dashoffset: -240;
+          }
+        }
+
+        @keyframes worship-pulse {
+          0%,
+          100% {
+            opacity: 0.18;
+            transform: scale(0.82);
+          }
+          50% {
+            opacity: 0.55;
+            transform: scale(1.2);
+          }
+        }
+
+        @keyframes worship-float {
+          0%,
+          100% {
+            transform: translate3d(0, 0, 0) rotate(-7deg);
+          }
+          50% {
+            transform: translate3d(7px, -18px, 0) rotate(9deg);
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .worship-trail,
+          .worship-particle,
+          .worship-symbol {
+            animation: none;
+          }
+        }
+      `}</style>
+    </div>
   )
 }
