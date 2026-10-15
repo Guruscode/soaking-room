@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
-import { ArrowLeft, Mail } from "lucide-react"
+import { ArrowLeft, ArrowUpRight, Mail } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Footer } from "@/components/footer"
 import { Header } from "@/components/header"
@@ -65,6 +65,12 @@ export default function WorshipNightDonatePage() {
                   These account details are provided specifically for this event.
                 </p>
               </div>
+              <Button asChild variant="outline" className="w-fit rounded-lg border-amber-900/20">
+                <Link href="/worship-night">
+                  Event details & registration
+                  <ArrowUpRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
             </div>
 
             <div className="overflow-hidden rounded-2xl border border-amber-200 bg-white shadow-xl">

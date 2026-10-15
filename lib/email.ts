@@ -325,6 +325,7 @@ export async function sendEventTicketEmail(to: string, attendeeName: string, eve
   date: string
   venue: string
   time: string
+  pagePath?: string
 }) {
   const subject = `Your Ticket: ${eventDetails.title}`
   const html = buildEmailTemplate({
@@ -349,7 +350,7 @@ export async function sendEventTicketEmail(to: string, attendeeName: string, eve
     accentColor: "#0f766e",
     accentSoft: "#ccfbf1",
     ctaLabel: "Event Details",
-    ctaUrl: `${getAppUrl()}/events/${encodeURIComponent(eventDetails.slug)}`,
+    ctaUrl: `${getAppUrl()}${eventDetails.pagePath ?? `/events/${encodeURIComponent(eventDetails.slug)}`}`,
     closing: "The Soaking Room Team",
   })
 

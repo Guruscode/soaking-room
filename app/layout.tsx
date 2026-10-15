@@ -7,6 +7,7 @@ import { getSessionUser } from "@/lib/session"
 import "./globals.css"
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://www.thesoakingroom.com"),
   title: "Moses Akoh - Music Ministry",
   description:
     "Support the music ministry of Moses Akoh. Donate to bless the ministry and spread the gospel through music.",

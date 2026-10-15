@@ -1,6 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Link from "next/link"
+import { ArrowUpRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -87,15 +89,24 @@ export default function AdminEventsPage() {
               View registered attendees and send the Spirit Spa welcome email to all of them at once.
             </p>
           </div>
-          <Button
-            type="button"
-            className="rounded-xl bg-slate-900"
-            onClick={() => setIsConfirmOpen(true)}
-            disabled={isLoading || registrations.length === 0 || isSending}
-          >
-            {isSending ? <Spinner className="size-4" /> : null}
-            Send Welcome Emails
-          </Button>
+          <div className="flex flex-col gap-2 sm:items-end">
+            <Button
+              type="button"
+              className="rounded-xl bg-slate-900"
+              onClick={() => setIsConfirmOpen(true)}
+              disabled={isLoading || registrations.length === 0 || isSending}
+            >
+              {isSending ? <Spinner className="size-4" /> : null}
+              Send Welcome Emails
+            </Button>
+            <Link
+              href="/admin/events/worship-night"
+              className="inline-flex items-center gap-1 text-sm font-medium text-slate-600 hover:text-slate-900"
+            >
+              Worship Night registrations
+              <ArrowUpRight className="h-4 w-4" />
+            </Link>
+          </div>
         </div>
       </div>
 
