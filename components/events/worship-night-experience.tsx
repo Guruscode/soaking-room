@@ -331,7 +331,7 @@ export function WorshipNightExperience() {
               </span>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#b9955f]">Can’t join in person?</p>
               <p className="mt-2 font-semibold text-[#fff4e4]">Join us live</p>
-              <p className="mt-1 text-sm leading-6 text-[#c3ad96]">The poster says “Moses Akoh” on YouTube.</p>
+              <p className="mt-1 text-sm leading-6 text-[#c3ad96]">“Moses Akoh” on YouTube.</p>
               <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-[#e5bd6d]">
                 Live stream · Moses Akoh <Play className="h-3.5 w-3.5 fill-current" />
               </span>
