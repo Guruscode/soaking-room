@@ -1,31 +1,39 @@
-import { Header } from "@/components/header"
-import { Hero } from "@/components/hero"
-import { About } from "@/components/about"
-import { Gallery } from "@/components/gallery"
-import { Testimonials } from "@/components/testimonials"
-import { Donation } from "@/components/donation"
-import { YoutubeMinistration } from "@/components/youtube-ministration"
-import { MusicLinks } from "@/components/music-links"
-import { BankDetails } from "@/components/bank-details"
-import { Footer } from "@/components/footer"
-import { SpiritSpaPromo } from "@/components/spirit-spa-promo"
+// MAINTENANCE MODE: the homepage currently shows the maintenance screen.
+// When maintenance is over, delete the two maintenance lines below and uncomment the original homepage.
+import { MaintenanceContent } from "./maintenance/maintenance-content"
 
 export default function Home() {
-  return (
-    <main className="min-h-screen bg-background">
-      <Header />
-   
-      <Hero />
-      <About />
-       <MusicLinks />
-          <SpiritSpaPromo />
-      <Gallery />
-      <Testimonials />
-      <YoutubeMinistration />
-      <Donation />
-     
-      {/* <BankDetails /> */}
-      <Footer />
-    </main>
-  )
+  return <MaintenanceContent />
 }
+
+// import { Header } from "@/components/header"
+// import { Hero } from "@/components/hero"
+// import { About } from "@/components/about"
+// import { Gallery } from "@/components/gallery"
+// import { Testimonials } from "@/components/testimonials"
+// import { Donation } from "@/components/donation"
+// import { YoutubeMinistration } from "@/components/youtube-ministration"
+// import { MusicLinks } from "@/components/music-links"
+// import { BankDetails } from "@/components/bank-details"
+// import { Footer } from "@/components/footer"
+// import { SpiritSpaPromo } from "@/components/spirit-spa-promo"
+//
+// export default function Home() {
+//   return (
+//     <main className="min-h-screen bg-background">
+//       <Header />
+//
+//       <Hero />
+//       <About />
+//        <MusicLinks />
+//           <SpiritSpaPromo />
+//       <Gallery />
+//       <Testimonials />
+//       <YoutubeMinistration />
+//       <Donation />
+//
+//       {/* <BankDetails /> */}
+//       <Footer />
+//     </main>
+//   )
+// }
