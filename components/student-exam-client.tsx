@@ -661,8 +661,8 @@ export function StudentExamClient({ initialData }: { initialData: ExamData }) {
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 p-4">
-          <h3 className="text-lg font-semibold text-slate-900">{data.config.title}</h3>
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-shadow hover:shadow-[0_18px_40px_-28px_rgb(15_23_42/0.35)]">
+          <h3 className="text-lg font-semibold tracking-tight text-ink">{data.config.title}</h3>
           <p className="text-sm text-slate-600">{data.config.description}</p>
           <p className="mt-2 text-sm text-slate-500">
             Course: {data.config.courseCode} &middot; {data.config.cohort} &middot; Total: {data.config.totalMarks} marks
@@ -676,7 +676,7 @@ export function StudentExamClient({ initialData }: { initialData: ExamData }) {
   if (proctoringRequired && proctoringState.error) {
     return (
       <div className="space-y-4">
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4">
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-5">
           <h2 className="text-2xl font-semibold text-red-900">Proctoring Unavailable</h2>
           <p className="mt-2 text-sm text-red-700">{proctoringState.error}</p>
           <p className="mt-1 text-sm text-red-600">
@@ -754,7 +754,7 @@ export function StudentExamClient({ initialData }: { initialData: ExamData }) {
   if (examEndedByAdmin || (data.config.status !== "active" && !examSubmitted && !data.answer?.isSubmitted)) {
     return (
       <div className="space-y-4">
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
           <h2 className="text-2xl font-semibold text-amber-900">
             {examEndedByAdmin ? "Exam Ended" : "No Active Exam"}
           </h2>
@@ -769,8 +769,8 @@ export function StudentExamClient({ initialData }: { initialData: ExamData }) {
             </p>
           ) : null}
         </div>
-        <div className="rounded-xl border border-slate-200 p-4">
-          <h3 className="text-lg font-semibold text-slate-900">{data.config.title}</h3>
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-shadow hover:shadow-[0_18px_40px_-28px_rgb(15_23_42/0.35)]">
+          <h3 className="text-lg font-semibold tracking-tight text-ink">{data.config.title}</h3>
           <p className="text-sm text-slate-600">{data.config.description}</p>
           <p className="mt-2 text-sm text-slate-500">
             Course: {data.config.courseCode} &middot; {data.config.cohort} &middot; Total: {data.config.totalMarks} marks
@@ -805,8 +805,8 @@ export function StudentExamClient({ initialData }: { initialData: ExamData }) {
           ) : null}
         </div>
 
-        <div className="rounded-xl border border-slate-200 p-4">
-          <h3 className="text-lg font-semibold text-slate-900">Your Answers</h3>
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-shadow hover:shadow-[0_18px_40px_-28px_rgb(15_23_42/0.35)]">
+          <h3 className="text-lg font-semibold tracking-tight text-ink">Your Answers</h3>
           <div className="mt-3 space-y-4">
             {data.questions.map((q) => {
               const answerText = answers[q.id] || ""
@@ -837,7 +837,7 @@ export function StudentExamClient({ initialData }: { initialData: ExamData }) {
       <div className="sticky top-0 z-20 -mx-3 -mt-3 rounded-t-2xl border-b border-slate-200 bg-white px-3 pb-3 pt-3 sm:-mx-6 sm:-mt-6 sm:px-6 sm:pt-6">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">{data.config.title}</h2>
+            <h2 className="text-lg font-semibold tracking-tight text-ink">{data.config.title}</h2>
             <p className="text-xs text-slate-500">{data.config.description} &middot; {data.config.courseCode}</p>
           </div>
           <div className="flex items-center gap-4">
@@ -915,7 +915,7 @@ export function StudentExamClient({ initialData }: { initialData: ExamData }) {
       {/* Questions */}
       <div className="space-y-6">
         {Object.entries(sections).map(([sectionTitle, sectionQuestions]) => (
-          <div key={sectionTitle} className="rounded-xl border border-slate-200 p-4">
+          <div key={sectionTitle} className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-shadow hover:shadow-[0_18px_40px_-28px_rgb(15_23_42/0.35)]">
             <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">{sectionTitle}</h3>
             <div className="mt-3 space-y-4">
               {sectionQuestions.map((q) => (
@@ -954,7 +954,7 @@ export function StudentExamClient({ initialData }: { initialData: ExamData }) {
           </p>
           <Button
             type="button"
-            className="rounded-xl bg-slate-900"
+            className="bg-ink"
             onClick={() => setShowSubmitDialog(true)}
             disabled={isSubmitting}
           >
@@ -1002,12 +1002,12 @@ export function StudentExamClient({ initialData }: { initialData: ExamData }) {
           </div>
 
           <DialogFooter className="gap-2">
-            <Button type="button" variant="outline" className="rounded-xl" onClick={() => setShowSubmitDialog(false)} disabled={isSubmitting}>
+            <Button type="button" variant="outline" onClick={() => setShowSubmitDialog(false)} disabled={isSubmitting}>
               Continue Writing
             </Button>
             <Button
               type="button"
-              className="rounded-xl bg-slate-900"
+              className="bg-ink"
               onClick={() => handleSubmit(false)}
               disabled={isSubmitting}
             >

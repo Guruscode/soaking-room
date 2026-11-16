@@ -93,7 +93,7 @@ export default function StudentExamMessagesPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
+      <div className="flex items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 px-5 py-10 text-sm text-slate-500">
         <Spinner />
         Loading messages...
       </div>
@@ -103,7 +103,7 @@ export default function StudentExamMessagesPage() {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="rounded-xl border border-slate-200 p-4">
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-shadow hover:shadow-[0_18px_40px_-28px_rgb(15_23_42/0.35)]">
         <h2 className="text-2xl font-semibold text-slate-900">💬 Message Admin</h2>
         <p className="mt-1 text-sm text-slate-600">
           Send a message to the exam administrator if you need clarification or assistance. Your name and email will be included.
@@ -111,7 +111,7 @@ export default function StudentExamMessagesPage() {
       </div>
 
       {/* Compose new message */}
-      <div className="rounded-xl border border-slate-200 p-4">
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-shadow hover:shadow-[0_18px_40px_-28px_rgb(15_23_42/0.35)]">
         <label className="mb-2 block text-sm font-medium text-slate-700">New Message</label>
         <Textarea
           rows={4}
@@ -134,11 +134,11 @@ export default function StudentExamMessagesPage() {
       </div>
 
       {/* Conversation thread */}
-      <div className="rounded-xl border border-slate-200 p-4">
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-shadow hover:shadow-[0_18px_40px_-28px_rgb(15_23_42/0.35)]">
         <h3 className="mb-1 text-lg font-semibold text-slate-900">Conversation</h3>
 
         {messages.length === 0 ? (
-          <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 px-5 py-10 text-center text-sm text-slate-500">
             No previous messages. Send a message above to start a conversation with the admin.
           </div>
         ) : (
@@ -149,7 +149,7 @@ export default function StudentExamMessagesPage() {
               return (
                 <div key={msg.id} className="space-y-2">
                   {/* Student's own message */}
-                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-5">
                     <div className="flex items-start justify-between gap-2">
                       <p className="text-xs font-semibold text-slate-500">You</p>
                       <p className="shrink-0 text-xs text-slate-400">

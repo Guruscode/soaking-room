@@ -89,7 +89,7 @@ export function BlockedDatesManager({
               className="rounded-lg"
             />
           </div>
-          <Button type="button" size="sm" className="w-full rounded-lg bg-slate-900" disabled={isSaving} onClick={addBlockedDate}>
+          <Button type="button" size="sm" className="w-full bg-ink" disabled={isSaving} onClick={addBlockedDate}>
             <Plus className="size-4" />
             Block this date
           </Button>

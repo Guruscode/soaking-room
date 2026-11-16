@@ -137,8 +137,8 @@ export function StudentAssignmentsClient({ assignments: initialAssignments }: { 
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-slate-200 p-4">
-        <h2 className="text-2xl font-semibold">Assignments</h2>
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-shadow hover:shadow-[0_18px_40px_-28px_rgb(15_23_42/0.35)]">
+        <h2 className="text-2xl font-semibold tracking-tight text-ink md:text-3xl">Assignments</h2>
         <p className="mt-2 text-sm text-slate-600">
           Review each assignment, choose how you want to submit it, and send it directly to the admin team.
         </p>
@@ -149,10 +149,10 @@ export function StudentAssignmentsClient({ assignments: initialAssignments }: { 
           const form = forms[assignment.id]
 
           return (
-            <div key={assignment.id} className="rounded-xl border border-slate-200 p-4">
+            <div key={assignment.id} className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-shadow hover:shadow-[0_18px_40px_-28px_rgb(15_23_42/0.35)]">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <h3 className="text-lg font-semibold text-slate-900">{assignment.title}</h3>
+                  <h3 className="text-lg font-semibold tracking-tight text-ink">{assignment.title}</h3>
                   <p className="mt-1 text-sm text-slate-500">
                     Due {new Date(assignment.dueDate).toLocaleDateString("en-NG", { dateStyle: "medium" })}
                   </p>
@@ -213,11 +213,11 @@ export function StudentAssignmentsClient({ assignments: initialAssignments }: { 
 
               <div className="mt-4 grid gap-4">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">Submission Method</label>
+                  <label className="mb-1.5 block text-sm font-medium text-slate-700">Submission Method</label>
                   <select
                     value={form.submissionType}
                     onChange={(event) => onSubmissionTypeChange(assignment.id, event.target.value as AssignmentSubmissionType)}
-                    className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs"
+                    className="flex h-11 w-full rounded-xl border border-input bg-white px-3.5 py-2 text-sm outline-none transition-[box-shadow,border-color] focus-visible:border-brand focus-visible:ring-4 focus-visible:ring-brand/15"
                   >
                     <option value="text">Text</option>
                     <option value="image">Image</option>
@@ -227,7 +227,7 @@ export function StudentAssignmentsClient({ assignments: initialAssignments }: { 
 
                 {form.submissionType === "text" ? (
                   <div>
-                    <label className="mb-1 block text-sm font-medium text-slate-700">Submission Text</label>
+                    <label className="mb-1.5 block text-sm font-medium text-slate-700">Submission Text</label>
                     <Textarea
                       rows={6}
                       value={form.textContent || ""}
@@ -276,7 +276,7 @@ export function StudentAssignmentsClient({ assignments: initialAssignments }: { 
                 <div>
                   <Button
                     type="button"
-                    className="rounded-xl bg-slate-900"
+                    className="bg-ink"
                     disabled={form.isSaving}
                     onClick={() => void onSubmit(assignment.id)}
                   >

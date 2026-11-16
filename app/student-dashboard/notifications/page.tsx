@@ -14,17 +14,17 @@ export default async function StudentNotificationsPage() {
   const { notifications } = await getStudentDashboardData(sessionUser.id)
 
   return (
-    <div className="rounded-xl border border-slate-200 p-4">
-      <h2 className="text-2xl font-semibold">Notifications</h2>
+    <div>
+      <h2 className="text-2xl font-semibold tracking-tight text-ink md:text-3xl">Notifications</h2>
       <p className="mt-2 text-sm text-slate-600">Broadcasts from the academy appear here automatically.</p>
       <div className="mt-4 space-y-4">
         {notifications.map((item) => {
           const meetingUrl = normalizeExternalUrl(item.meetingLink)
 
           return (
-            <article key={item.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <article key={item.id} className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-5">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className="text-lg font-semibold text-slate-900">{item.title}</h3>
+                <h3 className="text-lg font-semibold tracking-tight text-ink">{item.title}</h3>
                 <span className="text-xs text-slate-500">
                   {new Date(item.createdAt).toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" })}
                 </span>

@@ -29,7 +29,7 @@ export function DonationModal({ open, onOpenChange }: DonationModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl text-foreground">Bank Transfer Details</DialogTitle>
           <DialogDescription className="text-base text-muted-foreground">
@@ -42,7 +42,7 @@ export function DonationModal({ open, onOpenChange }: DonationModalProps) {
             {/* Account Name */}
             <div className="space-y-2">
               <label className="text-sm font-semibold text-foreground">Account Name</label>
-              <div className="flex items-center gap-2 bg-muted/50 p-3 rounded-lg">
+              <div className="flex items-center gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
                 <span className="text-foreground flex-1 font-mono text-sm">{bankDetails.accountName}</span>
                 <Button
                   size="sm"
@@ -51,7 +51,7 @@ export function DonationModal({ open, onOpenChange }: DonationModalProps) {
                   className="h-8 w-8 p-0"
                 >
                   {copied === "name" ? (
-                    <Check className="w-4 h-4 text-primary" />
+                    <Check className="w-4 h-4 text-brand" />
                   ) : (
                     <Copy className="w-4 h-4 text-muted-foreground" />
                   )}
@@ -62,7 +62,7 @@ export function DonationModal({ open, onOpenChange }: DonationModalProps) {
             {/* Account Number */}
             <div className="space-y-2">
               <label className="text-sm font-semibold text-foreground">Account Number</label>
-              <div className="flex items-center gap-2 bg-muted/50 p-3 rounded-lg">
+              <div className="flex items-center gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
                 <span className="text-foreground flex-1 font-mono text-sm font-bold">{bankDetails.accountNumber}</span>
                 <Button
                   size="sm"
@@ -71,7 +71,7 @@ export function DonationModal({ open, onOpenChange }: DonationModalProps) {
                   className="h-8 w-8 p-0"
                 >
                   {copied === "number" ? (
-                    <Check className="w-4 h-4 text-primary" />
+                    <Check className="w-4 h-4 text-brand" />
                   ) : (
                     <Copy className="w-4 h-4 text-muted-foreground" />
                   )}
@@ -82,7 +82,7 @@ export function DonationModal({ open, onOpenChange }: DonationModalProps) {
             {/* Bank Name */}
             <div className="space-y-2">
               <label className="text-sm font-semibold text-foreground">Bank Name</label>
-              <div className="flex items-center gap-2 bg-muted/50 p-3 rounded-lg">
+              <div className="flex items-center gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
                 <span className="text-foreground flex-1 font-mono text-sm">{bankDetails.bankName}</span>
                 <Button
                   size="sm"
@@ -91,7 +91,7 @@ export function DonationModal({ open, onOpenChange }: DonationModalProps) {
                   className="h-8 w-8 p-0"
                 >
                   {copied === "bank" ? (
-                    <Check className="w-4 h-4 text-primary" />
+                    <Check className="w-4 h-4 text-brand" />
                   ) : (
                     <Copy className="w-4 h-4 text-muted-foreground" />
                   )}
@@ -102,7 +102,7 @@ export function DonationModal({ open, onOpenChange }: DonationModalProps) {
             {/* Swift Code */}
             <div className="space-y-2">
               <label className="text-sm font-semibold text-foreground">Swift Code</label>
-              <div className="flex items-center gap-2 bg-muted/50 p-3 rounded-lg">
+              <div className="flex items-center gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
                 <span className="text-foreground flex-1 font-mono text-sm font-bold">{bankDetails.swiftCode}</span>
                 <Button
                   size="sm"
@@ -111,7 +111,7 @@ export function DonationModal({ open, onOpenChange }: DonationModalProps) {
                   className="h-8 w-8 p-0"
                 >
                   {copied === "swift" ? (
-                    <Check className="w-4 h-4 text-primary" />
+                    <Check className="w-4 h-4 text-brand" />
                   ) : (
                     <Copy className="w-4 h-4 text-muted-foreground" />
                   )}
@@ -123,7 +123,7 @@ export function DonationModal({ open, onOpenChange }: DonationModalProps) {
           {/* Bank Address */}
           <div className="space-y-2 pt-4 border-t border-border">
             <label className="text-sm font-semibold text-foreground">Bank Address</label>
-            <div className="flex items-start gap-2 bg-muted/50 p-3 rounded-lg">
+            <div className="flex items-start gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
               <span className="text-foreground flex-1 text-sm">{bankDetails.bankAddress}</span>
               <Button
                 size="sm"
@@ -132,7 +132,7 @@ export function DonationModal({ open, onOpenChange }: DonationModalProps) {
                 className="h-8 w-8 p-0 flex-shrink-0"
               >
                 {copied === "address" ? (
-                  <Check className="w-4 h-4 text-primary" />
+                  <Check className="w-4 h-4 text-brand" />
                 ) : (
                   <Copy className="w-4 h-4 text-muted-foreground" />
                 )}

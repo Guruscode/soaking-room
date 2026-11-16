@@ -31,7 +31,7 @@ export function BookingDetail({ booking }: { booking: MinistryBooking }) {
 
   return (
     <div className="space-y-3">
-      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+      <div className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-5">
         <Row label="Booker" value={booking.fullName} />
         <Row label="Email" value={booking.email} />
         <Row label="Phone" value={booking.phone} />

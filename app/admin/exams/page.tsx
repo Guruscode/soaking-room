@@ -206,7 +206,7 @@ export default function AdminExamsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
+      <div className="flex items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 px-5 py-10 text-sm text-slate-500">
         <Spinner />
         Loading exam data...
       </div>
@@ -216,7 +216,7 @@ export default function AdminExamsPage() {
   if (!data) {
     return (
       <div className="space-y-4">
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4">
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-5">
           <h2 className="font-semibold text-red-900">Could not load exam data</h2>
           <p className="mt-1 text-sm text-red-700">Refresh the page or try again later.</p>
         </div>
@@ -240,10 +240,10 @@ export default function AdminExamsPage() {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="rounded-xl border border-slate-200 p-4">
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-shadow hover:shadow-[0_18px_40px_-28px_rgb(15_23_42/0.35)]">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="text-2xl font-semibold">Exams CMS</h2>
+            <h2 className="text-2xl font-semibold tracking-tight text-ink md:text-3xl">Exams CMS</h2>
             <p className="mt-1 text-sm text-slate-600">
               {data.config.title} &mdash; {data.config.description}
             </p>
@@ -261,9 +261,9 @@ export default function AdminExamsPage() {
       </div>
 
       {/* Exam Info Cards */}
-      <div className="rounded-xl border border-slate-200 p-4">
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-shadow hover:shadow-[0_18px_40px_-28px_rgb(15_23_42/0.35)]">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-lg font-semibold text-slate-900">Exam Settings</h3>
+          <h3 className="text-lg font-semibold tracking-tight text-ink">Exam Settings</h3>
           <Button type="button" variant="outline" size="sm" className="rounded-lg" onClick={openEditConfig}>
             Edit Config
           </Button>
@@ -275,15 +275,15 @@ export default function AdminExamsPage() {
               {data.config.status}
             </p>
           </div>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <div className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-5">
             <p className="text-sm text-slate-500">Total Marks</p>
             <p className="mt-1 text-lg font-semibold text-slate-900">{data.config.totalMarks}</p>
           </div>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <div className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-5">
             <p className="text-sm text-slate-500">Duration</p>
             <p className="mt-1 text-lg font-semibold text-slate-900">{data.config.durationMinutes} mins</p>
           </div>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <div className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-5">
             <p className="text-sm text-slate-500">{data.config.courseCode}</p>
             <p className="mt-1 text-lg font-semibold text-slate-900">{data.config.cohort}</p>
           </div>
@@ -291,8 +291,8 @@ export default function AdminExamsPage() {
       </div>
 
       {/* Questions */}
-      <div className="rounded-xl border border-slate-200 p-4">
-        <h3 className="text-lg font-semibold text-slate-900">Questions ({data.questions.length} total)</h3>
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-shadow hover:shadow-[0_18px_40px_-28px_rgb(15_23_42/0.35)]">
+        <h3 className="text-lg font-semibold tracking-tight text-ink">Questions ({data.questions.length} total)</h3>
         <div className="mt-3 space-y-6">
           {Object.entries(sections).map(([sectionTitle, sectionQuestions]) => (
             <div key={sectionTitle}>
@@ -314,9 +314,9 @@ export default function AdminExamsPage() {
       </div>
 
       {/* Submissions */}
-      <div className="rounded-xl border border-slate-200 p-4">
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-shadow hover:shadow-[0_18px_40px_-28px_rgb(15_23_42/0.35)]">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <h3 className="text-lg font-semibold text-slate-900">Student Submissions</h3>
+          <h3 className="text-lg font-semibold tracking-tight text-ink">Student Submissions</h3>
           <p className="text-sm text-slate-500">
             {submittedCount} submitted &middot; {unsubmittedCount} in progress &middot; {reviewedCount} reviewed
           </p>
@@ -329,7 +329,7 @@ export default function AdminExamsPage() {
         ) : (
           <div className="mt-3 space-y-3">
             {data.submissions.map((submission) => (
-              <div key={submission.id} className="rounded-xl border border-slate-200 p-4">
+              <div key={submission.id} className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-shadow hover:shadow-[0_18px_40px_-28px_rgb(15_23_42/0.35)]">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <p className="font-medium text-slate-900">{submission.studentName}</p>
@@ -408,7 +408,7 @@ export default function AdminExamsPage() {
 
       {/* Edit Config Dialog */}
       <Dialog open={isEditConfigOpen} onOpenChange={setIsEditConfigOpen}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl sm:p-8">
           <DialogHeader>
             <DialogTitle>Edit Exam Configuration</DialogTitle>
             <DialogDescription>
@@ -417,7 +417,7 @@ export default function AdminExamsPage() {
           </DialogHeader>
           <div className="grid gap-4">
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Title</label>
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">Title</label>
               <Input
                 value={configForm.title}
                 onChange={(e) => setConfigForm((prev) => ({ ...prev, title: e.target.value }))}
@@ -425,7 +425,7 @@ export default function AdminExamsPage() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Description</label>
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">Description</label>
               <Input
                 value={configForm.description}
                 onChange={(e) => setConfigForm((prev) => ({ ...prev, description: e.target.value }))}
@@ -434,7 +434,7 @@ export default function AdminExamsPage() {
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Course Code</label>
+                <label className="mb-1.5 block text-sm font-medium text-slate-700">Course Code</label>
                 <Input
                   value={configForm.courseCode}
                   onChange={(e) => setConfigForm((prev) => ({ ...prev, courseCode: e.target.value }))}
@@ -442,7 +442,7 @@ export default function AdminExamsPage() {
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Cohort</label>
+                <label className="mb-1.5 block text-sm font-medium text-slate-700">Cohort</label>
                 <Input
                   value={configForm.cohort}
                   onChange={(e) => setConfigForm((prev) => ({ ...prev, cohort: e.target.value }))}
@@ -452,7 +452,7 @@ export default function AdminExamsPage() {
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Total Marks</label>
+                <label className="mb-1.5 block text-sm font-medium text-slate-700">Total Marks</label>
                 <Input
                   type="number"
                   min="1"
@@ -462,7 +462,7 @@ export default function AdminExamsPage() {
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Duration (minutes)</label>
+                <label className="mb-1.5 block text-sm font-medium text-slate-700">Duration (minutes)</label>
                 <Input
                   type="number"
                   min="1"
@@ -473,7 +473,7 @@ export default function AdminExamsPage() {
               </div>
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Instructions</label>
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">Instructions</label>
               <Textarea
                 rows={6}
                 value={configForm.instructions}
@@ -498,10 +498,10 @@ export default function AdminExamsPage() {
             </div>
           </div>
           <DialogFooter className="gap-2">
-            <Button type="button" variant="outline" className="rounded-xl" onClick={() => setIsEditConfigOpen(false)} disabled={isSavingConfig}>
+            <Button type="button" variant="outline" onClick={() => setIsEditConfigOpen(false)} disabled={isSavingConfig}>
               Cancel
             </Button>
-            <Button type="button" className="rounded-xl bg-slate-900" onClick={saveConfig} disabled={isSavingConfig}>
+            <Button type="button" className="bg-ink" onClick={saveConfig} disabled={isSavingConfig}>
               {isSavingConfig ? <Spinner className="size-4" /> : null}
               Save Configuration
             </Button>
@@ -511,7 +511,7 @@ export default function AdminExamsPage() {
 
       {/* Answers Modal */}
       <Dialog open={Boolean(viewingAnswers)} onOpenChange={(open) => { if (!open) setViewingAnswers(null) }}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl sm:p-8">
           <DialogHeader>
             <DialogTitle>{viewingAnswers?.studentName || "Student Answers"}</DialogTitle>
             <DialogDescription>
@@ -534,7 +534,7 @@ export default function AdminExamsPage() {
                   const answerMap = new Map(answers.map((a) => [a.questionId, a.answer]))
 
                   return data.questions.map((q) => (
-                    <div key={q.id} className="rounded-xl border border-slate-200 p-4">
+                    <div key={q.id} className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-shadow hover:shadow-[0_18px_40px_-28px_rgb(15_23_42/0.35)]">
                       <div className="flex gap-3">
                         <span className="shrink-0 text-sm font-bold text-slate-400">Q{q.questionNumber}.</span>
                         <div>
@@ -557,8 +557,8 @@ export default function AdminExamsPage() {
                 }
               })()}
 
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                <label className="mb-1 block text-sm font-medium text-slate-700">Score (out of {data.config.totalMarks})</label>
+              <div className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-5">
+                <label className="mb-1.5 block text-sm font-medium text-slate-700">Score (out of {data.config.totalMarks})</label>
                 <div className="flex items-center gap-3">
                   <Input
                     type="number"
@@ -571,7 +571,7 @@ export default function AdminExamsPage() {
                   />
                   <Button
                     type="button"
-                    className="rounded-xl bg-slate-900"
+                    className="bg-ink"
                     disabled={isSavingScore}
                     onClick={saveScore}
                   >

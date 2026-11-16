@@ -31,22 +31,22 @@ export default function StudentProfilePage() {
   ]
 
   return (
-    <div className="rounded-xl border border-slate-200 p-4">
-      <h2 className="text-2xl font-semibold">Profile</h2>
+    <div>
+      <h2 className="text-2xl font-semibold tracking-tight text-ink md:text-3xl">Profile</h2>
       <p className="mt-2 text-sm text-slate-600">Your dashboard session is tied to the account created during registration.</p>
       <div className="mt-3 overflow-x-auto">
         <table className="min-w-full text-left text-sm">
           <thead>
-            <tr className="border-b border-slate-200 text-slate-500">
-              <th className="py-2 pr-4 font-medium">Field</th>
-              <th className="py-2 pr-4 font-medium">Value</th>
+            <tr className="border-b border-slate-200 text-[0.7rem] uppercase tracking-[0.1em] text-slate-500">
+              <th className="py-3 pr-4 font-medium">Field</th>
+              <th className="py-3 pr-4 font-medium">Value</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={row.id} className="border-b border-slate-100 text-slate-700">
-                <td className="py-2 pr-4">{row.field}</td>
-                <td className="py-2 pr-4 capitalize">{row.value}</td>
+              <tr key={row.id} className="border-b border-slate-100 text-slate-700 transition-colors hover:bg-slate-50/80">
+                <td className="py-3.5 pr-4">{row.field}</td>
+                <td className="py-3.5 pr-4 capitalize">{row.value}</td>
               </tr>
             ))}
           </tbody>

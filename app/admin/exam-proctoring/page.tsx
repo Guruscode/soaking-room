@@ -122,7 +122,7 @@ export default function AdminExamProctoringPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
+      <div className="flex items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 px-5 py-10 text-sm text-slate-500">
         <Spinner />
         Loading proctoring data...
       </div>
@@ -132,7 +132,7 @@ export default function AdminExamProctoringPage() {
   if (!data) {
     return (
       <div className="space-y-4">
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4">
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-5">
           <h2 className="font-semibold text-red-900">Could not load proctoring data</h2>
           <p className="mt-1 text-sm text-red-700">Refresh the page or try again later.</p>
         </div>
@@ -159,8 +159,8 @@ export default function AdminExamProctoringPage() {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="rounded-xl border border-slate-200 p-4">
-        <h2 className="text-2xl font-semibold">Exam Proctoring</h2>
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-shadow hover:shadow-[0_18px_40px_-28px_rgb(15_23_42/0.35)]">
+        <h2 className="text-2xl font-semibold tracking-tight text-ink md:text-3xl">Exam Proctoring</h2>
         <p className="mt-1 text-sm text-slate-600">
           {data.config.title} &mdash; {data.config.courseCode} &middot; {data.config.cohort}
           {data.config.requiresProctoring ? (
@@ -177,7 +177,7 @@ export default function AdminExamProctoringPage() {
 
       {/* Summary stats */}
       <div className="grid gap-3 sm:grid-cols-4">
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+        <div className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-5">
           <p className="text-sm text-slate-500">Students</p>
           <p className="mt-1 text-lg font-semibold text-slate-900">{data.summaries.length}</p>
         </div>
@@ -188,7 +188,7 @@ export default function AdminExamProctoringPage() {
           </p>
         </div>
 
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
           <p className="text-sm text-amber-600">Flagged (tab switches)</p>
           <p className="mt-1 text-lg font-semibold text-amber-900">
             {data.summaries.filter((s) => tabSwitchCount(s.events) > 3).length}
@@ -197,8 +197,8 @@ export default function AdminExamProctoringPage() {
       </div>
 
       {/* Students list */}
-      <div className="rounded-xl border border-slate-200 p-4">
-        <h3 className="text-lg font-semibold text-slate-900">Students</h3>
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-shadow hover:shadow-[0_18px_40px_-28px_rgb(15_23_42/0.35)]">
+        <h3 className="text-lg font-semibold tracking-tight text-ink">Students</h3>
 
         {sortedSummaries.length === 0 ? (
           <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">

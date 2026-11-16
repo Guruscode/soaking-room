@@ -119,10 +119,10 @@ export default function AdminBookingsPage() {
 
   return (
     <div className="space-y-5">
-      <div className="rounded-2xl border border-slate-200 bg-white p-5">
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)]">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
-            <h2 className="text-2xl font-semibold">Ministry Bookings</h2>
+            <h2 className="text-2xl font-semibold tracking-tight text-ink md:text-3xl">Ministry Bookings</h2>
             <p className="mt-1 text-sm text-slate-600">
               Review hosting requests, approve or reject them, and manage blocked dates.
             </p>
@@ -142,7 +142,7 @@ export default function AdminBookingsPage() {
               type="button"
               variant={activeTab === tab.id ? "default" : "outline"}
               size="sm"
-              className="rounded-xl"
+             
               onClick={() => setActiveTab(tab.id)}
             >
               {tab.label}
@@ -185,7 +185,7 @@ export default function AdminBookingsPage() {
                 </p>
               </div>
               <div className="flex shrink-0 gap-2">
-                <Button type="button" variant="outline" size="sm" className="rounded-xl" onClick={() => setSelectedBooking(booking)}>
+                <Button type="button" variant="outline" size="sm" onClick={() => setSelectedBooking(booking)}>
                   View details
                 </Button>
               </div>
@@ -203,7 +203,7 @@ export default function AdminBookingsPage() {
           }
         }}
       >
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl sm:p-8">
           {selectedBooking ? (
             <>
               <DialogHeader>
@@ -221,7 +221,7 @@ export default function AdminBookingsPage() {
 
               <div className="space-y-3 border-t border-slate-100 pt-4">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">Admin note (sent to booker)</label>
+                  <label className="mb-1.5 block text-sm font-medium text-slate-700">Admin note (sent to booker)</label>
                   <Input
                     value={adminNote}
                     onChange={(e) => setAdminNote(e.target.value)}
@@ -235,7 +235,7 @@ export default function AdminBookingsPage() {
                       <Button
                         type="button"
                         variant="destructive"
-                        className="rounded-xl"
+                       
                         disabled={isUpdating}
                         onClick={() => updateStatus(selectedBooking, "rejected")}
                       >
@@ -253,7 +253,7 @@ export default function AdminBookingsPage() {
                       </Button>
                     </>
                   ) : (
-                    <Button type="button" variant="outline" className="rounded-xl" onClick={() => setSelectedBooking(null)}>
+                    <Button type="button" variant="outline" onClick={() => setSelectedBooking(null)}>
                       Close
                     </Button>
                   )}

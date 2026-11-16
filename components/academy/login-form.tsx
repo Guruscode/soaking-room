@@ -2,7 +2,9 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import { Header } from "@/components/header"
+import { Rays } from "@/components/site/rays"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -142,9 +144,22 @@ export function LoginForm() {
   return (
     <>
       <Header />
-      <main className="mx-auto max-w-xl px-6 py-14 lg:px-8">
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
-          <h1 className="text-3xl font-bold text-slate-900">TSR Academy Login</h1>
+      <main className="bg-surface-soft">
+        <div className="container-page grid gap-8 py-10 md:py-16 lg:grid-cols-[1fr_1.05fr] lg:items-stretch">
+          <div className="relative hidden min-h-[36rem] overflow-hidden rounded-[2rem] bg-ink lg:block animate-scale-in">
+            <Image src="/image-12.jpg" alt="" fill priority sizes="45vw" className="object-cover opacity-70" />
+            <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/40 to-transparent" />
+            <Rays className="absolute -top-24 -right-24 size-96 text-white/10 animate-spin-slow" />
+            <div className="absolute inset-x-0 bottom-0 p-10 text-white">
+              <p className="eyebrow text-cyan-300">The Soaking Room Academy</p>
+              <p className="mt-4 text-4xl font-light leading-tight tracking-tight">
+                Worship • Obedience • <span className="font-bold">Eyes on Jesus</span>
+              </p>
+            </div>
+          </div>
+        <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_40px_80px_-40px_rgb(15_23_42/0.35)] animate-rise sm:p-10 lg:p-12">
+          <p className="eyebrow text-brand-strong">TSR Academy</p>
+          <h1 className="mt-3 text-4xl font-light tracking-tight text-ink">TSR Academy <span className="font-bold">Login</span></h1>
           <p className="mt-2 text-slate-600">
             {mode === "login"
               ? "Access your student or admin dashboard with your registered credentials."
@@ -175,7 +190,7 @@ export function LoginForm() {
                   </label>
                   <button
                     type="button"
-                    className="text-sm font-medium text-slate-900 underline"
+                    className="text-sm font-medium text-brand-strong hover:underline"
                     onClick={() => {
                       setForgotPasswordState((prev) => ({ ...prev, email: formState.email }))
                       setError(null)
@@ -202,7 +217,7 @@ export function LoginForm() {
               </div>
 
               <div className="flex flex-wrap gap-3">
-                <Button type="submit" className="rounded-xl bg-slate-900" disabled={isSubmitting}>
+                <Button type="submit" className="bg-ink" disabled={isSubmitting}>
                   {isSubmitting ? <Spinner className="size-4" /> : null}
                   Login
                 </Button>
@@ -227,14 +242,14 @@ export function LoginForm() {
               {error ? <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
 
               <div className="flex flex-wrap gap-3">
-                <Button type="submit" className="rounded-xl bg-slate-900" disabled={isSubmitting}>
+                <Button type="submit" className="bg-ink" disabled={isSubmitting}>
                   {isSubmitting ? <Spinner className="size-4" /> : null}
                   Send OTP
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
-                  className="rounded-xl"
+                 
                   disabled={isSubmitting}
                   onClick={() => {
                     setError(null)
@@ -309,17 +324,17 @@ export function LoginForm() {
               {error ? <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
 
               <div className="flex flex-wrap gap-3">
-                <Button type="submit" className="rounded-xl bg-slate-900" disabled={isSubmitting || forgotPasswordState.otp.length !== 6}>
+                <Button type="submit" className="bg-ink" disabled={isSubmitting || forgotPasswordState.otp.length !== 6}>
                   {isSubmitting ? <Spinner className="size-4" /> : null}
                   Reset Password
                 </Button>
-                <Button type="button" variant="outline" className="rounded-xl" disabled={isSubmitting} onClick={() => void resendResetOtp()}>
+                <Button type="button" variant="outline" disabled={isSubmitting} onClick={() => void resendResetOtp()}>
                   Resend OTP
                 </Button>
                 <Button
                   type="button"
                   variant="ghost"
-                  className="rounded-xl"
+                 
                   disabled={isSubmitting}
                   onClick={() => {
                     setError(null)
@@ -332,6 +347,7 @@ export function LoginForm() {
               </div>
             </form>
           )}
+        </div>
         </div>
       </main>
       <Footer />

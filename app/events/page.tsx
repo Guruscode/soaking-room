@@ -1,9 +1,11 @@
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
-import { Button } from "@/components/ui/button"
-import { CalendarDays, MapPin, Sparkles, ArrowRight, Flower2, Waves, UtensilsCrossed } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import { ArrowUpRight, CalendarDays, Flower2, MapPin, Sparkles, UtensilsCrossed, Waves } from "lucide-react"
+import { Header } from "@/components/header"
+import { Footer } from "@/components/footer"
+import { PageHero } from "@/components/site/page-hero"
+import { Rays } from "@/components/site/rays"
+import { cn } from "@/lib/utils"
 
 const events = [
   {
@@ -11,8 +13,7 @@ const events = [
     subtitle: "A Sacred Gathering",
     date: "Sunday 18th October, 2026 · 4PM Prompt",
     venue: "Charis Hub, Atlantic Mall, Utako, Abuja",
-    description:
-      "An afternoon of deep worship, rest and encounter — come and soak in God's presence.",
+    description: "An afternoon of deep worship, rest and encounter — come and soak in God's presence.",
     slug: "soaking-room",
     accent: "emerald" as const,
     icon: Waves,
@@ -23,8 +24,7 @@ const events = [
     subtitle: "Jesus My Kingsman Redeemer",
     date: "Sunday 1st November, 2026 · 6PM – 8PM",
     venue: "Strictly by registration",
-    description:
-      "A call to dine with the divine — an evening set apart to feast in the presence of the King.",
+    description: "A call to dine with the divine — an evening set apart to feast in the presence of the King.",
     slug: "kitchen-in-the-sky",
     accent: "royal" as const,
     icon: UtensilsCrossed,
@@ -43,94 +43,70 @@ const events = [
   },
 ]
 
+const accents = {
+  blush: { bg: "from-[#6B5544] via-[#5C4A3A] to-[#4A3D32]", text: "text-[#D8A8A0]", glow: "bg-[#D8A8A0]/25" },
+  emerald: { bg: "from-emerald-950 via-teal-900 to-cyan-950", text: "text-emerald-300", glow: "bg-emerald-400/20" },
+  royal: { bg: "from-[#1E1B4B] via-[#312E81] to-[#4C1D95]", text: "text-amber-300", glow: "bg-amber-300/15" },
+}
+
 function EventCard({ event }: { event: (typeof events)[number] }) {
   const Icon = event.icon
-  const gradientFrom =
-    event.accent === "blush"
-      ? "from-[#6B5544] via-[#5C4A3A] to-[#4A3D32]"
-      : event.accent === "emerald"
-        ? "from-emerald-950 via-teal-900 to-cyan-950"
-        : event.accent === "royal"
-          ? "from-[#1E1B4B] via-[#312E81] to-[#4C1D95]"
-          : "from-blue-950 via-indigo-900 to-violet-950"
-  const accentLight =
-    event.accent === "blush"
-      ? "text-[#D8A8A0]"
-      : event.accent === "emerald"
-        ? "text-emerald-300"
-        : event.accent === "royal"
-          ? "text-amber-300"
-          : "text-blue-300"
-  const badgeBg =
-    event.accent === "blush"
-      ? "bg-[#D8A8A0]/20 border-[#D8A8A0]/30"
-      : event.accent === "emerald"
-        ? "bg-emerald-500/20 border-emerald-300/30"
-        : event.accent === "royal"
-          ? "bg-amber-400/20 border-amber-300/30"
-          : "bg-blue-500/20 border-blue-300/30"
+  const accent = accents[event.accent]
 
   return (
-    <Link href={`/events/${event.slug}`} className="group block">
-      <div
-        className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${gradientFrom} p-8 md:p-12 transition-transform duration-500 hover:scale-[1.02]`}
-      >
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent" />
-        <div className="absolute top-1/2 right-0 w-64 h-64 rounded-full blur-3xl" style={{ backgroundColor: event.accent === "blush" ? "rgba(216,168,160,0.15)" : "rgba(255,255,255,0.05)" }} />
+    <Link
+      href={`/events/${event.slug}`}
+      className={cn(
+        "reveal-scale group relative block overflow-hidden rounded-[2rem] bg-gradient-to-br p-7 md:p-10 lg:p-12",
+        accent.bg,
+      )}
+    >
+      <div className={cn("pointer-events-none absolute -top-24 -right-24 size-80 rounded-full blur-3xl", accent.glow)} />
+      <Rays className="pointer-events-none absolute -bottom-40 -left-40 size-96 text-white/[0.06] transition-transform duration-[2000ms] group-hover:rotate-45" />
 
-        <div className="relative grid md:grid-cols-3 gap-8 items-center">
-          <div className="md:col-span-2 space-y-5">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white/90 text-xs font-medium uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5" />
-              Upcoming Event
-            </div>
+      <div className="relative grid items-center gap-8 md:grid-cols-[1fr_auto] md:gap-12">
+        <div className="space-y-6">
+          <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-medium uppercase tracking-wider text-white/90 ring-1 ring-white/20 backdrop-blur-sm">
+            <Sparkles className="size-3.5" />
+            Upcoming Event
+          </span>
 
-            <div className="space-y-2">
-              <p className={`${accentLight} font-semibold tracking-widest text-xs uppercase`}>{event.subtitle}</p>
-              <h2 className="text-3xl md:text-4xl font-bold text-white">{event.title}</h2>
-              <p className="text-white/70 max-w-lg leading-relaxed">{event.description}</p>
-            </div>
-
-            <div className="flex flex-wrap gap-4">
-              <div className="flex items-center gap-2 text-sm text-white/80">
-                <CalendarDays className="w-4 h-4 shrink-0" />
-                <span>{event.date}</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-white/80">
-                <MapPin className="w-4 h-4 shrink-0" />
-                <span>{event.venue}</span>
-              </div>
-            </div>
-
-            <Button
-              className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border border-white/20 rounded-xl"
-              size="lg"
-            >
-              View Event
-              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-            </Button>
+          <div className="space-y-3">
+            <p className={cn("eyebrow", accent.text)}>{event.subtitle}</p>
+            <h2 className="text-4xl font-light tracking-tight text-white md:text-5xl">{event.title}</h2>
+            <p className="max-w-xl leading-relaxed text-white/70">{event.description}</p>
           </div>
 
-          <div className="hidden md:flex items-center justify-center">
-            {"image" in event && event.image ? (
-              <div
-                className="w-44 rounded-2xl overflow-hidden shadow-2xl"
-                style={{ backgroundColor: "rgba(255,255,255,0.08)" }}
-              >
-                <Image
-                  src={event.image}
-                  alt={`${event.title} flyer`}
-                  width={400}
-                  height={500}
-                  className="w-full h-auto object-cover"
-                />
-              </div>
-            ) : (
-              <div className={`w-32 h-32 rounded-full ${badgeBg} backdrop-blur-sm border flex items-center justify-center`}>
-                <Icon className="w-14 h-14 text-white/80" />
-              </div>
-            )}
+          <div className="flex flex-wrap gap-2.5">
+            {[
+              { icon: CalendarDays, text: event.date },
+              { icon: MapPin, text: event.venue },
+            ].map(({ icon: ItemIcon, text }) => (
+              <span key={text} className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm text-white/85 ring-1 ring-white/10">
+                <ItemIcon className="size-4 shrink-0" />
+                {text}
+              </span>
+            ))}
           </div>
+
+          <span className="inline-flex h-12 items-center gap-3 rounded-full bg-white pr-1.5 pl-6 text-sm font-semibold text-ink">
+            View Event
+            <span className="grid size-9 place-items-center rounded-full bg-ink text-white transition-transform duration-500 group-hover:rotate-45">
+              <ArrowUpRight className="size-4" />
+            </span>
+          </span>
+        </div>
+
+        <div className="hidden md:block">
+          {event.image ? (
+            <div className="w-52 rotate-3 overflow-hidden rounded-[1.5rem] shadow-2xl ring-1 ring-white/20 transition-transform duration-700 ease-[var(--ease-settle)] group-hover:rotate-0 group-hover:scale-105 lg:w-60">
+              <Image src={event.image} alt={`${event.title} flyer`} width={480} height={600} sizes="240px" className="h-auto w-full" />
+            </div>
+          ) : (
+            <div className="grid size-44 place-items-center rounded-full bg-white/10 ring-1 ring-white/20 backdrop-blur-sm">
+              <Icon className="size-16 text-white/80 transition-transform duration-700 group-hover:scale-110" />
+            </div>
+          )}
         </div>
       </div>
     </Link>
@@ -139,23 +115,20 @@ function EventCard({ event }: { event: (typeof events)[number] }) {
 
 export default function EventsPage() {
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-white">
       <Header />
+      <PageHero
+        eyebrow="Upcoming Events"
+        title={<span className="font-bold">Events</span>}
+        description="Stay connected with The Soaking Room community. Join us for worship, prayer gatherings, and life-changing events."
+      />
 
-      <section className="max-w-7xl mx-auto px-6 lg:px-8 py-16 md:py-24">
-        <div className="space-y-4 mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold">Events</h1>
-          <p className="text-lg text-muted-foreground max-w-2xl">
-            Stay connected with The Soaking Room community. Join us for worship, prayer gatherings, and
-            life-changing events.
-          </p>
-        </div>
-
+      <section className="container-page py-14 md:py-20">
         {events.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border bg-card py-20 text-center space-y-3">
-            <CalendarDays className="w-12 h-12 text-muted-foreground/50 mx-auto" />
+          <div className="space-y-3 rounded-[2rem] border border-dashed border-slate-300 bg-surface-soft py-20 text-center">
+            <CalendarDays className="mx-auto size-12 text-slate-300" />
             <h2 className="text-xl font-semibold">No Upcoming Events</h2>
-            <p className="text-muted-foreground">Check back soon for upcoming events.</p>
+            <p className="text-slate-500">Check back soon for upcoming events.</p>
           </div>
         ) : (
           <div className="space-y-6">

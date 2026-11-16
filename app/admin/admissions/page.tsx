@@ -370,26 +370,26 @@ export default function AdminAdmissionsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-slate-200 p-4">
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-shadow hover:shadow-[0_18px_40px_-28px_rgb(15_23_42/0.35)]">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="text-2xl font-semibold">Admissions CMS</h2>
+            <h2 className="text-2xl font-semibold tracking-tight text-ink md:text-3xl">Admissions CMS</h2>
             <p className="mt-2 text-sm text-slate-600">Create, review, update, approve, reject, and delete student records.</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button type="button" className="rounded-xl bg-slate-900" onClick={openCreateModal}>
+            <Button type="button" className="bg-ink" onClick={openCreateModal}>
               Add Admission
             </Button>
-            <Button type="button" variant="outline" className="rounded-xl" onClick={() => setIsExportModalOpen(true)}>
+            <Button type="button" variant="outline" onClick={() => setIsExportModalOpen(true)}>
               Export Students
             </Button>
           </div>
         </div>
       </div>
 
-      <div className="rounded-xl border border-slate-200 p-4">
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-shadow hover:shadow-[0_18px_40px_-28px_rgb(15_23_42/0.35)]">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <h3 className="text-lg font-semibold text-slate-900">Student Records</h3>
+          <h3 className="text-lg font-semibold tracking-tight text-ink">Student Records</h3>
           <p className="text-sm text-slate-500">{filteredRows.length} in view · {rows.length} total</p>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
@@ -430,7 +430,7 @@ export default function AdminAdmissionsPage() {
             <Button
               type="button"
               variant="destructive"
-              className="rounded-xl"
+             
               disabled={!selectedRejectedIds.length || isBulkDeleting}
               onClick={() => void onBulkDeleteRejected()}
             >
@@ -444,17 +444,17 @@ export default function AdminAdmissionsPage() {
         </div>
         <div className="mt-3 space-y-3 md:hidden">
           {isLoading ? (
-            <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
+            <div className="flex items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 px-5 py-10 text-sm text-slate-500">
               <Spinner />
               Loading admissions...
             </div>
           ) : !filteredRows.length ? (
-            <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
+            <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 px-5 py-10 text-center text-sm text-slate-500">
               No {activeTab} admissions found.
             </div>
           ) : (
             filteredRows.map((row) => (
-              <div key={row.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <div key={row.id} className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex items-center gap-3">
@@ -492,31 +492,31 @@ export default function AdminAdmissionsPage() {
         </div>
         <div className="mt-3 hidden overflow-x-auto md:block">
           {isLoading ? (
-            <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
+            <div className="flex items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 px-5 py-10 text-sm text-slate-500">
               <Spinner />
               Loading admissions...
             </div>
           ) : !filteredRows.length ? (
-            <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
+            <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 px-5 py-10 text-center text-sm text-slate-500">
               No {activeTab} admissions found.
             </div>
           ) : (
             <table className="min-w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-slate-200 text-slate-500">
-                  {isRejectedTab ? <th className="py-2 pr-4 font-medium">Select</th> : null}
-                  <th className="py-2 pr-4 font-medium">Name</th>
-                  <th className="py-2 pr-4 font-medium">Category</th>
-                  <th className="py-2 pr-4 font-medium">Email</th>
-                  <th className="py-2 pr-4 font-medium">Status</th>
-                  <th className="py-2 text-right font-medium">Action</th>
+                <tr className="border-b border-slate-200 text-[0.7rem] uppercase tracking-[0.1em] text-slate-500">
+                  {isRejectedTab ? <th className="py-3 pr-4 font-medium">Select</th> : null}
+                  <th className="py-3 pr-4 font-medium">Name</th>
+                  <th className="py-3 pr-4 font-medium">Category</th>
+                  <th className="py-3 pr-4 font-medium">Email</th>
+                  <th className="py-3 pr-4 font-medium">Status</th>
+                  <th className="py-3 text-right font-medium">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredRows.map((row) => (
-                  <tr key={row.id} className="border-b border-slate-100 text-slate-700 align-top">
+                  <tr key={row.id} className="border-b border-slate-100 text-slate-700 align-top transition-colors hover:bg-slate-50/80">
                     {isRejectedTab ? (
-                      <td className="py-2 pr-4">
+                      <td className="py-3.5 pr-4">
                         <Checkbox
                           checked={selectedRejectedIds.includes(row.id)}
                           onCheckedChange={(checked) => toggleRejectedSelection(row.id, Boolean(checked))}
@@ -524,11 +524,11 @@ export default function AdminAdmissionsPage() {
                         />
                       </td>
                     ) : null}
-                    <td className="py-2 pr-4">{row.fullName}</td>
-                    <td className="py-2 pr-4">{row.category}</td>
-                    <td className="py-2 pr-4">{row.email}</td>
-                    <td className="py-2 pr-4 capitalize">{row.admissionStatus}</td>
-                    <td className="py-2 text-right">
+                    <td className="py-3.5 pr-4">{row.fullName}</td>
+                    <td className="py-3.5 pr-4">{row.category}</td>
+                    <td className="py-3.5 pr-4">{row.email}</td>
+                    <td className="py-3.5 pr-4 capitalize">{row.admissionStatus}</td>
+                    <td className="py-3.5 text-right">
                       <div className="flex justify-end">
                   <AdminRowActions
                     recordName={row.fullName}
@@ -561,7 +561,7 @@ export default function AdminAdmissionsPage() {
           setIsFormModalOpen(true)
         }}
       >
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl sm:p-8">
           <DialogHeader>
             <DialogTitle>{editingId ? "Edit Admission" : "Add Admission"}</DialogTitle>
             <DialogDescription>
@@ -572,11 +572,11 @@ export default function AdminAdmissionsPage() {
             <Field label="Full Name" value={formState.fullName} onChange={(value) => setFormState((prev) => ({ ...prev, fullName: value }))} />
             <Field label="Date of Birth / Age" value={formState.dateOfBirthOrAge} onChange={(value) => setFormState((prev) => ({ ...prev, dateOfBirthOrAge: value }))} />
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Category</label>
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">Category</label>
               <select
                 value={formState.category}
                 onChange={(event) => setFormState((prev) => ({ ...prev, category: event.target.value }))}
-                className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs"
+                className="flex h-11 w-full rounded-xl border border-input bg-white px-3.5 py-2 text-sm outline-none transition-[box-shadow,border-color] focus-visible:border-brand focus-visible:ring-4 focus-visible:ring-brand/15"
                 required
               >
                 <option value="">Select category</option>
@@ -593,22 +593,22 @@ export default function AdminAdmissionsPage() {
             <Field label="Church / Fellowship" value={formState.church || ""} onChange={(value) => setFormState((prev) => ({ ...prev, church: value }))} />
             <Field label="Musical Skill" value={formState.musicalSkill || ""} onChange={(value) => setFormState((prev) => ({ ...prev, musicalSkill: value }))} />
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Born Again</label>
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">Born Again</label>
               <select
                 value={formState.bornAgain}
                 onChange={(event) => setFormState((prev) => ({ ...prev, bornAgain: event.target.value }))}
-                className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs"
+                className="flex h-11 w-full rounded-xl border border-input bg-white px-3.5 py-2 text-sm outline-none transition-[box-shadow,border-color] focus-visible:border-brand focus-visible:ring-4 focus-visible:ring-brand/15"
               >
                 <option value="Yes">Yes</option>
                 <option value="No">No</option>
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Admission Status</label>
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">Admission Status</label>
               <select
                 value={formState.admissionStatus}
                 onChange={(event) => setFormState((prev) => ({ ...prev, admissionStatus: event.target.value as AdmissionStatus }))}
-                className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs"
+                className="flex h-11 w-full rounded-xl border border-input bg-white px-3.5 py-2 text-sm outline-none transition-[box-shadow,border-color] focus-visible:border-brand focus-visible:ring-4 focus-visible:ring-brand/15"
               >
                 <option value="pending">Pending</option>
                 <option value="approved">Approved</option>
@@ -616,7 +616,7 @@ export default function AdminAdmissionsPage() {
               </select>
             </div>
             <div className="md:col-span-2">
-              <label className="mb-1 block text-sm font-medium text-slate-700">
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">
                 {editingId ? "New Password (optional)" : "Password"}
               </label>
               <Input
@@ -627,14 +627,14 @@ export default function AdminAdmissionsPage() {
               />
             </div>
             <div className="md:col-span-2">
-              <label className="mb-1 block text-sm font-medium text-slate-700">Reason</label>
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">Reason</label>
               <Textarea rows={4} value={formState.reason} onChange={(event) => setFormState((prev) => ({ ...prev, reason: event.target.value }))} required />
             </div>
             <DialogFooter className="md:col-span-2">
               <Button type="button" variant="outline" onClick={closeFormModal} disabled={isSaving}>
                 Cancel
               </Button>
-              <Button type="submit" className="rounded-xl bg-slate-900" disabled={isSaving}>
+              <Button type="submit" className="bg-ink" disabled={isSaving}>
                 {isSaving ? <Spinner className="size-4" /> : null}
                 {editingId ? "Update Student" : "Create Student"}
               </Button>
@@ -648,7 +648,7 @@ export default function AdminAdmissionsPage() {
           setViewingRow(null)
         }
       }}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl sm:p-8">
           <DialogHeader>
             <DialogTitle>Admission Details</DialogTitle>
             <DialogDescription>
@@ -668,13 +668,13 @@ export default function AdminAdmissionsPage() {
               <ReadOnlyField label="Born Again" value={viewingRow.bornAgain} />
               <ReadOnlyField label="Admission Status" value={viewingRow.admissionStatus} />
               <div className="md:col-span-2">
-                <label className="mb-1 block text-sm font-medium text-slate-700">Reason</label>
+                <label className="mb-1.5 block text-sm font-medium text-slate-700">Reason</label>
                 <div className="min-h-24 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
                   {viewingRow.reason}
                 </div>
               </div>
               <div className="md:col-span-2">
-                <label className="mb-1 block text-sm font-medium text-slate-700">Created At</label>
+                <label className="mb-1.5 block text-sm font-medium text-slate-700">Created At</label>
                 <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
                   {new Date(viewingRow.createdAt).toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" })}
                 </div>
@@ -699,11 +699,11 @@ export default function AdminAdmissionsPage() {
           </DialogHeader>
           <div className="grid gap-4">
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Start Date</label>
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">Start Date</label>
               <Input type="date" value={exportStartDate} onChange={(event) => setExportStartDate(event.target.value)} max={exportEndDate || undefined} />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">End Date</label>
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">End Date</label>
               <Input type="date" value={exportEndDate} onChange={(event) => setExportEndDate(event.target.value)} min={exportStartDate || undefined} />
             </div>
           </div>
@@ -711,7 +711,7 @@ export default function AdminAdmissionsPage() {
             <Button type="button" variant="outline" onClick={() => setIsExportModalOpen(false)} disabled={isExporting}>
               Cancel
             </Button>
-            <Button type="button" className="rounded-xl bg-slate-900" onClick={onExportAdmissions} disabled={isExporting}>
+            <Button type="button" className="bg-ink" onClick={onExportAdmissions} disabled={isExporting}>
               {isExporting ? <Spinner className="size-4" /> : null}
               Export CSV
             </Button>
@@ -731,7 +731,7 @@ function ReadOnlyField({
 }) {
   return (
     <div>
-      <label className="mb-1 block text-sm font-medium text-slate-700">{label}</label>
+      <label className="mb-1.5 block text-sm font-medium text-slate-700">{label}</label>
       <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 capitalize">
         {value}
       </div>
@@ -752,7 +752,7 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-1 block text-sm font-medium text-slate-700">{label}</label>
+      <label className="mb-1.5 block text-sm font-medium text-slate-700">{label}</label>
       <Input type={type} value={value} onChange={(event) => onChange(event.target.value)} required />
     </div>
   )

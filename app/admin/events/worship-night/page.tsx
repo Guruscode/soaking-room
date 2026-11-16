@@ -63,7 +63,7 @@ export default function WorshipNightRegistrationsPage() {
           <div className="flex items-center gap-3 rounded-xl bg-slate-50 px-4 py-3">
             <Users className="h-5 w-5 text-amber-700" />
             <div>
-              <p className="text-lg font-semibold text-slate-900">{registrations.length}</p>
+              <p className="text-lg font-semibold tracking-tight text-ink">{registrations.length}</p>
               <p className="text-xs text-slate-500">{emailedCount} tickets emailed</p>
             </div>
           </div>
@@ -73,7 +73,7 @@ export default function WorshipNightRegistrationsPage() {
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">Registered attendees</h2>
+            <h2 className="text-lg font-semibold tracking-tight text-ink">Registered attendees</h2>
             <p className="mt-1 text-sm text-slate-500">Ticket email status is shown for each registration.</p>
           </div>
           <Button type="button" variant="outline" onClick={() => void loadRegistrations()} disabled={isLoading}>
@@ -94,7 +94,7 @@ export default function WorshipNightRegistrationsPage() {
           <>
             <div className="mt-5 space-y-3 md:hidden">
               {registrations.map((registration) => (
-                <article key={registration.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <article key={registration.id} className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-5">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="font-medium text-slate-900">{registration.name}</p>
@@ -115,7 +115,7 @@ export default function WorshipNightRegistrationsPage() {
             <div className="mt-5 hidden overflow-x-auto md:block">
               <table className="min-w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-slate-200 text-slate-500">
+                  <tr className="border-b border-slate-200 text-[0.7rem] uppercase tracking-[0.1em] text-slate-500">
                     <th className="py-3 pr-4 font-medium">Name</th>
                     <th className="py-3 pr-4 font-medium">Email</th>
                     <th className="py-3 pr-4 font-medium">Phone</th>
@@ -125,7 +125,7 @@ export default function WorshipNightRegistrationsPage() {
                 </thead>
                 <tbody>
                   {registrations.map((registration) => (
-                    <tr key={registration.id} className="border-b border-slate-100 text-slate-700">
+                    <tr key={registration.id} className="border-b border-slate-100 text-slate-700 transition-colors hover:bg-slate-50/80">
                       <td className="py-3 pr-4 font-medium">{registration.name}</td>
                       <td className="py-3 pr-4">
                         <a href={`mailto:${registration.email}`} className="hover:text-slate-950 hover:underline">

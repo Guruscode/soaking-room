@@ -1,138 +1,132 @@
 "use client"
 
 import Link from "next/link"
-import Image from "next/image"  // ← add this if you haven't already
-import { Heart, Menu, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { motion, AnimatePresence } from "framer-motion"
-import { useState } from "react"
+import Image from "next/image"
+import { usePathname } from "next/navigation"
+import { useEffect, useState } from "react"
+import { ArrowUpRight, Heart, Menu, X } from "lucide-react"
+import { cn } from "@/lib/utils"
+
+const navItems = [
+  { label: "Home", href: "/" },
+  { label: "About", href: "/about" },
+  { label: "Gallery", href: "/gallery" },
+  { label: "Events", href: "/events" },
+  { label: "TSR Academy", href: "/tsr-academy" },
+  { label: "Login", href: "/tsr-academy/login" },
+  { label: "Contact", href: "/contact" },
+  { label: "Booking", href: "/booking" },
+]
+
+function isActive(pathname: string, href: string) {
+  if (href === "/") return pathname === "/"
+  if (href === "/tsr-academy") return pathname === href
+  return pathname === href || pathname.startsWith(`${href}/`)
+}
 
 export function Header() {
+  const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  const navItems = ["Home", "About", "Gallery", "Events", "TSR Academy", "Login", "Contact", "Booking"]
-
-  const getNavHref = (item: string) =>
-    item === "Home" ? "/" :
-    item === "About" ? "/about" :
-    item === "Gallery" ? "/gallery" :
-    item === "Events" ? "/events" :
-    item === "TSR Academy" ? "/tsr-academy" :
-    item === "Login" ? "/tsr-academy/login" :
-    item === "Donate" ? "/donate" :
-    item === "Contact" ? "/contact" :
-    item === "Booking" ? "/booking" : "#"
+  useEffect(() => {
+    document.body.style.overflow = mobileMenuOpen ? "hidden" : ""
+    return () => {
+      document.body.style.overflow = ""
+    }
+  }, [mobileMenuOpen])
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full border-b border-gray-200/50 bg-white/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-5 flex items-center justify-between">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-black flex items-center justify-center shadow-lg overflow-hidden">
-              <Image
-                src="/logo.PNG"
-                alt="The Soaking Room Logo"
-                width={44}
-                height={44}
-                className="w-11 h-11 object-contain"
-              />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-black tracking-tight">
-                The Soaking Room
-              </h1>
-              <p className="text-xs text-gray-500 font-medium tracking-wider uppercase">
-                Worship  • Obedience • eyes on Jesus
-              </p>
-            </div>
+      <header className="sticky top-0 z-50 border-b border-[#e8e2d8] bg-[#f7f5f0]/95 backdrop-blur-sm">
+        <div className="container-page flex min-h-[78px] items-center justify-between gap-6">
+          <Link href="/" className="flex shrink-0 items-center gap-3" aria-label="The Soaking Room home">
+            <Image src="/logo.PNG" alt="" width={42} height={42} className="size-10 object-contain" />
+            <span className="leading-tight">
+              <span className="block font-serif text-lg tracking-tight text-[#201e1a]">The Soaking Room</span>
+              <span className="mt-0.5 hidden text-[0.58rem] uppercase tracking-[0.18em] text-[#777166] sm:block">
+                Worship · Obedience · Eyes on Jesus
+              </span>
+            </span>
           </Link>
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-10">
-            {navItems.map((item, i) => (
-              <motion.a
-                key={item}
-                href={getNavHref(item)}
-                className="text-sm font-medium text-gray-700 hover:text-black relative"
-                whileHover={{ y: -2 }}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-              >
-                {item}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-cyan-500 transition-all duration-300 hover:w-full" />
-              </motion.a>
-            ))}
-
-            <Button
-              size="lg"
-              asChild
-              className="bg-black hover:bg-gray-900 text-white font-medium px-8 py-6 rounded-2xl shadow-xl hover:shadow-cyan-500/20"
-            >
-              <Link href="/donate">
-                <Heart className="w-5 h-5 mr-2 fill-current" />
-                Support Us
-              </Link>
-            </Button>
+          <nav className="hidden items-center gap-4 xl:flex" aria-label="Main">
+            {navItems.map((item) => {
+              const active = isActive(pathname, item.href)
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "border-b py-2 text-[0.8rem] transition-colors",
+                    active
+                      ? "border-[#9a7946] text-[#201e1a]"
+                      : "border-transparent text-[#69655c] hover:border-[#c5b18d] hover:text-[#201e1a]",
+                  )}
+                >
+                  {item.label}
+                </Link>
+              )
+            })}
           </nav>
 
-          {/* Mobile Hamburger */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-xl hover:bg-gray-100 transition"
-          >
-            {mobileMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
-          </button>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/donate"
+              className="hidden min-h-11 items-center gap-2 border border-[#9a7946] px-5 text-sm text-[#201e1a] transition-colors hover:bg-[#9a7946] hover:text-white sm:inline-flex"
+            >
+              <Heart className="size-4" />
+              Support Us
+              <ArrowUpRight className="size-4" />
+            </Link>
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen((open) => !open)}
+              aria-expanded={mobileMenuOpen}
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              className="grid size-11 place-items-center border border-[#ded8ce] text-[#201e1a] transition-colors hover:border-[#9a7946] xl:hidden"
+            >
+              {mobileMenuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+            </button>
+          </div>
         </div>
       </header>
 
-      {/* Mobile Menu Overlay & Panel */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden"
-              onClick={() => setMobileMenuOpen(false)}
-            />
-
-            <motion.div
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed right-0 top-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl z-50 md:hidden"
-            >
-              <div className="flex flex-col p-8 pt-24 space-y-8">
-                {navItems.map((item) => (
-                  <a
-                    key={item}
-                    href={getNavHref(item)}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="text-2xl font-medium text-gray-800 hover:text-black transition"
-                  >
-                    {item}
-                  </a>
-                ))}
-
-                <Button
-                  size="lg"
-                  asChild
-                  className="w-full mt-8 bg-black hover:bg-gray-900 text-white text-lg py-8 rounded-2xl shadow-xl"
-                >
-                  <Link href="/donate" onClick={() => setMobileMenuOpen(false)}>
-                    <Heart className="w-6 h-6 mr-3 fill-current" />
-                    Support This Ministry
-                  </Link>
-                </Button>
-              </div>
-            </motion.div>
-          </>
+      <div
+        className={cn(
+          "fixed inset-0 z-40 bg-[#f7f5f0] transition-[opacity,visibility] duration-300 xl:hidden",
+          mobileMenuOpen ? "visible opacity-100" : "invisible opacity-0",
         )}
-      </AnimatePresence>
+        aria-hidden={!mobileMenuOpen}
+      >
+        <div className="container-page flex h-full flex-col pt-24 pb-5">
+          <nav className="flex min-h-0 flex-col overflow-y-auto" aria-label="Mobile">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setMobileMenuOpen(false)}
+                tabIndex={mobileMenuOpen ? 0 : -1}
+                className={cn(
+                  "flex items-center justify-between border-b border-[#e8e2d8] py-3 font-serif text-2xl",
+                  isActive(pathname, item.href) ? "text-[#201e1a]" : "text-[#777166]",
+                )}
+              >
+                {item.label}
+                <ArrowUpRight className="size-5 text-[#9a7946]" />
+              </Link>
+            ))}
+          </nav>
+          <Link
+            href="/donate"
+            onClick={() => setMobileMenuOpen(false)}
+            tabIndex={mobileMenuOpen ? 0 : -1}
+            className="mt-4 inline-flex min-h-12 shrink-0 items-center justify-center gap-2 bg-[#201e1a] text-sm text-white"
+          >
+            Give to the ministry
+            <ArrowUpRight className="size-4" />
+          </Link>
+        </div>
+      </div>
     </>
   )
 }

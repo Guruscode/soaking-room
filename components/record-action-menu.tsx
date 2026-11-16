@@ -114,7 +114,7 @@ export function RecordActionMenu({
               <button onClick={closeModal} className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700">Cancel</button>
               <button
                 onClick={activeAction === "view" ? closeModal : confirmAction}
-                className="rounded-lg bg-slate-900 px-3 py-1.5 text-sm text-white"
+                className="rounded-full bg-ink px-4 py-1.5 text-sm font-semibold text-white"
               >
                 {activeAction === "view" ? "Close" : "Confirm"}
               </button>

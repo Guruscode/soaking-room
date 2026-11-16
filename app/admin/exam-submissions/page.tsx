@@ -163,7 +163,7 @@ export default function AdminExamSubmissionsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
+      <div className="flex items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 px-5 py-10 text-sm text-slate-500">
         <Spinner />
         Loading submissions...
       </div>
@@ -173,7 +173,7 @@ export default function AdminExamSubmissionsPage() {
   if (!data) {
     return (
       <div className="space-y-4">
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4">
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-5">
           <h2 className="font-semibold text-red-900">Could not load submissions</h2>
           <p className="mt-1 text-sm text-red-700">Refresh the page or try again later.</p>
         </div>
@@ -235,10 +235,10 @@ export default function AdminExamSubmissionsPage() {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="rounded-xl border border-slate-200 p-4">
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-shadow hover:shadow-[0_18px_40px_-28px_rgb(15_23_42/0.35)]">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-2xl font-semibold">Exam Submissions</h2>
+            <h2 className="text-2xl font-semibold tracking-tight text-ink md:text-3xl">Exam Submissions</h2>
             <p className="mt-1 text-sm text-slate-600">
               {data.config.title} &mdash; {data.config.courseCode} &middot; {data.config.cohort}
             </p>
@@ -247,7 +247,7 @@ export default function AdminExamSubmissionsPage() {
             <Button
               type="button"
               variant="outline"
-              className="rounded-xl"
+             
               onClick={downloadCsv}
             >
               <svg className="mr-1.5 size-4" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
@@ -313,7 +313,7 @@ export default function AdminExamSubmissionsPage() {
 
       {/* Stats */}
       <div className="grid gap-3 sm:grid-cols-3">
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+        <div className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-5">
           <p className="text-sm text-slate-500">Submitted</p>
           <p className="mt-1 text-lg font-semibold text-slate-900">{submittedCount}</p>
         </div>
@@ -337,8 +337,8 @@ export default function AdminExamSubmissionsPage() {
       </div>
 
       {/* Submissions list */}
-      <div className="rounded-xl border border-slate-200 p-4">
-        <h3 className="text-lg font-semibold text-slate-900">Student Submissions</h3>
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-shadow hover:shadow-[0_18px_40px_-28px_rgb(15_23_42/0.35)]">
+        <h3 className="text-lg font-semibold tracking-tight text-ink">Student Submissions</h3>
 
         {data.submissions.length === 0 ? (
           <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
@@ -417,7 +417,7 @@ export default function AdminExamSubmissionsPage() {
 
       {/* Answers & Scoring Modal */}
       <Dialog open={Boolean(viewingAnswers)} onOpenChange={(open) => { if (!open) setViewingAnswers(null) }}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl sm:p-8">
           <DialogHeader>
             <DialogTitle>
               {viewingAnswers?.studentName || "Student Answers"}
@@ -474,7 +474,7 @@ export default function AdminExamSubmissionsPage() {
                   const answerMap = new Map(parsedAnswers.map((a) => [a.questionId, a.answer]))
 
                   return data.questions.map((q) => (
-                    <div key={q.id} className="rounded-xl border border-slate-200 p-4">
+                    <div key={q.id} className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-shadow hover:shadow-[0_18px_40px_-28px_rgb(15_23_42/0.35)]">
                       <div className="flex gap-3">
                         <span className="shrink-0 text-sm font-bold text-slate-400">
                           Q{q.questionNumber}.
@@ -504,8 +504,8 @@ export default function AdminExamSubmissionsPage() {
                 }
               })()}
 
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                <label className="mb-1 block text-sm font-medium text-slate-700">
+              <div className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-5">
+                <label className="mb-1.5 block text-sm font-medium text-slate-700">
                   Score (out of {data.config.totalMarks})
                 </label>
                 <div className="flex items-center gap-3">
@@ -520,7 +520,7 @@ export default function AdminExamSubmissionsPage() {
                   />
                   <Button
                     type="button"
-                    className="rounded-xl bg-slate-900"
+                    className="bg-ink"
                     disabled={isSavingScore}
                     onClick={saveScore}
                   >

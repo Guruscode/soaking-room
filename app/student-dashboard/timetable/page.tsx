@@ -14,18 +14,18 @@ export default async function StudentTimetablePage() {
   const { classSchedule } = await getStudentDashboardData(sessionUser.id)
 
   return (
-    <div className="rounded-xl border border-slate-200 p-4">
-      <h2 className="text-2xl font-semibold">Weekly Timetable</h2>
+    <div>
+      <h2 className="text-2xl font-semibold tracking-tight text-ink md:text-3xl">Weekly Timetable</h2>
       <p className="mt-2 text-sm text-slate-600"> from academy broadcasts. This view is read-only.</p>
       <div className="mt-3 overflow-x-auto">
         <table className="min-w-full text-left text-sm">
           <thead>
-            <tr className="border-b border-slate-200 text-slate-500">
-              <th className="py-2 pr-4 font-medium">Class</th>
-              <th className="py-2 pr-4 font-medium">Date</th>
-              <th className="py-2 pr-4 font-medium">Time</th>
-              <th className="py-2 pr-4 font-medium">Mode</th>
-              <th className="py-2 pr-4 font-medium">Venue / Link</th>
+            <tr className="border-b border-slate-200 text-[0.7rem] uppercase tracking-[0.1em] text-slate-500">
+              <th className="py-3 pr-4 font-medium">Class</th>
+              <th className="py-3 pr-4 font-medium">Date</th>
+              <th className="py-3 pr-4 font-medium">Time</th>
+              <th className="py-3 pr-4 font-medium">Mode</th>
+              <th className="py-3 pr-4 font-medium">Venue / Link</th>
             </tr>
           </thead>
           <tbody>
@@ -33,15 +33,15 @@ export default async function StudentTimetablePage() {
               const meetingUrl = normalizeExternalUrl(row.meetingLink)
 
               return (
-                <tr key={row.id} className="border-b border-slate-100 text-slate-700">
-                  <td className="py-2 pr-4">{row.className || row.title}</td>
-                  <td className="py-2 pr-4">{new Date(row.classStartAt!).toLocaleDateString("en-NG", { dateStyle: "medium" })}</td>
-                  <td className="py-2 pr-4">
+                <tr key={row.id} className="border-b border-slate-100 text-slate-700 transition-colors hover:bg-slate-50/80">
+                  <td className="py-3.5 pr-4">{row.className || row.title}</td>
+                  <td className="py-3.5 pr-4">{new Date(row.classStartAt!).toLocaleDateString("en-NG", { dateStyle: "medium" })}</td>
+                  <td className="py-3.5 pr-4">
                     {new Date(row.classStartAt!).toLocaleTimeString("en-NG", { timeStyle: "short" })}
                     {row.classEndAt ? ` - ${new Date(row.classEndAt).toLocaleTimeString("en-NG", { timeStyle: "short" })}` : ""}
                   </td>
-                  <td className="py-2 pr-4 capitalize">{row.classMode || "-"}</td>
-                  <td className="py-2 pr-4">
+                  <td className="py-3.5 pr-4 capitalize">{row.classMode || "-"}</td>
+                  <td className="py-3.5 pr-4">
                     {row.classMode === "online" && meetingUrl ? (
                       <Link
                         href={meetingUrl}

@@ -81,10 +81,10 @@ export default function AdminEventsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-slate-200 p-4">
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-shadow hover:shadow-[0_18px_40px_-28px_rgb(15_23_42/0.35)]">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="text-2xl font-semibold">Spirit Spa Registrations</h2>
+            <h2 className="text-2xl font-semibold tracking-tight text-ink md:text-3xl">Spirit Spa Registrations</h2>
             <p className="mt-2 text-sm text-slate-600">
               View registered attendees and send the Spirit Spa welcome email to all of them at once.
             </p>
@@ -92,7 +92,7 @@ export default function AdminEventsPage() {
           <div className="flex flex-col gap-2 sm:items-end">
             <Button
               type="button"
-              className="rounded-xl bg-slate-900"
+              className="bg-ink"
               onClick={() => setIsConfirmOpen(true)}
               disabled={isLoading || registrations.length === 0 || isSending}
             >
@@ -120,16 +120,16 @@ export default function AdminEventsPage() {
         </div>
       )}
 
-      <div className="rounded-xl border border-slate-200 p-4">
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-shadow hover:shadow-[0_18px_40px_-28px_rgb(15_23_42/0.35)]">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <h3 className="text-lg font-semibold text-slate-900">Registered Attendees</h3>
+          <h3 className="text-lg font-semibold tracking-tight text-ink">Registered Attendees</h3>
           <p className="text-sm text-slate-500">
             {registrations.length} total · {sentCount} emailed
           </p>
         </div>
 
         {isLoading ? (
-          <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
+          <div className="flex items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 px-5 py-10 text-sm text-slate-500">
             <Spinner />
             Loading registrations...
           </div>
@@ -140,7 +140,7 @@ export default function AdminEventsPage() {
             {/* Mobile cards */}
             <div className="mt-3 space-y-3 md:hidden">
               {registrations.map((reg) => (
-                <div key={reg.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <div key={reg.id} className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-5">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="font-medium text-slate-900">{reg.name}</p>
@@ -173,22 +173,22 @@ export default function AdminEventsPage() {
             <div className="mt-3 hidden overflow-x-auto md:block">
               <table className="min-w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-slate-200 text-slate-500">
-                    <th className="py-2 pr-4 font-medium">Name</th>
-                    <th className="py-2 pr-4 font-medium">Email</th>
-                    <th className="py-2 pr-4 font-medium">Phone</th>
-                    <th className="py-2 pr-4 font-medium">Registered</th>
-                    <th className="py-2 text-right font-medium">Status</th>
+                  <tr className="border-b border-slate-200 text-[0.7rem] uppercase tracking-[0.1em] text-slate-500">
+                    <th className="py-3 pr-4 font-medium">Name</th>
+                    <th className="py-3 pr-4 font-medium">Email</th>
+                    <th className="py-3 pr-4 font-medium">Phone</th>
+                    <th className="py-3 pr-4 font-medium">Registered</th>
+                    <th className="py-3 text-right font-medium">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {registrations.map((reg) => (
-                    <tr key={reg.id} className="border-b border-slate-100 text-slate-700">
-                      <td className="py-2 pr-4 font-medium">{reg.name}</td>
-                      <td className="py-2 pr-4">{reg.email}</td>
-                      <td className="py-2 pr-4">{reg.phone}</td>
-                      <td className="py-2 pr-4">{new Date(reg.createdAt).toLocaleString("en-NG")}</td>
-                      <td className="py-2 text-right">
+                    <tr key={reg.id} className="border-b border-slate-100 text-slate-700 transition-colors hover:bg-slate-50/80">
+                      <td className="py-3 pr-4 font-medium">{reg.name}</td>
+                      <td className="py-3.5 pr-4">{reg.email}</td>
+                      <td className="py-3.5 pr-4">{reg.phone}</td>
+                      <td className="py-3.5 pr-4">{new Date(reg.createdAt).toLocaleString("en-NG")}</td>
+                      <td className="py-3.5 text-right">
                         {reg.ticketSentAt ? (
                           <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800">
                             Emailed
@@ -223,7 +223,7 @@ export default function AdminEventsPage() {
             </Button>
             <Button
               type="button"
-              className="rounded-xl bg-slate-900"
+              className="bg-ink"
               onClick={handleSendEmails}
               disabled={isSending}
             >

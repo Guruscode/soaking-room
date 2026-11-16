@@ -125,15 +125,15 @@ export default function AdminSettingsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-slate-200 p-4">
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-shadow hover:shadow-[0_18px_40px_-28px_rgb(15_23_42/0.35)]">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="text-2xl font-semibold">Settings</h2>
+            <h2 className="text-2xl font-semibold tracking-tight text-ink md:text-3xl">Settings</h2>
             <p className="mt-2 text-sm text-slate-600">Manage academy-wide defaults used by broadcasts and student-facing experiences.</p>
           </div>
           <Button
             type="button"
-            className="rounded-xl bg-slate-900"
+            className="bg-ink"
             onClick={() => {
               if (settings) {
                 syncFormWithSettings(settings)
@@ -147,8 +147,8 @@ export default function AdminSettingsPage() {
       </div>
 
       {settings ? (
-        <div className="rounded-xl border border-slate-200 p-4">
-          <h3 className="text-lg font-semibold text-slate-900">Current Defaults</h3>
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-shadow hover:shadow-[0_18px_40px_-28px_rgb(15_23_42/0.35)]">
+          <h3 className="text-lg font-semibold tracking-tight text-ink">Current Defaults</h3>
           <div className="mt-3 grid gap-3 md:grid-cols-2">
             <Info label="Academy Name" value={settings.academyName} />
             <Info label="Support Email" value={settings.supportEmail} />
@@ -184,7 +184,7 @@ export default function AdminSettingsPage() {
               <Field label="Default Venue" value={formState.defaultVenue} onChange={(value) => setFormState((prev) => ({ ...prev, defaultVenue: value }))} />
             </div>
             <div className="md:col-span-2">
-              <label className="mb-1 block text-sm font-medium text-slate-700">Booking Notification Emails</label>
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">Booking Notification Emails</label>
               <Textarea
                 value={formState.bookingNotificationEmails}
                 onChange={(event) => setFormState((prev) => ({ ...prev, bookingNotificationEmails: event.target.value }))}
@@ -207,7 +207,7 @@ export default function AdminSettingsPage() {
               >
                 Cancel
               </Button>
-              <Button type="submit" className="rounded-xl bg-slate-900" disabled={isSaving}>
+              <Button type="submit" className="bg-ink" disabled={isSaving}>
                 {isSaving ? <Spinner className="size-4" /> : null}
                 Save Settings
               </Button>
@@ -232,7 +232,7 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-1 block text-sm font-medium text-slate-700">{label}</label>
+      <label className="mb-1.5 block text-sm font-medium text-slate-700">{label}</label>
       <Input type={type} value={value} onChange={(event) => onChange(event.target.value)} required />
     </div>
   )

@@ -299,7 +299,7 @@ export default function BookingWizard() {
               variant="outline"
               onClick={goBack}
               disabled={stepIndex === 0 || isSubmitting}
-              className="rounded-xl"
+             
             >
               <ArrowLeft className="size-4" />
               Back

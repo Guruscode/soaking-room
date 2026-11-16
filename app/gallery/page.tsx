@@ -1,114 +1,46 @@
-// app/gallery/page.tsx
-"use client";
+import { Header } from "@/components/header"
+import { Footer } from "@/components/footer"
+import { PageHero } from "@/components/site/page-hero"
+import { GalleryGrid } from "@/components/site/gallery-grid"
 
-import Image from "next/image";
-import { useState } from "react";
-import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
-
-// Your images data — just add/remove as needed
 const galleryImages = [
-  { src: "/image-1.JPG", alt: "Image 1" },
-  { src: "/image-2.jpg", alt: "Image 2" },
-  { src: "/image-3.jpg", alt: "Image 3" },
-  { src: "/image-4.jpg", alt: "Image 4" },
-  { src: "/image-5.jpg", alt: "Image 5" },
-  { src: "/image-6.jpg", alt: "Image 6" },
-  { src: "/image-7.jpg", alt: "Image 7" },
-  { src: "/image-8.jpg", alt: "Image 8" },
-  { src: "/image-9.jpg", alt: "Image 9" },
-  { src: "/image-10.jpg", alt: "Image 10" },
-  { src: "/image-11.jpg", alt: "Image 11" },
-  { src: "/image-12.jpg", alt: "Image 12" },
-  { src: "/image-13.jpg", alt: "Image 13" },
-  { src: "/image-14.jpg", alt: "Image 14" },
-  { src: "/image-15.jpg", alt: "Image 15" },
-  { src: "/image-16.jpg", alt: "Image 16" },
-  { src: "/image-17.jpg", alt: "Image 17" },
-  { src: "/image-18.jpg", alt: "Image 18" },
-  { src: "/image-19.jpg", alt: "Image 19" },
-  { src: "/image-20.jpg", alt: "Image 20" },
-  // Add more here if needed → { src: "/image-21.JPG", alt: "Image 21" },
-] as const;
-
-// Grid configuration
-const COLUMNS: 2 | 3 | 4 | 5 = 4;
-
-const columnClasses = {
-  2: "grid-cols-1 md:grid-cols-2",
-  3: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
-  4: "grid-cols-2 md:grid-cols-3 lg:grid-cols-4",
-  5: "grid-cols-2 md:grid-cols-3 lg:grid-cols-5",
-} as const;
+  { src: "/image-1.JPG", alt: "Image 1", width: 2400, height: 3000 },
+  { src: "/image-2.jpg", alt: "Image 2", width: 1920, height: 2400 },
+  { src: "/image-3.jpg", alt: "Image 3", width: 2400, height: 1600 },
+  { src: "/image-4.jpg", alt: "Image 4", width: 1365, height: 1365 },
+  { src: "/image-5.jpg", alt: "Image 5", width: 1440, height: 1799 },
+  { src: "/image-6.jpg", alt: "Image 6", width: 1440, height: 960 },
+  { src: "/image-7.jpg", alt: "Image 7", width: 1080, height: 1346 },
+  { src: "/image-8.jpg", alt: "Image 8", width: 1440, height: 960 },
+  { src: "/image-9.jpg", alt: "Image 9", width: 1440, height: 1800 },
+  { src: "/image-10.jpg", alt: "Image 10", width: 1440, height: 901 },
+  { src: "/image-11.jpg", alt: "Image 11", width: 1440, height: 1799 },
+  { src: "/image-12.jpg", alt: "Image 12", width: 1440, height: 1800 },
+  { src: "/image-13.jpg", alt: "Image 13", width: 1440, height: 1800 },
+  { src: "/image-14.jpg", alt: "Image 14", width: 1440, height: 1800 },
+  { src: "/image-15.jpg", alt: "Image 15", width: 1440, height: 1914 },
+  { src: "/image-16.jpg", alt: "Image 16", width: 1440, height: 1791 },
+  { src: "/image-17.jpg", alt: "Image 17", width: 1440, height: 1800 },
+  { src: "/image-18.jpg", alt: "Image 18", width: 1537, height: 2048 },
+  { src: "/image-19.jpg", alt: "Image 19", width: 1364, height: 1364 },
+  { src: "/image-20.jpg", alt: "Image 20", width: 2048, height: 2048 },
+]
 
 export default function GalleryPage() {
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-
   return (
     <>
       <Header />
-
-      <main className="min-h-screen bg-gray-50 py-12 px-4">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-bold text-center mb-12 text-gray-800">
-            Gallery
-          </h1>
-
-          <div className={`grid ${columnClasses[COLUMNS]} gap-6`}>
-            {galleryImages.map((image, index) => (
-              <div
-                key={image.src}
-                onClick={() => setSelectedImage(image.src)}
-                className="relative overflow-hidden rounded-xl shadow-lg cursor-zoom-in group aspect-square bg-gray-200 transition-shadow hover:shadow-2xl"
-              >
-                <Image
-                  src={image.src}
-                  alt={image.alt}
-                  fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  className="object-cover transition-transform duration-700 group-hover:scale-110"
-                  priority={index < 12} // Load first ~12 images faster
-                  unoptimized // Required for .JPG with uppercase extension
-                />
-
-                {/* Hover overlay */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
-                  <span className="text-white text-lg font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                    Click to enlarge
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
+      <main className="bg-white">
+        <PageHero
+          eyebrow="Ministry Gallery"
+          title={<span className="font-bold">Gallery</span>}
+          description="Moments from worship services, live ministrations, and encounters in His presence."
+        />
+        <div className="container-page py-14 md:py-20">
+          <GalleryGrid images={galleryImages} />
         </div>
       </main>
-
-      {/* Lightbox Modal */}
-      {selectedImage && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4"
-          onClick={() => setSelectedImage(null)}
-        >
-          <div className="relative max-w-6xl w-full">
-            <Image
-              src={selectedImage}
-              alt="Enlarged view"
-              width={1800}
-              height={1200}
-              className="max-w-full max-h-screen object-contain rounded-lg"
-            />
-            <button
-              onClick={() => setSelectedImage(null)}
-              className="absolute top-4 right-4 text-white text-6xl font-thin hover:text-gray-300 transition"
-              aria-label="Close"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-      )}
-
       <Footer />
     </>
-  );
+  )
 }

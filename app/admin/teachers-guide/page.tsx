@@ -150,32 +150,32 @@ export default function AdminTeachersGuidePage() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-slate-200 p-4">
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-shadow hover:shadow-[0_18px_40px_-28px_rgb(15_23_42/0.35)]">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="text-2xl font-semibold">Teachers Guide CMS</h2>
+            <h2 className="text-2xl font-semibold tracking-tight text-ink md:text-3xl">Teachers Guide CMS</h2>
             <p className="mt-2 text-sm text-slate-600">Manage teaching flows, ownership, and lesson guidance.</p>
           </div>
-          <Button type="button" className="rounded-xl bg-slate-900" onClick={openCreateModal}>
+          <Button type="button" className="bg-ink" onClick={openCreateModal}>
             Add Guide
           </Button>
         </div>
       </div>
 
-      <div className="rounded-xl border border-slate-200 p-4">
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-shadow hover:shadow-[0_18px_40px_-28px_rgb(15_23_42/0.35)]">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <h3 className="text-lg font-semibold text-slate-900">Teaching Guide Table</h3>
+          <h3 className="text-lg font-semibold tracking-tight text-ink">Teaching Guide Table</h3>
           <p className="text-sm text-slate-500">{rows.length} total</p>
         </div>
         <div className="mt-3 space-y-3 md:hidden">
           {isLoading ? (
-            <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
+            <div className="flex items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 px-5 py-10 text-sm text-slate-500">
               <Spinner />
               Loading teachers guides...
             </div>
           ) : (
             rows.map((row) => (
-              <div key={row.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <div key={row.id} className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="font-medium text-slate-900">{row.title}</p>
@@ -197,29 +197,29 @@ export default function AdminTeachersGuidePage() {
         </div>
         <div className="mt-3 hidden overflow-x-auto md:block">
           {isLoading ? (
-            <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
+            <div className="flex items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 px-5 py-10 text-sm text-slate-500">
               <Spinner />
               Loading teachers guides...
             </div>
           ) : (
             <table className="min-w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-slate-200 text-slate-500">
-                  <th className="py-2 pr-4 font-medium">Title</th>
-                  <th className="py-2 pr-4 font-medium">Owner</th>
-                  <th className="py-2 pr-4 font-medium">Duration</th>
-                  <th className="py-2 pr-4 font-medium">Content</th>
-                  <th className="py-2 text-right font-medium">Action</th>
+                <tr className="border-b border-slate-200 text-[0.7rem] uppercase tracking-[0.1em] text-slate-500">
+                  <th className="py-3 pr-4 font-medium">Title</th>
+                  <th className="py-3 pr-4 font-medium">Owner</th>
+                  <th className="py-3 pr-4 font-medium">Duration</th>
+                  <th className="py-3 pr-4 font-medium">Content</th>
+                  <th className="py-3 text-right font-medium">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((row) => (
-                  <tr key={row.id} className="border-b border-slate-100 text-slate-700 align-top">
-                    <td className="py-2 pr-4">{row.title}</td>
-                    <td className="py-2 pr-4">{row.owner}</td>
-                    <td className="py-2 pr-4">{row.duration}</td>
-                    <td className="py-2 pr-4">{row.content}</td>
-                    <td className="py-2 text-right">
+                  <tr key={row.id} className="border-b border-slate-100 text-slate-700 align-top transition-colors hover:bg-slate-50/80">
+                    <td className="py-3.5 pr-4">{row.title}</td>
+                    <td className="py-3.5 pr-4">{row.owner}</td>
+                    <td className="py-3.5 pr-4">{row.duration}</td>
+                    <td className="py-3.5 pr-4">{row.content}</td>
+                    <td className="py-3.5 text-right">
                       <div className="flex justify-end">
                         <AdminRowActions
                           recordName={row.title}
@@ -247,7 +247,7 @@ export default function AdminTeachersGuidePage() {
           setIsFormModalOpen(true)
         }}
       >
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl sm:p-8">
           <DialogHeader>
             <DialogTitle>{editingId ? "Edit Guide" : "Add Guide"}</DialogTitle>
             <DialogDescription>
@@ -256,26 +256,26 @@ export default function AdminTeachersGuidePage() {
           </DialogHeader>
           <form onSubmit={onSubmit} className="grid gap-4 md:grid-cols-2">
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Title</label>
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">Title</label>
               <Input value={formState.title} onChange={(event) => setFormState((prev) => ({ ...prev, title: event.target.value }))} required />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Owner</label>
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">Owner</label>
               <Input value={formState.owner} onChange={(event) => setFormState((prev) => ({ ...prev, owner: event.target.value }))} required />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Duration</label>
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">Duration</label>
               <Input value={formState.duration} onChange={(event) => setFormState((prev) => ({ ...prev, duration: event.target.value }))} required />
             </div>
             <div className="md:col-span-2">
-              <label className="mb-1 block text-sm font-medium text-slate-700">Content</label>
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">Content</label>
               <Textarea rows={6} value={formState.content} onChange={(event) => setFormState((prev) => ({ ...prev, content: event.target.value }))} required />
             </div>
             <DialogFooter className="md:col-span-2">
               <Button type="button" variant="outline" onClick={closeFormModal} disabled={isSaving}>
                 Cancel
               </Button>
-              <Button type="submit" className="rounded-xl bg-slate-900" disabled={isSaving}>
+              <Button type="submit" className="bg-ink" disabled={isSaving}>
                 {isSaving ? <Spinner className="size-4" /> : null}
                 {editingId ? "Update Guide" : "Create Guide"}
               </Button>

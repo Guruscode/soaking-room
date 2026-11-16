@@ -17,8 +17,8 @@ export default async function StudentNextClassPage() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
-        <h2 className="text-2xl font-semibold">Next Class</h2>
+      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
+        <h2 className="text-2xl font-semibold tracking-tight text-ink md:text-3xl">Next Class</h2>
         {nextClass ? (
           <>
             <p className="mt-2 text-sm text-slate-700">{nextClass.className || nextClass.title}</p>
@@ -27,7 +27,7 @@ export default async function StudentNextClassPage() {
             </p>
             <p className="mt-1 text-sm text-slate-700 capitalize">{nextClass.classMode || "online"} class</p>
             {nextClass.classMode === "online" && nextClassMeetingUrl ? (
-              <Button asChild className="mt-3 rounded-xl bg-slate-900">
+              <Button asChild className="mt-3 bg-ink">
                 <Link href={nextClassMeetingUrl} target="_blank" rel="noopener noreferrer">Join Class Link</Link>
               </Button>
             ) : null}
@@ -40,16 +40,16 @@ export default async function StudentNextClassPage() {
         )}
       </div>
 
-      <div className="rounded-xl border border-slate-200 p-4">
-        <h3 className="text-lg font-semibold text-slate-900">Class Schedule</h3>
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-shadow hover:shadow-[0_18px_40px_-28px_rgb(15_23_42/0.35)]">
+        <h3 className="text-lg font-semibold tracking-tight text-ink">Class Schedule</h3>
         <div className="mt-3 overflow-x-auto">
           <table className="min-w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-slate-200 text-slate-500">
-                <th className="py-2 pr-4 font-medium">Class</th>
-                <th className="py-2 pr-4 font-medium">Date</th>
-                <th className="py-2 pr-4 font-medium">Mode</th>
-                <th className="py-2 pr-4 font-medium">Access</th>
+              <tr className="border-b border-slate-200 text-[0.7rem] uppercase tracking-[0.1em] text-slate-500">
+                <th className="py-3 pr-4 font-medium">Class</th>
+                <th className="py-3 pr-4 font-medium">Date</th>
+                <th className="py-3 pr-4 font-medium">Mode</th>
+                <th className="py-3 pr-4 font-medium">Access</th>
               </tr>
             </thead>
             <tbody>
@@ -57,11 +57,11 @@ export default async function StudentNextClassPage() {
                 const meetingUrl = normalizeExternalUrl(row.meetingLink)
 
                 return (
-                  <tr key={row.id} className="border-b border-slate-100 text-slate-700">
-                    <td className="py-2 pr-4">{row.className || row.title}</td>
-                    <td className="py-2 pr-4">{new Date(row.classStartAt!).toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" })}</td>
-                    <td className="py-2 pr-4 capitalize">{row.classMode || "-"}</td>
-                    <td className="py-2 pr-4">
+                  <tr key={row.id} className="border-b border-slate-100 text-slate-700 transition-colors hover:bg-slate-50/80">
+                    <td className="py-3.5 pr-4">{row.className || row.title}</td>
+                    <td className="py-3.5 pr-4">{new Date(row.classStartAt!).toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" })}</td>
+                    <td className="py-3.5 pr-4 capitalize">{row.classMode || "-"}</td>
+                    <td className="py-3.5 pr-4">
                       {row.classMode === "online" && meetingUrl ? (
                         <Link href={meetingUrl} className="font-medium underline" target="_blank" rel="noopener noreferrer">
                           Open class link

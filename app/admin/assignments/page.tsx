@@ -288,32 +288,32 @@ export default function AdminAssignmentsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-slate-200 p-4">
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-shadow hover:shadow-[0_18px_40px_-28px_rgb(15_23_42/0.35)]">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="text-2xl font-semibold">Assignments CMS</h2>
+            <h2 className="text-2xl font-semibold tracking-tight text-ink md:text-3xl">Assignments CMS</h2>
             <p className="mt-2 text-sm text-slate-600">Create, update, and remove assignments shown on the student dashboard.</p>
           </div>
-          <Button type="button" className="rounded-xl bg-slate-900" onClick={openCreateModal}>
+          <Button type="button" className="bg-ink" onClick={openCreateModal}>
             Add Assignment
           </Button>
         </div>
       </div>
 
-      <div className="rounded-xl border border-slate-200 p-4">
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-shadow hover:shadow-[0_18px_40px_-28px_rgb(15_23_42/0.35)]">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <h3 className="text-lg font-semibold text-slate-900">Published Assignments</h3>
+          <h3 className="text-lg font-semibold tracking-tight text-ink">Published Assignments</h3>
           <p className="text-sm text-slate-500">{rows.length} total</p>
         </div>
         <div className="mt-3 space-y-3 md:hidden">
           {isLoading ? (
-            <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
+            <div className="flex items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 px-5 py-10 text-sm text-slate-500">
               <Spinner />
               Loading assignments...
             </div>
           ) : (
             rows.map((row) => (
-              <div key={row.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <div key={row.id} className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="font-medium text-slate-900">{row.title}</p>
@@ -342,30 +342,30 @@ export default function AdminAssignmentsPage() {
         </div>
         <div className="mt-3 hidden overflow-x-auto md:block">
           {isLoading ? (
-            <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
+            <div className="flex items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 px-5 py-10 text-sm text-slate-500">
               <Spinner />
               Loading assignments...
             </div>
           ) : (
             <table className="min-w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-slate-200 text-slate-500">
-                  <th className="py-2 pr-4 font-medium">Title</th>
-                  <th className="py-2 pr-4 font-medium">Category</th>
-                  <th className="py-2 pr-4 font-medium">Instructions</th>
-                  <th className="py-2 pr-4 font-medium">Due Date</th>
-                  <th className="py-2 pr-4 font-medium">Submissions</th>
-                  <th className="py-2 text-right font-medium">Action</th>
+                <tr className="border-b border-slate-200 text-[0.7rem] uppercase tracking-[0.1em] text-slate-500">
+                  <th className="py-3 pr-4 font-medium">Title</th>
+                  <th className="py-3 pr-4 font-medium">Category</th>
+                  <th className="py-3 pr-4 font-medium">Instructions</th>
+                  <th className="py-3 pr-4 font-medium">Due Date</th>
+                  <th className="py-3 pr-4 font-medium">Submissions</th>
+                  <th className="py-3 text-right font-medium">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((row) => (
-                  <tr key={row.id} className="border-b border-slate-100 text-slate-700 align-top">
-                    <td className="py-2 pr-4">{row.title}</td>
-                    <td className="py-2 pr-4">{row.audience}</td>
-                    <td className="py-2 pr-4">{row.instructions}</td>
-                    <td className="py-2 pr-4">{new Date(row.dueDate).toLocaleDateString("en-NG", { dateStyle: "medium" })}</td>
-                    <td className="py-2 pr-4">
+                  <tr key={row.id} className="border-b border-slate-100 text-slate-700 align-top transition-colors hover:bg-slate-50/80">
+                    <td className="py-3.5 pr-4">{row.title}</td>
+                    <td className="py-3.5 pr-4">{row.audience}</td>
+                    <td className="py-3.5 pr-4">{row.instructions}</td>
+                    <td className="py-3.5 pr-4">{new Date(row.dueDate).toLocaleDateString("en-NG", { dateStyle: "medium" })}</td>
+                    <td className="py-3.5 pr-4">
                       <div className="flex items-center gap-3">
                         <span>{row.submissionCount || 0}</span>
                         <Button type="button" variant="outline" size="sm" onClick={() => void openSubmissionsModal(row)}>
@@ -373,7 +373,7 @@ export default function AdminAssignmentsPage() {
                         </Button>
                       </div>
                     </td>
-                    <td className="py-2 text-right">
+                    <td className="py-3.5 text-right">
                       <div className="flex justify-end">
                         <AdminRowActions
                           recordName={row.title}
@@ -401,7 +401,7 @@ export default function AdminAssignmentsPage() {
           setIsFormModalOpen(true)
         }}
       >
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl sm:p-8">
           <DialogHeader>
             <DialogTitle>{editingId ? "Edit Assignment" : "Add Assignment"}</DialogTitle>
             <DialogDescription>
@@ -410,7 +410,7 @@ export default function AdminAssignmentsPage() {
           </DialogHeader>
           <form onSubmit={onSubmit} className="grid gap-4">
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Title</label>
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">Title</label>
               <Input
                 value={formState.title}
                 onChange={(event) => setFormState((prev) => ({ ...prev, title: event.target.value }))}
@@ -418,12 +418,12 @@ export default function AdminAssignmentsPage() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Category</label>
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">Category</label>
               <select
                 value={formState.audience}
                 onChange={(event) => setFormState((prev) => ({ ...prev, audience: event.target.value }))}
                 required
-                className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs"
+                className="flex h-11 w-full rounded-xl border border-input bg-white px-3.5 py-2 text-sm outline-none transition-[box-shadow,border-color] focus-visible:border-brand focus-visible:ring-4 focus-visible:ring-brand/15"
               >
                 {BROADCAST_AUDIENCE_OPTIONS.map((audience) => (
                   <option key={audience} value={audience}>
@@ -433,7 +433,7 @@ export default function AdminAssignmentsPage() {
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Due Date</label>
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">Due Date</label>
               <Input
                 type="date"
                 value={formState.dueDate}
@@ -442,7 +442,7 @@ export default function AdminAssignmentsPage() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Instructions</label>
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">Instructions</label>
               <Textarea
                 rows={5}
                 value={formState.instructions}
@@ -454,7 +454,7 @@ export default function AdminAssignmentsPage() {
               <Button type="button" variant="outline" onClick={closeFormModal} disabled={isSaving}>
                 Cancel
               </Button>
-              <Button type="submit" className="rounded-xl bg-slate-900" disabled={isSaving}>
+              <Button type="submit" className="bg-ink" disabled={isSaving}>
                 {isSaving ? <Spinner className="size-4" /> : null}
                 {editingId ? "Update Assignment" : "Create Assignment"}
               </Button>
@@ -484,14 +484,14 @@ export default function AdminAssignmentsPage() {
           </DialogHeader>
 
           {isLoadingSubmissions ? (
-            <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
+            <div className="flex items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 px-5 py-10 text-sm text-slate-500">
               <Spinner />
               Loading submissions...
             </div>
           ) : submissions.length ? (
             <div className="space-y-4">
               <div className="grid gap-3 md:grid-cols-3">
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <div className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-5">
                   <p className="text-sm text-slate-500">Total submissions</p>
                   <p className="mt-1 text-2xl font-semibold text-slate-900">{submissions.length}</p>
                 </div>
@@ -499,7 +499,7 @@ export default function AdminAssignmentsPage() {
                   <p className="text-sm text-emerald-700">Reviewed</p>
                   <p className="mt-1 text-2xl font-semibold text-emerald-900">{reviewedCount}</p>
                 </div>
-                <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+                <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
                   <p className="text-sm text-amber-700">Pending review</p>
                   <p className="mt-1 text-2xl font-semibold text-amber-900">{pendingCount}</p>
                 </div>
@@ -507,7 +507,7 @@ export default function AdminAssignmentsPage() {
 
               <div className="grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 md:grid-cols-[1fr_220px]">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">Search student</label>
+                  <label className="mb-1.5 block text-sm font-medium text-slate-700">Search student</label>
                   <Input
                     value={submissionSearch}
                     onChange={(event) => setSubmissionSearch(event.target.value)}
@@ -515,11 +515,11 @@ export default function AdminAssignmentsPage() {
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">Review status</label>
+                  <label className="mb-1.5 block text-sm font-medium text-slate-700">Review status</label>
                   <select
                     value={reviewFilter}
                     onChange={(event) => setReviewFilter(event.target.value as "all" | "reviewed" | "pending")}
-                    className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs"
+                    className="flex h-11 w-full rounded-xl border border-input bg-white px-3.5 py-2 text-sm outline-none transition-[box-shadow,border-color] focus-visible:border-brand focus-visible:ring-4 focus-visible:ring-brand/15"
                   >
                     <option value="all">All submissions</option>
                     <option value="reviewed">Reviewed</option>
@@ -529,7 +529,7 @@ export default function AdminAssignmentsPage() {
               </div>
 
               {filteredSubmissions.length ? filteredSubmissions.map((submission) => (
-                <div key={submission.id} className="rounded-xl border border-slate-200 p-4">
+                <div key={submission.id} className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-shadow hover:shadow-[0_18px_40px_-28px_rgb(15_23_42/0.35)]">
                   {(() => {
                     const reviewForm = reviewForms[submission.id] || buildReviewFormState(submission)
 
@@ -598,7 +598,7 @@ export default function AdminAssignmentsPage() {
                               <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
                                 <div className="grid gap-4 md:grid-cols-[180px_1fr]">
                                   <div>
-                                    <label className="mb-1 block text-sm font-medium text-slate-700">Score</label>
+                                    <label className="mb-1.5 block text-sm font-medium text-slate-700">Score</label>
                                     <Input
                                       type="number"
                                       min="1"
@@ -610,7 +610,7 @@ export default function AdminAssignmentsPage() {
                                     <p className="mt-1 text-xs text-slate-500">Use a score from 1 to 10.</p>
                                   </div>
                                   <div>
-                                    <label className="mb-1 block text-sm font-medium text-slate-700">Comment</label>
+                                    <label className="mb-1.5 block text-sm font-medium text-slate-700">Comment</label>
                                     <Textarea
                                       rows={4}
                                       value={reviewForm.adminComment}
@@ -633,7 +633,7 @@ export default function AdminAssignmentsPage() {
                                   </div>
                                   <Button
                                     type="button"
-                                    className="rounded-xl bg-slate-900"
+                                    className="bg-ink"
                                     disabled={reviewForm.isSaving}
                                     onClick={() => void saveReview(submission.id)}
                                   >
@@ -650,13 +650,13 @@ export default function AdminAssignmentsPage() {
                   })()}
                 </div>
               )) : (
-                <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
+                <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 px-5 py-10 text-center text-sm text-slate-500">
                   No submissions match the current search or filter.
                 </div>
               )}
             </div>
           ) : (
-            <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
+            <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 px-5 py-10 text-center text-sm text-slate-500">
               No submissions yet for this assignment.
             </div>
           )}
