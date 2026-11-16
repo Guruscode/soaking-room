@@ -2,6 +2,15 @@ import Image from "next/image"
 import { Award, BookOpen, Brain, Globe, Mail, MapPin, Music, Phone, Users } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import type { ReactNode } from "react"
+import { createPageMetadata } from "@/lib/seo"
+
+export const metadata = createPageMetadata({
+  title: "About Moses Akoh",
+  description:
+    "Meet Moses Oche Akoh, Nigerian recording artist, pastor, songwriter, producer, and founder of The Soaking Room worship ministry.",
+  path: "/about",
+  image: "/image-1.JPG",
+})
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { PageHero } from "@/components/site/page-hero"

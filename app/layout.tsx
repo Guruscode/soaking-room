@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { AuthProvider } from "@/components/providers/auth-provider"
 import { Toaster } from "@/components/ui/toaster"
 import { getSessionUser } from "@/lib/session"
+import { organizationStructuredData, SITE_NAME, SITE_URL } from "@/lib/seo"
 import "./globals.css"
 
 const figtree = Figtree({
@@ -22,11 +23,46 @@ const monoFont = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://www.thesoakingroom.com"),
-  title: "Moses Akoh - Music Ministry",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "The Soaking Room | Global Worship Ministry",
+    template: `%s | ${SITE_NAME}`,
+  },
   description:
-    "Support the music ministry of Moses Akoh. Donate to bless the ministry and spread the gospel through music.",
-  generator: "v0.app",
+    "The Soaking Room is a global worship ministry led by Moses Akoh, creating space to encounter God through worship, music, and prayer.",
+  applicationName: SITE_NAME,
+  category: "Music and worship ministry",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    locale: "en_NG",
+    title: "The Soaking Room | Global Worship Ministry",
+    description:
+      "A global worship ministry led by Moses Akoh, devoted to worship, obedience, and keeping our eyes on Jesus.",
+    url: "/",
+    images: [{ url: "/image-16.jpg", width: 1200, height: 630, alt: "The Soaking Room worship ministry" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "The Soaking Room | Global Worship Ministry",
+    description:
+      "A global worship ministry led by Moses Akoh, devoted to worship, obedience, and keeping our eyes on Jesus.",
+    images: ["/image-16.jpg"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
 }
 
 export const viewport: Viewport = {
@@ -44,6 +80,12 @@ export default async function RootLayout({
     <html lang="en" className={`${figtree.variable} ${monoFont.variable}`}>
       <body className="font-sans antialiased">
         <AuthProvider initialUser={initialUser}>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(organizationStructuredData).replace(/</g, "\\u003c"),
+            }}
+          />
           {children}
           <Toaster />
         </AuthProvider>

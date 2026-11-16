@@ -1,4 +1,3 @@
-import type { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
 import { ArrowLeft, ArrowUpRight, Mail } from "lucide-react"
@@ -6,11 +5,15 @@ import { Footer } from "@/components/footer"
 import { Header } from "@/components/header"
 import { Rays } from "@/components/site/rays"
 import { delay } from "@/lib/motion"
+import { createPageMetadata } from "@/lib/seo"
 
-export const metadata: Metadata = {
-  title: "Worship Night Giving | The Soaking Room",
-  description: "Event-specific giving details for Worship Night with Moses Akoh.",
-}
+export const metadata = createPageMetadata({
+  title: "Worship Night Giving Details",
+  description:
+    "View event-specific Naira, CAD, and UK giving details for Worship Night with Moses Akoh and The Soaking Room.",
+  path: "/worship-night-donate",
+  image: "/donation-image.jpg",
+})
 
 const givingMethods = [
   {

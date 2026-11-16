@@ -1,7 +1,13 @@
 import { type ReactNode } from "react"
+import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 import { DashboardShell } from "@/components/dashboard-shell"
 import { getSessionUser } from "@/lib/session"
+
+export const metadata: Metadata = {
+  title: "Student Dashboard",
+  robots: { index: false, follow: false },
+}
 
 const navItems = [
   { label: "Profile", href: "/student-dashboard/profile" },

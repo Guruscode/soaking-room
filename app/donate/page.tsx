@@ -4,6 +4,14 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { BankDetails } from "@/components/bank-details"
 import { PageHero } from "@/components/site/page-hero"
+import { createPageMetadata } from "@/lib/seo"
+
+export const metadata = createPageMetadata({
+  title: "Support The Soaking Room",
+  description:
+    "Partner with The Soaking Room ministry and support gospel music, worship gatherings, and outreach led by Moses Akoh.",
+  path: "/donate",
+})
 
 export default function DonatePage() {
   return (

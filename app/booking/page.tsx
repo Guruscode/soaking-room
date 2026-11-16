@@ -3,6 +3,14 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { PageHero } from "@/components/site/page-hero"
 import BookingWizard from "@/components/booking-wizard"
+import { createPageMetadata } from "@/lib/seo"
+
+export const metadata = createPageMetadata({
+  title: "Book Moses Akoh",
+  description:
+    "Invite Moses Akoh to lead worship at your church or ministry event. Submit a hosting request for The Soaking Room team to review.",
+  path: "/booking",
+})
 
 export default function BookingPage() {
   return (

@@ -3,6 +3,15 @@ import { Globe, Mail, Phone } from "lucide-react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { PageHero } from "@/components/site/page-hero"
+import { createPageMetadata } from "@/lib/seo"
+
+export const metadata = createPageMetadata({
+  title: "Contact The Soaking Room",
+  description:
+    "Contact Moses Akoh and The Soaking Room ministry for worship invitations, ministry enquiries, and collaborations in Abuja and around the world.",
+  path: "/contact",
+  image: "/image-11.jpg",
+})
 
 const contacts = [
   { icon: Globe, title: "Address", lines: ["Atlantic Mall,", "Utako, FCT Abuja"] },

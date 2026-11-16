@@ -7,6 +7,14 @@ import { Footer } from "@/components/footer"
 import { PageHero } from "@/components/site/page-hero"
 import { SectionHeading } from "@/components/site/section-heading"
 import { TSR_ACADEMY_ADMISSION_STATUS } from "@/lib/academy-admissions"
+import { createPageMetadata } from "@/lib/seo"
+
+export const metadata = createPageMetadata({
+  title: "The Soaking Room Academy",
+  description:
+    "Learn about The Soaking Room Academy, a worship and discipleship school developing worshippers, musicians, and ministry leaders through structured learning.",
+  path: "/tsr-academy",
+})
 
 const schools = [
   {

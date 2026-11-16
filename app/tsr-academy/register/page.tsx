@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import { ArrowUpRight, Lock } from "lucide-react"
 import { getSessionUser } from "@/lib/session"
@@ -5,6 +6,12 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Rays } from "@/components/site/rays"
 import { TSR_ACADEMY_ADMISSION_STATUS } from "@/lib/academy-admissions"
+
+export const metadata: Metadata = {
+  title: "Academy Registration",
+  description: "Information about admissions to The Soaking Room Academy.",
+  robots: { index: false, follow: false },
+}
 
 export default async function TSRRegisterPage() {
   const sessionUser = await getSessionUser()

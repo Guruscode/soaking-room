@@ -6,6 +6,15 @@ import { Footer } from "@/components/footer"
 import { PageHero } from "@/components/site/page-hero"
 import { Rays } from "@/components/site/rays"
 import { cn } from "@/lib/utils"
+import { createPageMetadata } from "@/lib/seo"
+
+export const metadata = createPageMetadata({
+  title: "Worship Events in Abuja and Beyond",
+  description:
+    "Explore worship gatherings and ministry events from The Soaking Room, including The Soaking Room gathering, Spirit Spa, and A Kitchen in the Sky.",
+  path: "/events",
+  image: "/soaking-room.webp",
+})
 
 const events = [
   {

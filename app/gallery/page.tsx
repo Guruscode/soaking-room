@@ -2,6 +2,15 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { PageHero } from "@/components/site/page-hero"
 import { GalleryGrid } from "@/components/site/gallery-grid"
+import { createPageMetadata } from "@/lib/seo"
+
+export const metadata = createPageMetadata({
+  title: "Worship and Ministry Photo Gallery",
+  description:
+    "Browse photos of Moses Akoh, live worship, and ministry gatherings from The Soaking Room.",
+  path: "/gallery",
+  image: "/image-1.JPG",
+})
 
 const galleryImages = [
   { src: "/image-1.JPG", alt: "Image 1", width: 2400, height: 3000 },
